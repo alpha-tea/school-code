@@ -1049,7 +1049,8 @@ lab_1:
         printf("x3 = %.2f\n",x3);
     printf("\n4.86\n");
     int z = 0;
-    int a2 = -2;
+    int a2;
+    a2 = -2;
     if (a2 > 0)
         z = 1;
     if (a2 < 0)
@@ -1099,6 +1100,7 @@ lab_1:
         y1 = -1;
     printf("b)y = %0.2f\n",y1);
     // V
+    x1 = -0.5;
     y1 = 0;
     if (x1 <= -1)
         y1 = 1;
@@ -1228,9 +1230,256 @@ lab_1:
     }
     else
         printf("You entered incorrect values!!!\n\n");
+    //---------------------------------------------------------------------
+    // HARDCORE!!!!!!!!!
+    printf("HARDCORE!-------------------------------\n\n");
+    printf("4.118\n");
+    int a3, b2;
+    a3 = 2;
+    a2 = 3;
+    a1 = 5;
+    b2 = 4;
+    b1 = 9;
+    if (b1 > a1) {
+        a2 -= 1;
+        a1 = a1 - b1 + 10;
+    } else
+        a1 -= b1;
+    if (b2 > a2) {
+        a2 = a2 - b2 + 10;
+        a3 -= 1;
+    } else {
+        a2 = a2 - b2;
+    }
+    if (a3 <= 0)
+        printf("You entered incorrect values!\n\n");
+    else
+        printf("sotny = %d, desyatki = %d, edenytsy = %d\n\n",a3,a2,a1);
+    printf("4.119\n");
+    a1 = 3; //x1(vertical)
+    b1 = 2; //y1(gorizont)
+    c1 = 6; //x2
+    int d1 = 3; //y2
+    // ладья
+    a1 = 2;
+    b1 = 4;
+    // жертва
+    c1 = 2;
+    d1 = 7;
+    if (a1 <= 8 && a1 >=1 &&
+            b1 <= 8 && b1 >=1 &&
+            c1 <= 8 && c1 >=1 &&
+            d1 <= 8 && d1 >=1) {
+        //a
+        if (c1 == a1 || d1 == b1)
+            printf("a)ladya ugrozhaet peshke!\n");
+        else
+            printf("a)ladya ne ugrozhaet peshke!\n");
+        //b
+        // слон
+        a1 = 2;
+        b1 = 4;
+        // жертва
+        c1 = 3;
+        d1 = 5;
+        if (abs(c1 - a1) == abs(d1 - b1))
+            printf("b)slon ugrozhaet peshke!\n");
+        else
+            printf("b)slon ne ugrozhaet peshke!\n");
+        //c
+        // король
+        a1 = 2;
+        b1 = 4;
+        // другое поле
+        c1 = 2;
+        d1 = 3;
+        if (abs(c1 - a1) <= 1 && abs(d1 - b1) <= 1)
+            printf("c)Korol mozhet pereity!\n\n");
+        else
+            printf("c)No!\n\n");
+    }
+    printf("4.124(a)\n");
+    a = 8;
+    b = 8;
+    c = 8;
+    if ((c < b + a) && (a < b + c) && (b < c + a)) {
+        if (pow(c,2) == pow(a,2) + pow(b,2) ||
+                pow(b,2) == pow(a,2) + pow(c,2) ||
+                pow(a,2) == pow(c,2) + pow(b,2))
+            printf("Pryamoygolniy treugolynk!\n\n");
+        else
+            if (pow(c,2) < pow(a,2) + pow(b,2) &&
+                    pow(b,2) < pow(a,2) + pow(c,2) &&
+                    pow(a,2) < pow(c,2) + pow(b,2))
+                printf("Ostrougolniy treugolynk!\n\n");
+            else
+                printf("Tupoygolniy treugolnyk!\n\n");
+    }
+    else
+        printf("This is not a triangle!\n\n");
+    printf("4.125\n");
+    n = 12;
+    if (n >= 1 && n <= 99) {
+        if (n % 10 == 1 && n != 11)
+            printf("MHE %d GOT\n\n",n);
+        else
+            if (n % 10 >= 2 && n % 10 <= 4 && n > 15)
+                printf("MHE %d GODA\n\n",n);
+            else
+                printf("MHE %d LET\n\n",n);
+    } else
+        printf("You entered incorrect values!\n\n");
+    printf("4.128\n");
+    year = 0;
+    month = 0;
+    n = 28;
+    if (n >= 1 && n <= 1188) {
+        if (n % 12 == 0) {
+            year = n / 12;
+        } else {
+            year = n / 12;
+            month = n % 12;
+        }
+    } else
+        printf("You entered incorrect values!\n\n");
+    printf("year = %d,month = %d\n\n",year,month);
+    printf("4.132\n");
+    a1 = 10;
+    b1 = 56;
+    c1 = 12;
+    d1 = 55;
+    n = 9;
+    int m = 55;
+    if (n > a1 && n < c1)
+        printf("Popal, mezhdy chasamy!\n\n");
+    else
+        if ((n == a1 && m >= b1) || (n == c1 && m <= d1))
+            printf("Popal mezhdy minutamy!\n\n");
+        else
+            printf("Ne popal!\n\n");
+    printf("4.134\n");
+    //A
+    int last_year = 0, last_month = 0, last_day = 0;
+    year = 2016;
+    month = 2;
+    day = 28;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        last_day = day - 1;
+        last_month = month;
+        last_year = year;
+        if (last_day == 0) {
+            if ((month >= 1 && month <= 7 && month % 2 != 0) || (month >=8 && month <=12 && month % 2 == 0)) {
+                last_day = 31;
+                last_month = month - 1;
+                if (last_month == 0) {
+                    last_month = 12;
+                    last_year = year - 1;
+                }
+            } else {
+                if (month == 2) {
+                    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+                        last_day = 29;
+                    else
+                        last_day = 28;
+                } else
+                    last_day = 30;
+                printf("Date(A): %d.%d.%d\n",last_day,last_month,last_year);
+            }
+        } else
+            printf("You entered incorrect values!\n\n");
+        //Б
+        int next_day = 0, next_year = 0, next_month = 0;
+        next_day = day + 1;
+        next_month = month;
+        next_year = year;
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            if ((month >= 1 && month <= 7 && month % 2 != 0) || (month >=8 && month <=12 && month % 2 == 0)) {
+                if (next_day > 31) {
+                    next_day = 1;
+                    next_month = month + 1;
+                    if (next_month > 12) {
+                        next_year = year + 1;
+                        next_month = 1;
+                    }
+                }
+            } else {
+                if (month == 2) {
+                    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+                        help1 = 29;
+                } else
+                    help1 = 28;
+                if (next_day > help1) {
+                    next_day = 1;
+                    next_month = month + 1;
+                    if (next_month > 12) {
+                        next_year = year + 1;
+                        next_month = 1;
+                    }
+                }
+            }
+        } else {
+            if (next_day > 30) {
+                next_day = 1;
+                next_month = month + 1;
+                if (next_month > 12) {
+                    next_year = year + 1;
+                    next_month = 1;
+                }
+            }
+        }
+        printf("Date(B): %d.%d.%d\n\n",next_day,next_month,next_year);
+    } else
+        printf("You entered incorrect values!\n\n");
+    printf("4.141\n");
+    a1 = 12; // Номер 1-й квартиры
+    n = 7;  // Кол-во квартир
+    i = 0;
+    int summ = 0;
+    while (i < n) {
+        summ = summ + a1;
+        a1++;
+        ++i;
+    }
+    if (summ % 2 == 0)
+        printf("summ = %d; Yes!\n\n",summ);
+    else
+        printf("summ = %d; No!\n\n",summ);
+    printf("4.135\n");
+    a1 = 16;
+    help1 = a1 % 6;
+    if (help1 >= 0 && help1 < 3)
+        printf("Green!\n\n");
+    else
+        if (help1 >= 3 && help1 < 4)
+            printf("Yellow!\n\n");
+        else
+            printf("Red!\n\n");
+    printf("4.140\n");
+    n = 0;
+    k = 29;
+    if (k >= 1 && k <= 9)
+        n = k;
+    else if (k >= 10 && k <= 187) {
+        if (k % 2 == 0)
+            n = ((k - 10) / 20) +1;
+        else {
+            n = ((k - 10) % 20 ) / 2;
+        }
+    } else if (k >= 188 && k <=222) {
+        n = k - 188;
+        if (n % 3 == 0)
+            n = 1;
+        else if (n % 3 == 1)
+            n = k / 30;
+        else
+            n = k / 3;
+    }
+    printf("N[k] = N[%d] = %d\n\n",k,n);
 }
 
 int main()
 {
+    chapter_4();
+    //getchar(); - не снимать.
     return 0;
 }
