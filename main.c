@@ -838,7 +838,7 @@ lab_1:
     } else
         printf("disc < 0, disc = %.2f or a = 0, no results.\n\n",disc);
     printf("4.50\n");
-    double d = 5;
+    int d = 5;
     a = 5;
     b = 7;
     c = 9;
@@ -1357,79 +1357,73 @@ lab_1:
             printf("Popal mezhdy minutamy!\n\n");
         else
             printf("Ne popal!\n\n");
-    printf("4.134\n");
-    //A
-    int last_year = 0, last_month = 0, last_day = 0;
-    year = 2016;
-    month = 2;
-    day = 28;
-    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        last_day = day - 1;
-        last_month = month;
-        last_year = year;
-        if (last_day == 0) {
-            if ((month >= 1 && month <= 7 && month % 2 != 0) || (month >=8 && month <=12 && month % 2 == 0)) {
-                last_day = 31;
-                last_month = month - 1;
-                if (last_month == 0) {
-                    last_month = 12;
-                    last_year = year - 1;
-                }
-            } else {
-                if (month == 2) {
-                    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
-                        last_day = 29;
-                    else
-                        last_day = 28;
-                } else
-                    last_day = 30;
-                printf("Date(A): %d.%d.%d\n",last_day,last_month,last_year);
-            }
-        } else
-            printf("You entered incorrect values!\n\n");
-        //Б
-        int next_day = 0, next_year = 0, next_month = 0;
-        next_day = day + 1;
-        next_month = month;
-        next_year = year;
-        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-            if ((month >= 1 && month <= 7 && month % 2 != 0) || (month >=8 && month <=12 && month % 2 == 0)) {
-                if (next_day > 31) {
-                    next_day = 1;
-                    next_month = month + 1;
-                    if (next_month > 12) {
-                        next_year = year + 1;
-                        next_month = 1;
-                    }
-                }
-            } else {
-                if (month == 2) {
-                    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
-                        help1 = 29;
-                } else
-                    help1 = 28;
-                if (next_day > help1) {
-                    next_day = 1;
-                    next_month = month + 1;
-                    if (next_month > 12) {
-                        next_year = year + 1;
-                        next_month = 1;
-                    }
-                }
-            }
+    enum Months { January = 1, February, March, April, May, June, July, August, September, October, November, December };
+        const int months_in_year = 12;
+        const int days_in_month[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        int y_prev = 0, m_prev = 0, d_prev = 0, y_next = 0, m_next = 0, d_next = 0;
+        y = 2020, m = 2, d = 28;
+    printf("4.134. Year %d, month %d and day %d. ", y, m, d);
+        int diff;
+        if (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) {
+            printf("Leap year, using delta = 1.\n");
+            diff = 1;
         } else {
-            if (next_day > 30) {
-                next_day = 1;
-                next_month = month + 1;
-                if (next_month > 12) {
-                    next_year = year + 1;
-                    next_month = 1;
+            printf("Not a leap year, using delta = 0.\n");
+            diff = 0;
+        }
+        // Better IF expression, using 'days' array, "if (d < days_in_month[m]))...". Using 'days' only for consts.
+        d_prev = d - 1; d_next = d + 1;     // Better in if-else statesments, but default (else) here.
+        m_prev = m_next = m;                // If not changing, then as current date.
+        y_prev = y_next = y;
+        if (d == 1) {
+            if (m == March)
+                d_prev = days_in_month[February] + diff;
+            else if ((m == May || m == July || m == October || m == December))
+                d_prev = days_in_month[April]; // Or any other 30 day, or better constant with name.
+            else
+                d_prev = days_in_month[March];    // 31 day.
+            // Only if January, then first expression divided will be 1, second will 0. Or just use IF. ;)
+            printf("Day was 1, switch to previos month.\n");
+            m_prev = ((months_in_year - (m - 1)) / months_in_year) * months_in_year + (m - 1);
+            if (m == 1) {
+                printf("Month was January, switch to previous year.\n");
+                y_prev = y - 1;
+                if (y_prev == 0) {
+                    printf("Changing year scale to BC.\n");
+                    y_prev = - 1;
+                }
+            }
+        } else {    // One IF possible, other way.
+            int l1 = (m == February && d == days_in_month[February] + diff);
+            int l2 = ((m == April || m == June || m == September || m == November) && d == days_in_month[April]);
+            int l3 = (d == days_in_month[January]); // Any of 31-day month.
+            if (l1 || l2 || l3) {
+                d_next = 1;
+                // (++(m - 1)) % 12 + 1. Next month index, and increment after modulus, as months starts from 1 = January.
+                printf("Day was last in month, switch to next.\n");
+                m_next = (m % months_in_year) + 1;
+                if (m == 12) {
+                    printf("Month was december, switch to next year.\n");
+                    y_next = y + 1;
+                    if (y_next == 0) {
+                        printf("Changing year scale to AD.\n");
+                        y_next = 1;
+                    }
                 }
             }
         }
-        printf("Date(B): %d.%d.%d\n\n",next_day,next_month,next_year);
-    } else
-        printf("You entered incorrect values!\n\n");
+        printf("Previous date year %d ", abs(y_prev));
+        if (y_prev > 0)
+            printf("A.D., ");
+        else
+            printf("B.C., ");
+        printf("month %d, day %d.\n", m_prev, d_prev);
+        printf("Next date year %d ", abs(y_next));
+        if (y_next > 0)
+            printf("A.D., ");
+        else
+            printf("B.C., ");
+        printf("month %d, day %d.\n", m_next, d_next);;
     printf("4.141\n");
     a1 = 12; // Номер 1-й квартиры
     n = 7;  // Кол-во квартир
@@ -1477,6 +1471,10 @@ lab_1:
     printf("N[k] = N[%d] = %d\n\n",k,n);
 }
 
+void chapter_5()
+{
+
+}
 int main()
 {
     chapter_4();
