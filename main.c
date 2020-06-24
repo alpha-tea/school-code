@@ -1358,72 +1358,72 @@ lab_1:
         else
             printf("Ne popal!\n\n");
     enum Months { January = 1, February, March, April, May, June, July, August, September, October, November, December };
-        const int months_in_year = 12;
-        const int days_in_month[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        int y_prev = 0, m_prev = 0, d_prev = 0, y_next = 0, m_next = 0, d_next = 0;
-        y = 2020, m = 2, d = 28;
+    const int months_in_year = 12;
+    const int days_in_month[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    int y_prev = 0, m_prev = 0, d_prev = 0, y_next = 0, m_next = 0, d_next = 0;
+    y = -1, m = 12, d = 32;
     printf("4.134. Year %d, month %d and day %d. ", y, m, d);
-        int diff;
-        if (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) {
-            printf("Leap year, using delta = 1.\n");
-            diff = 1;
-        } else {
-            printf("Not a leap year, using delta = 0.\n");
-            diff = 0;
-        }
-        // Better IF expression, using 'days' array, "if (d < days_in_month[m]))...". Using 'days' only for consts.
-        d_prev = d - 1; d_next = d + 1;     // Better in if-else statesments, but default (else) here.
-        m_prev = m_next = m;                // If not changing, then as current date.
-        y_prev = y_next = y;
-        if (d == 1) {
-            if (m == March)
-                d_prev = days_in_month[February] + diff;
-            else if ((m == May || m == July || m == October || m == December))
-                d_prev = days_in_month[April]; // Or any other 30 day, or better constant with name.
-            else
-                d_prev = days_in_month[March];    // 31 day.
-            // Only if January, then first expression divided will be 1, second will 0. Or just use IF. ;)
-            printf("Day was 1, switch to previos month.\n");
-            m_prev = ((months_in_year - (m - 1)) / months_in_year) * months_in_year + (m - 1);
-            if (m == 1) {
-                printf("Month was January, switch to previous year.\n");
-                y_prev = y - 1;
-                if (y_prev == 0) {
-                    printf("Changing year scale to BC.\n");
-                    y_prev = - 1;
-                }
-            }
-        } else {    // One IF possible, other way.
-            int l1 = (m == February && d == days_in_month[February] + diff);
-            int l2 = ((m == April || m == June || m == September || m == November) && d == days_in_month[April]);
-            int l3 = (d == days_in_month[January]); // Any of 31-day month.
-            if (l1 || l2 || l3) {
-                d_next = 1;
-                // (++(m - 1)) % 12 + 1. Next month index, and increment after modulus, as months starts from 1 = January.
-                printf("Day was last in month, switch to next.\n");
-                m_next = (m % months_in_year) + 1;
-                if (m == 12) {
-                    printf("Month was december, switch to next year.\n");
-                    y_next = y + 1;
-                    if (y_next == 0) {
-                        printf("Changing year scale to AD.\n");
-                        y_next = 1;
-                    }
-                }
+    int diff;
+    if (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) {
+        printf("Leap year, using delta = 1.\n");
+        diff = 1;
+    } else {
+        printf("Not a leap year, using delta = 0.\n");
+        diff = 0;
+    }
+    // Better IF expression, using 'days' array, "if (d < days_in_month[m]))...". Using 'days' only for consts.
+    d_prev = d - 1; d_next = d + 1;     // Better in if-else statesments, but default (else) here.
+    m_prev = m_next = m;                // If not changing, then as current date.
+    y_prev = y_next = y;
+    if (d == 1) {
+        if (m == March)
+            d_prev = days_in_month[February] + diff;
+        else if ((m == May || m == July || m == October || m == December))
+            d_prev = days_in_month[April]; // Or any other 30 day, or better constant with name.
+        else
+            d_prev = days_in_month[March];    // 31 day.
+        // Only if January, then first expression divided will be 1, second will 0. Or just use IF. ;)
+        printf("Day was 1, switch to previos month.\n");
+        m_prev = ((months_in_year - (m - 1)) / months_in_year) * months_in_year + (m - 1);
+        if (m == 1) {
+            printf("Month was January, switch to previous year.\n");
+            y_prev = y - 1;
+            if (y_prev == 0) {
+                printf("Changing year scale to BC.\n");
+                y_prev = - 1;
             }
         }
-        printf("Previous date year %d ", abs(y_prev));
-        if (y_prev > 0)
-            printf("A.D., ");
-        else
-            printf("B.C., ");
-        printf("month %d, day %d.\n", m_prev, d_prev);
-        printf("Next date year %d ", abs(y_next));
-        if (y_next > 0)
-            printf("A.D., ");
-        else
-            printf("B.C., ");
-        printf("month %d, day %d.\n", m_next, d_next);;
+    } else {    // One IF possible, other way.
+        int l1 = (m == February && d == days_in_month[February] + diff);
+        int l2 = ((m == April || m == June || m == September || m == November) && d == days_in_month[April]);
+        int l3 = (d == days_in_month[January]); // Any of 31-day month.
+        if (l1 || l2 || l3) {
+            d_next = 1;
+            // (++(m - 1)) % 12 + 1. Next month index, and increment after modulus, as months starts from 1 = January.
+            printf("Day was last in month, switch to next.\n");
+            m_next = (m % months_in_year) + 1;
+            if (m == 12) {
+                printf("Month was december, switch to next year.\n");
+                y_next = y + 1;
+                if (y_next == 0) {
+                    printf("Changing year scale to AD.\n");
+                    y_next = 1;
+                }
+            }
+        }
+    }
+    printf("Previous date year %d ", abs(y_prev));
+    if (y_prev > 0)
+        printf("A.D., ");
+    else
+        printf("B.C., ");
+    printf("month %d, day %d.\n", m_prev, d_prev);
+    printf("Next date year %d ", abs(y_next));
+    if (y_next > 0)
+        printf("A.D., ");
+    else
+        printf("B.C., ");
+    printf("month %d, day %d.\n", m_next, d_next);;
     printf("4.141\n");
     a1 = 12; // Номер 1-й квартиры
     n = 7;  // Кол-во квартир
@@ -1473,11 +1473,124 @@ lab_1:
 
 void chapter_5()
 {
-
+    printf("5.3\n\n");
+    int i = 0, a = 20, b = 15, i1 = 10, a1 = 7, result = 0;
+    printf("Numbers\tSquare\tDegree(3)\n\n");
+    while (i <= 5) {
+        printf("a)%3d %3d\n",i, a + i);
+        if (i1 + i <= b) {
+            result = pow(i1 + i,2);
+            printf("b)%3d %3d\n",i1 + i, result);
+        } else
+            printf("b)--");
+        if (a1 + i <= 50) {
+            result = pow(a1 + i,3);
+            printf("c)%3d %3d\n",a1 + i, result);
+        } else
+            printf("c)znacheniye bolshe chem 50!\n");
+        if (i >= 1 && i <= 4) {
+            printf("d)%3d\n",i);
+        }
+        ++i;
+    }
+    printf("\n");
+    printf("5.8. Tablitsa funty v kilogramy\n");
+    double funt = 1, kilograms = 0;
+    const double grams_in_funt = 453.0;
+    while (funt <= 10) {
+        kilograms = funt * grams_in_funt / 1000;
+        printf("%2.0f lb = %2.3f kg\n",funt,kilograms);
+        ++funt;
+    }
+    printf("\n5.9.Duymy v samtimetry\n");
+    double inch = 10, cm = 0;
+    const double sm_per_inch = 2.54;
+    while (inch <= 22) {
+        cm = inch * sm_per_inch;
+        printf("%2.0f inch = %2.2f cm\n",inch, cm);
+        ++inch;
+    }
+    printf("\n5.10.Konverter: doll v rub\n");
+    const double doll = 68.78;
+    int help = 1;
+    while (help <= 20) {
+        printf("%d doll = %0.2f rub\n",help, help * doll);
+        ++help;
+    }
+    printf("\n5.11.Rastoyanie do linii gorizonta.\n");
+    int R = 6350, h = 1, gorizont = 0;
+    while (h <= 10) {
+        gorizont = pow(R + h,2) - pow(R,2);
+        printf("length = %0.f km\n",sqrt(gorizont));
+        ++h;
+    }
+    printf("\n5.15.Tablitsa umnozheniya\n");
+    int n = 7;
+    help = 1;
+    while (help <= 10) {
+        printf("%d * %d = %d;\n",n, help, n * help);
+        ++help;
+    }
+    i = 3;
+    printf("\n5.16. Talitsa sin.\n");
+    while (i <= 20) {
+        printf("sin(%d) = %0.6f\n",i,sin(i));
+        ++i;
+    }
+    printf("\n5.18.Raschet z po formyle.\n");
+    a = 2;
+    double t = 0, z = 0;
+    while (a <= 17) {
+        t = 4 * a;
+        z = (3.5 * pow(t,2)) - (7 * t) + 16;
+        printf("z = %.f, a = %d\n",z, a);
+        ++a;
+    }
+    printf("\n5.20Tablisa korney.\n");
+    i = 1;
+    double help1 = 0.1;
+    while (i <= 9) {
+        printf("sqrt(%.1f) = %.5f\n",help1, sqrt(help1));
+        help1 += 0.1;
+        ++i;
+    }
+    printf("\n5.22.Raschet stoimosti konfet.\n");
+    double cost = 289.45;
+    double mass = 0.1;
+    i = 1;
+    while ( i <= 20) {
+        printf("cost(%.1f kg) = %.2f rub\n",mass,cost * mass);
+        mass += 0.1;
+        ++i;
+    }
+    printf("\n5.24.Posledovatelnost chisel.\n");
+    i = 1;
+    help1 = 3.2;
+    while (i <= 8) {
+        printf("%.1f\n%.1f\n",help1, help1);
+        ++i;
+        help1 += 0.1;
+    }
+    printf("\n5.26Posledovatelnost chisel.\n");
+    i = 1;
+    help1 = 4.4;
+    while (i <= 11) {
+        printf("%.1f\n",help1);
+        ++i;
+        help1 += 0.2;
+    }
+    printf("\n5.30\n");
+    //a
+    i = 20;
+    int summ = 0;
+    while (i <= 40) {
+        summ += pow(i,3);
+        ++i;
+    }
 }
 int main()
 {
-    chapter_4();
+    chapter_5();
     //getchar(); - не снимать.
     return 0;
 }
