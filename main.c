@@ -1,9 +1,25 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <time.h>
 #define Y CHAR_MAX
 #define Z CHAR_MIN
+
+int numerical_generation_int()
+{
+    srand(time(NULL));
+    int i = 1, a = 0, sum = 0;
+    while (i <= 10) {
+        a = rand() % 10;
+        sum += a;
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n");
+    return sum;
+}
 
 void intro()
 {
@@ -1587,6 +1603,189 @@ void chapter_5()
         summ += pow(i,3);
         ++i;
     }
+    printf("c)Sum of squares = %d\n",summ);
+    summ = 0;
+    a = 1;
+    n = 5;
+    while (a <= n) {
+        summ += a * a;
+        ++a;
+    }
+    printf("d)Sum of squares = %d\n\n",summ);
+    n = 10;
+    printf("5.31 - 5.35. n = %d\n",n);
+    printf("idx\t5.31:\t5.32:\t5.33:\t5.34:\t5.35:\n");
+    double sum = 0, sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0, p3 = 1, p4 = 1;
+    for (i = 0; i < n; ++i) {
+        double e1 = (n + i) * (n + i);
+        double e2 = 1.0 / (i + 1);
+        double e3 = (double) (2 + i) / (double) (3 + i);
+        double e4 = 1.0 / p3;
+        p3 *= 3;
+        double e5 = 1.0 / (i + 1) * p4;
+        p4 *= -1;
+        sum += e1;
+        sum1 += e2;
+        sum2 += e3;
+        sum3 += e4;
+        sum4 += e5;
+        printf("%d\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",i,e1,e2,e3,e4,e5);
+    }
+    printf("sum:\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n\n",sum,sum1,sum2,sum3,sum4);
+    printf("5.39:summa posledovatelnosty\n");
+    srand(time(NULL));
+    i = 1;
+    summ = 0;
+    summ += numerical_generation_int();
+    printf("Sum = %d\n\n",summ);
+    printf("5.42:Ocency na ekzamenax\n");
+    i = 1;
+    summ = 0;
+    while (i <= 4) {
+        a = 1 + rand() % 5;
+        summ += a;
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n");
+    printf("Points = %d\n\n",summ);
+    printf("5.45:Obshee soprotevleniye elementov\n");
+    i = 0;
+    summ = 0;
+    a = 1 + rand() % 10;
+    while (i <= a) {
+        a = 1 + rand() % 10;
+        summ += a;
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n");
+    printf("Sum = %d\n\n",summ);
+    printf("5.48:Summa kvadratov chisel\n");
+    i = 0;
+    summ = 0;
+    a = 1 + rand() % 10;
+    while (i <= a) {
+        a = 1 + rand() % 10;
+        summ += a * a;
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n\n");
+    printf("Sum of squares = %d\n\n",summ);
+    printf("5.51\n");
+    srand(time(NULL));
+    n = 3;
+    sum = 0;
+    for (i = 0; i < 3; ++i) {
+        double e = (double)(rand() % 10) / (double)(1 + rand() % 10);
+        sum += e;
+        printf("%.1f ",e);
+    }
+    printf("SRED.ARIF = %.2f\n\n",sum / n);
+    printf("5.54\n");
+    n = 10;
+    srand(time(NULL));
+    sum = 0;
+    for (i = 0; i < n; ++i) {
+        a = 1 + rand() % 5;
+        sum += a;
+        printf("%d ",a);
+    }
+    printf("SRED.OCENKA = %.0f\n\n",sum / n);
+    printf("5.56\n");
+    //a
+    n = 1 + rand() % 5;
+    i = 1;
+    summ = 0;
+    while (i <= n) {
+        a = rand() % 10;
+        summ += abs(a);
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n");
+    printf("a)Sum = %d\n\n",summ);
+    //Б
+    n = 1 + rand() % 5;
+    i = 1;
+    summ = 1;
+    while (i <= n) {
+        a = 1 + rand() % 10;
+        summ *= abs(a);
+        printf("%d ",a);
+        ++i;
+    }
+    printf("\n");
+    printf("b)Sum = %d\n\n",summ);
+    //c
+    summ = 0;
+    b = 0;
+    n = 1 + rand() % 8;
+    i = 1;
+    printf("c)\n");
+    a = 1 + rand() % 10;
+    while (i <= n) {
+        b = 1 + rand() % 10;
+        summ += a + b;
+        printf("%d + %d = %d\n",a,b,summ);
+        ++i;
+        a = b;
+    }
+    printf("Sum = %d\n",summ);
+    // D
+    n = 1 + rand() % 5;
+    i = 1;
+    summ = 0;
+    b = 1;
+    while (i <= n) {
+        a = rand() % 10;
+        summ += a * b;
+        printf("%d ",a * b);
+        ++i;
+        b *= -1;
+    }
+    printf("\n");
+    printf("d)Sum = %d\n\n",summ);
+    printf("\n5.57\n");
+    int summ1 = 0;
+    i = 1;
+    summ = 0;
+    printf("Two student: ");
+    while (i <= 4) {
+        a = 1 + rand() % 5;
+        b = 1 + rand() % 5;
+        summ += a;
+        summ1 += b;
+        printf("%d - %d; ",a,b);
+        ++i;
+    }
+    printf("\nTotal: %d - %d; \n\n",summ, summ1);
+    printf("5.60\n");
+    int january = 0, march = 0;
+    i = 1;
+    printf("Januaty\t\tMarch\n");
+    while (i <= 31) {
+        a = 1 + rand() % 40;
+        january += a;
+        b = 1 + rand() % 15;
+        march += b;
+        printf("%4d\t\t%4d\n",a,b);
+        ++i;
+    }
+    printf("\nTotal:\n%4d\t\t%4d\n\n",january / 31,march / 31);
+    printf("5.63\n");
+    srand(time(NULL));
+    n = 10;
+    summ = 0;
+    for (i = 1; i <= 10;++i) {
+        a = 1 + rand() % 7;
+        b = 1 + rand() % 5;
+        printf("%d - %d; ",a,b);
+        summ += a * b;
+    }
+    printf("SUMM.UROZHAY = %d\n",summ);
+    printf("SRED.UROZHAYNOST = %.2f\n\n",(double)summ / 10.0);
 }
 int main()
 {
