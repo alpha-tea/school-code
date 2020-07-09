@@ -1786,6 +1786,162 @@ void chapter_5()
     }
     printf("SUMM.UROZHAY = %d\n",summ);
     printf("SRED.UROZHAYNOST = %.2f\n\n",(double)summ / 10.0);
+    printf("5.66.posledovatelnost: ");
+    n = 5;
+    double a2 = 0, a3 = 0, k = 0;
+    for (k = 1;k <= n;++k) {
+        a3 = k * (a2) + 1 / k;
+        printf("a%.f = %.2f; ",k,a3);
+        a2 = a3;
+    }
+    printf("\n5.67\n");
+    //A
+    k = 7;
+    n = 10;
+    a = 1;
+    a1 = 1;
+    b = 1;
+    summ = 2;
+    printf("Fibonnachi: %d %d ", a, a1);
+    for (i = 3; i <= n; ++i) {
+        b = a1 + a;
+        a = a1;
+        a1 = b;
+        summ += b;
+        printf("%d(%d) ",b,summ);
+        if (i == k) {
+            printf("Nayden element - k; ");
+        }
+    }
+    if (summ % 2 == 0)
+        printf("Yes!\n\n");
+    else
+        printf("No!\n\n");
+    printf("5.68\n");
+    double p = 1, p1 = 0;
+    k = 1;
+    int k1 = 5;
+    for (i = 1; i < k1; ++i) {
+        p1 = k;
+        k += p;
+        p = p1;
+    }
+    printf("a)k = %d; k / p = %.f / %.f = %.3f\n", k1, k, p,k / p);
+    p = 1, p1 = 0;
+    k = 1;
+    n = 6;
+    a = 7;
+    sum = 0;
+    printf("b)");
+    for (i = 1; i <= n; ++i) {
+        printf("%d) %.3f; ",i,k / p);
+        sum += k / p;
+        p1 = k;
+        k += p;
+        p = p1;
+    }
+    if (sum > a)
+        printf("\nc)Yes, sum > A; %.3f > %d;\n\n",sum, a);
+    else
+        printf("\nc)No, sum < A; %.3f < %d;\n\n",sum, a);
+    printf("5.69\n");
+    double v1 = 0, v2 = 0, v3 = 1.5, v4 = 0;
+    n = 7;
+    printf("Posledovatelnost: ");
+    for (i = 4; i < n; ++i) {
+        v4 = ((i - 1) / (pow(i,2) + 1)) * v3 - v2 + v1;
+        printf("%.2f; ",v4);
+    }
+    printf("\n\n5.70\n");
+    a = 1;
+    for (i = 1; i <= 24 / 3; ++i) {
+        a *= 2;
+        printf("%d hours = %d amoebas\n",i * 3,a);
+    }
+    printf("\n5.71\n");
+    double score = 1000, profit = 0, summ_score = 0;
+    const double percent = 2;
+    for (i = 1; i <= 5; ++i) {
+        if (i >= 3 && i <= 5)
+            printf("%d)%.2f\t%.2f\n",i,score,profit);
+        else
+            printf("%d)%.2f\t-\n",i,score);
+        summ_score = score + (score / 100 * percent);
+        profit =  summ_score - score;
+        score = summ_score;
+
+    }
+    printf("\n5.72\n");
+    printf("a)\n");
+    double way = 10,sum_way = 0;
+    for (i = 1; i <= 10; ++i) {
+        way += way / 10;
+        if (i <= 7)
+            sum_way += way;
+        printf("Way = %.2f km\n",way);
+    }
+    printf("b) summ = %.2f\n\n",sum_way);
+    printf("5.73\n");
+    v1 = 100.0; v2 = 20; v3 = 0.05; v4 = 0.02;
+    sum = 0;
+    n = 8;
+    printf("God:\tPloshad:\tUrozhaynost:\tUrozhay:\tSumma:\n");
+    for (i = 1; i < 8; ++i) {
+        double v5 = v1 * v2;
+        sum += v5;
+        printf("%d\t",i);
+        if (i <= 7 && i >= 4)
+            printf("%.f\t\t",v1);
+        else
+            printf("-\t\t");
+        if (i >= 2)
+            printf("%.2f\t\t",v2);
+        else
+            printf("-\t\t");
+        if (i <= 6)
+            printf("%.f\t\t%.f",v5,sum);
+        else
+            printf("-\t\t-");
+        printf("\n");
+        v1 = v1 + (v1 * v3);
+        v2 = v2 + (v2 * v4);
+    }
+    printf("\n5.74\n");
+    v1 = 10; v2 = 10; v3 = 0.5; v4 = M_PI / 6 * v1 * v1 * v1; sum = v4;
+    n = 12;
+    printf("Posledovatelnost: ");
+    for (i = 1; i < n; ++i) {
+        v2 += v1 + v3;
+        double v5 = M_PI / 6 * v2 * v2 * v2;
+        sum += v5 - v4;
+        v1 = v2;
+        v4 = M_PI / 6 * v1 * v1 * v1;
+        printf("%3.1f - %3.1f: %3.1f - %3.1f; ", v1, v4, v2, v5);
+    }
+    printf("\n\n5.75\n");
+    summ = 0;
+    help = 2 * 2;
+    for (i = 1; i <= 10; ++i) {
+        summ += help;
+        help *= 2;
+    }
+    printf("%d\n\n",summ);
+    printf("5.76\n");
+    a2 = 2.2;
+    help1 = a2;
+    n = 5;
+    for (i = 1; i <= n; ++i) {
+        help1 *= a2;
+        printf("%.2f\n",help1);
+    }
+    printf("\n5.77\n");
+    b = -1;
+    summ = 0;
+    for (i = 1; i <= 10; ++i) {
+        summ += i * i * b;
+        b *= -1;
+        printf("i = %d;  sum = %d; sign = (%d)\n",i, summ, b);
+    }
 }
 int main()
 {
