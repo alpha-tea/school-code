@@ -7,6 +7,27 @@
 #define Y CHAR_MAX
 #define Z CHAR_MIN
 
+int squaring(int n)
+{
+    int value = 1;
+    int help_value = 2;
+    for (int i = 1; i <= n; ++i) {
+        printf("%d ^ 2 = %d;\n",i,value);
+        value += help_value + 1;
+        help_value += 2;
+    }
+    return 0;
+}
+
+int sqrt_5_92()
+{
+    double sqrt = 0;
+    for (int i = 0; i <= 50; ++i)
+        sqrt += sqrtf(i);
+    printf("%.5f\n\n",sqrt);
+    return 0;
+}
+
 int numerical_generation_int()
 {
     srand(time(NULL));
@@ -19,6 +40,73 @@ int numerical_generation_int()
     }
     printf("\n");
     return sum;
+}
+
+void invert_1(const char s[], int len)
+{
+    if (len <= 0) {
+        printf("You entered incorrect lenth\n");
+        return;
+    }
+    while (--len >= 0)
+        printf("%c",s[len]);
+}
+
+int multiply(int x, int y)
+{
+    //1 вариант, сделать битовый сдвиг.
+    int result =  0;
+    for ( int i = 0; i < y; ++i) {
+        result += x;
+    }
+    return result;
+}
+
+int factorial(int n)
+{
+    int result = 1;
+    for (; n > 0; --n) {
+        result = result * n;
+    }
+    return result;
+}
+
+double exponentiation(double a, unsigned int n)
+{
+    if (n == 0) {
+        printf("n not natural value\n");
+        return -1;
+    }
+    double r = a;
+    for (unsigned int i = 1; i < n; ++i) {
+        r *= a;
+    }
+    return r;
+}
+
+int group_values(int n,int g)
+{
+    if (n % g != 0) {
+        printf("chisla ne delyatsa na gropy.\n");
+        return -1;
+    }
+    int raznost_1 = 0,raznost_2 = 0;
+    for (int i = n; i > 0; i -= g) {
+        raznost_2 = i * i;
+        for (int j = 1; j < g; ++j) {
+            int m = (i - j) * (i - j);
+            raznost_2 -= m;
+            printf("r2 = %d\n",raznost_2);
+        }
+        raznost_2 *= raznost_2;
+        printf("r2 ^ 2 = %d\n",raznost_2);
+        if ( raznost_1 == 0)
+            raznost_1 = raznost_2;
+        else
+            raznost_1 -= raznost_2;
+        printf("r1 = %d\n",raznost_1);
+    }
+    return raznost_1;
 }
 
 void intro()
@@ -1942,6 +2030,36 @@ void chapter_5()
         b *= -1;
         printf("i = %d;  sum = %d; sign = (%d)\n",i, summ, b);
     }
+    printf("\n5.78\n");
+    double x1 = 2, x2 = -1, S_sin = 0;
+    if (x2 >= x1 && x1 >= 0 && x2 <= M_PI ) {
+        S_sin = cos(x1) - cos(x2);
+        printf("Ploshyad arki sinusoidy = %.5f\n\n",S_sin);
+    } else {
+        printf("Nekorektnoe znacheniye\n\n");
+    }
+    printf("5.81\n");
+    int x = 5, y = 7;
+    result = multiply(x,y);
+    printf("x * y = %d * %d = %d\n\n",x,y,result);
+    printf("5.82\n");
+    n = 1;
+    result = factorial(n);
+    printf("n = %d;n! = %d;\n\n",n,result);
+    printf("5.83\n");
+    a = 3; // Степень
+    p3 = 3; // Возводимое число
+    printf("a ^ n = %.f ^ %d = %.f\n",p3,a,exponentiation(p3,a));
+    printf("5.84\n");
+    group_values(9,3);      // ((4 ^ 2 - 3 ^ 2) ^ 2 - (2 ^ 2 - 1 ^ 2) ^ 2)
+    printf("5.85\n");
+    const char s[] = "12345";
+    printf("Inverted value = ");
+    invert_1(s,-1);
+    printf(";\n\n");
+    printf("5.86.n^2 = 1 + 3 + 5 + 7 + ... 2n + 1\n");
+    n = 4;
+    squaring(n);
 }
 int main()
 {
