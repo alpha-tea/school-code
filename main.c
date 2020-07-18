@@ -7,6 +7,74 @@
 #define Y CHAR_MAX
 #define Z CHAR_MIN
 
+int factorial(int n);
+
+double summary(int n)
+{
+    if (n <= 1 && n > 10) {
+        printf("You entered incorrect value!!!!\n");
+        return -1;
+    }
+    double result = 1;
+    for (int i = 1; i <= n; ++i)
+        result += 1.0 / (double)factorial(i);
+    return result;
+}
+
+int factorial(int n)
+{
+    int result = 1;
+    for (; n > 0; --n) {
+        result = result * n;
+    }
+    return result;
+}
+
+int value(int a, int n, int base)
+{
+    if (n <= 0 && a <= 0) {
+        printf("You entered incorrect value!!\n");
+        return -1;
+    }
+    int s = 0;
+    printf("Binary:");
+    for (int i = 1; i <= n && a > 0; ++i) {
+        printf("%d",a % base);
+        s += a % base;
+        a = a / base;
+    }
+    printf("\n");
+    return s;
+}
+
+int cubing(int n)
+{
+    /*    int m = 1, r = 0;
+    for (int i = 1; i < n; ++i)
+        m += i * 2;
+    r += m;
+    for (int i = 1; i< n; ++i) {
+        m += 2;
+        r += m;
+    }
+    return r; */
+    int value = 1; int value_help_1 = 2; int value_help_2 = 1; int k = 1;
+    printf("Making cube of %d; ",n);
+    for (int i = 1; i < n; ++i) {
+        value += value_help_1;
+        value_help_1 += 2;
+        value_help_2 = value;
+        printf(" i = %d: value = %d;",i,value);
+        for (k = 1; k <= i;++k) {
+            value_help_2 += value + (2 * k);
+            printf("r = %d; ",value_help_2);
+        }
+    }
+    printf("\n");
+    return value_help_2;
+
+}
+
 int squaring(int n)
 {
     int value = 1;
@@ -21,9 +89,11 @@ int squaring(int n)
 
 int sqrt_5_92()
 {
-    double sqrt = 0;
-    for (int i = 0; i <= 50; ++i)
-        sqrt += sqrtf(i);
+    double sqrt = 0, prev_sqrt = sqrtf(50);
+    for (int i = 49; i > 0; --i) {
+        sqrt = sqrtf(i) + prev_sqrt;
+        prev_sqrt = sqrt;
+    }
     printf("%.5f\n\n",sqrt);
     return 0;
 }
@@ -58,15 +128,6 @@ int multiply(int x, int y)
     int result =  0;
     for ( int i = 0; i < y; ++i) {
         result += x;
-    }
-    return result;
-}
-
-int factorial(int n)
-{
-    int result = 1;
-    for (; n > 0; --n) {
-        result = result * n;
     }
     return result;
 }
@@ -2060,6 +2121,23 @@ void chapter_5()
     printf("5.86.n^2 = 1 + 3 + 5 + 7 + ... 2n + 1\n");
     n = 4;
     squaring(n);
+    printf("\n5.88.Cubing\n");
+    for (i = 1; i <= 5; ++i) {
+        result = cubing(i);
+        printf("%d ^ 3 = %d;\n",i,result);
+    }
+    printf("\n5.90\n");
+    n = 5;
+    double result_1 = 0;
+    result_1 = summary(n);
+    printf("result = %.2f;\n",result_1);
+    printf("\n5.92\n");
+    sqrt_5_92();
+    printf("\n5.94\n");
+    n = 178;
+    result = value(n,8,2);
+    printf("Sum of digits of a six-digit number %d = %d",n,result);
+
 }
 int main()
 {
