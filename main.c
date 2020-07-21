@@ -2139,6 +2139,90 @@ void chapter_5()
     printf("Sum of digits of a six-digit number %d = %d",n,result);
 
 }
+
+void chapter_6()
+{
+    srand(0);
+    printf("6.1\n");
+    int n = 0, sum = 0, quantity = 1;
+    printf("Hello! Please enter any integers in turn or write 0 to complete;\n");
+    scanf("%d",&n);
+    while (n != 0) {
+        sum += n;
+        ++quantity;
+        scanf("%d",&n);
+    }
+    printf("Sum of %d numbers equals = %d;\n\n",quantity,sum);
+    printf("6.4\n");
+    n = 5;
+    int a1 = 0;
+    while ((a1 = rand() % 10) > 5  && (n > 0)) {
+        printf("%d; ",a1);
+        --n;
+    }
+    n = 99;
+    printf("\n\n6.8.posledowatelnost kvadratov chisel < n(%d)\n",n);
+    for (int i = 1; i * i < n;++i)
+        printf("%d; ",i * i);
+    printf("\n\n6.11.posledowantelnost v intervale ot 1 do 1.5\n");
+    double a = 1.3;
+    n = 7;
+    if (a > 1.0 && a <= 1.5) {
+        for (int i = 2; i < n; ++i) {
+            double double_value = 1.0 + (1.0 / i);
+            if (double_value < a)
+                printf("1 + (1 / %d) < a(%.1f)\n",i,a);
+            else
+                printf("Value(%.2f) not printed\n",double_value);
+        }
+    } else
+        printf("You entered incorrect value!\n\n");
+    a = 1.1;
+    printf("\n6.14.max n pri a = %.2f\n",a);
+    double double_value = 1.0 + (1.0 / 2);
+    if (a > 1 && a <= 1.5) {
+        for (int i = 2; double_value > a; ++i) {
+            double_value = 1.0 + (1.0 / i);
+            if (double_value > a)
+                printf("1.0 + 1.0 / %d > a(%.1f), n = %d\n",i,a,i);
+        }
+    } else
+        printf("You entered incorrect value!\n\n");
+    a = 2.5;
+    double summ = 30;
+    printf("6.17.summa 1 + 1 / 2 + 1 / 3 ... + 1 / n > a, a = %.2f\n",a);
+    for (n = 2; summ < a || n == 2; ++n) {
+        printf("n = %d: ",n);
+        int x = 1;
+        summ = 0;
+        while (x <= n) {
+            summ += 1.0 / x;
+            printf("summ = %.2f; ",summ);
+            ++x;
+        }
+        if (summ < a)
+            printf("summ < a, next n;\n");
+        else
+            printf("summ > a, end;\n");
+    }
+    double eps = 0.000001;
+    printf("\n6.20.posledowatelnost y(n), eps = %.2f\n",eps);
+    double double_x = 5;
+    double prev_y = 0.5 * (double_x / -1), y = 0.5 * (prev_y + (double_x / (prev_y - 1)));
+    for (int i = 1; fabs(y * y - prev_y * prev_y) >= eps;++i) {
+        prev_y = y;
+        y = 0.5 * (prev_y + (double_x / (prev_y - 1)));
+        double delta = fabs(y * y - prev_y * prev_y);
+        printf("%.9f; ",delta);
+    }
+    n = -124236;
+    int k = 0;
+    while (abs(n) > 0) { // Длинна числа.
+        n /= 10;
+        ++k;
+    }
+    printf("n = %d, razryadow v nom = %d",n,k);
+}
 int main()
 {
     chapter_5();
