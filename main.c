@@ -2215,17 +2215,150 @@ void chapter_6()
         double delta = fabs(y * y - prev_y * prev_y);
         printf("%.9f; ",delta);
     }
-    n = -124236;
+    n = 124236;
+    printf("\n\n6.23, n = %d\n",n);
+    int value = 0;
+    int x1 = 3; int x2 = 0; // a
+    int x3 = 4; int x4 = 0; // б
+    int x5 = 5; sum = 0;    // в
+    int x6 = 3;int x7 = 2;int x8 = 0;int x9 = 0; //г
+    while (n > 0) { // Длинна числа.
+        value = abs(n) % 10;
+        n /= 10;
+        if (x1 == value)
+            ++x2;
+        if (value % x3 == 0)
+            ++x4;
+        if (value > x5 && x5 <= 8 && x5 >= 0)
+            sum += value;
+        if (x6 == value)
+            ++x8;
+        if (x7 == value)
+            ++x9;
+    }
+    if (x8 > x9)
+        x8 = x9;
+    printf("a)%d;\nb)%d;\nv)%d;\ng)%d\n",x2,x4,sum,x8);
+    n = 246957;
+    printf("\n6.26 and 6.29, number is %d;\n",n);
     int k = 0;
-    while (abs(n) > 0) { // Длинна числа.
+    int x_max = 0;
+    int x_min = 9;
+    int max_pos = 0, min_pos = 0;
+    x3 = 0;
+    x4 = 0;
+    while (n > 0) {
+        value = n % 10;
         n /= 10;
         ++k;
+        if (value > x_max) {
+            x_max = value;
+            max_pos = k;
+        }
+        if (value < x_min) {
+            x_min = value;
+            min_pos = k;
+        }
     }
-    printf("n = %d, razryadow v nom = %d",n,k);
+    printf("a)max = %d;\nfrom start = %d;\nfrom the end = %d\n",x_max,max_pos,k - max_pos + 1);
+    printf("b)min = %d;\nfrom start = %d;\nfrom the end = %d\n",x_min,min_pos,k - min_pos + 1);
+    n = 12345;
+    printf("\n6.32, n = %d\n",n);
+    x_min = 9;
+    int x_amount = 0;
+    while (n > 0) {
+        value = n % 10;
+        n /= 10;
+        if (value < x_min) {
+            x_amount = 0;
+            x_min = value;
+        }
+        if (value == x_min)
+            ++x_amount;
+    }
+    printf("min = %d,quantity = %d;\n\n",x_min,x_amount);
+    printf("6.35\n");
+    x1 = 0;
+    for (n = 500;x1 < 10;++n) {
+        if (n % 13 == 0) {
+            ++x1;
+            printf("%d %% 13 = 0;\n",n);
+        }
+        if (n % 17 == 0) {
+            ++x1;
+            printf("%d %% 17 = 0;\n",n);
+        }
+    }
+    n = 1237174;
+    x1 = n;
+    x2 = 0;
+    printf("\n6.38, n = %d\n",n);
+    while (n > 0) {
+        value = n % 10;
+        n /= 10;
+    }
+    while (x1 > 0) {
+        x2 = x1 % 10;
+        x1 /= 10;
+        if (x2 == value)
+            ++n;
+    }
+    printf("first number %d; quantity %d;\n\n",value,n);
+    n = 987123;
+    printf("6.41, n = %d\n",n);
+    x1 = 0;
+    x2 = 9;
+    x3 = 0;
+    x4 = 0;
+    while (n > 0) {
+        value = n % 10;
+        n /= 10;
+        if (value > x1) {
+            x3 = x1;
+            x1 = value;
+        } else
+            if (value > x3 && x1 > x3 && value != x1)
+                x3 = value;
+        if (value < x2) {
+            x4 = x2;
+            x2 = value;
+        } else
+            if (value < x4 && x2 < x4 && value != x2)
+                x4 = value;
+    }
+    printf("max(1) = %d; max(2) = %d\n",x1,x3);
+    printf("min(1) = %d; min(2) = %d\n",x2,x4);
+    printf("\n6.43 - 6.44\n");
+    srand(3);
+    n = 10;
+    int is_seq = 0;
+    int seq_am = 0;
+    x3 = 0;
+    k = 0;
+    int mass[n], digits[n];
+    printf("Sequence: %d\n",n);
+    for (int i = 0;i < n;++i) {
+        mass[i] = k;
+        k += rand() % 2;
+        printf("%d ",mass[i]);
+        digits[i] = 0;
+    }
+    for (int i = 0;i < n;++i) {
+        if (i > 0 && !is_seq && mass[i] == mass[i - 1]) {
+            is_seq = 1;
+            ++seq_am;
+        } else  if (mass[i] != mass[i - 1])
+            is_seq = 0;
+        ++digits[mass[i]];
+    }
+    printf("\nresult = %d\n",seq_am);
+    printf("Chastota chisel :=");
+    for (int i = 0; i < n;++i)
+        printf(" %d:%d",i,digits[i]);
 }
 int main()
 {
-    chapter_5();
+    chapter_6();
     //getchar(); - не снимать.
     return 0;
 }

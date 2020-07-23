@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+E:/school-code/main.c
+stdlib.h
+-
+stdio.h
+-
+math.h
+-
+limits.h
+-
+stdbool.h
+-
+time.h
+-
+
