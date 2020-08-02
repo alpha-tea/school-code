@@ -7,6 +7,26 @@
 #define Y CHAR_MAX
 #define Z CHAR_MIN
 
+int evklid_first_step(int a, int b)
+{
+    int c,d,i = 0;
+    printf("Algoritm Evklida\n");
+    while (a != 0 && b != 0) {
+        if (a > b) {
+            c = a;
+            a %= b;
+            ++i;
+            printf("%d)a(%d) > b(%d);\nTotal: a = %d;\n\n",i,c,b,a);
+        } else {
+            d = b;
+            b %= a;
+            ++i;
+            printf("%d)b(%d) > a(%d)\nTotal: b = %d;\n\n",i,d,a,b);
+        }
+    }
+    return a + b;
+}
+
 int factorial(int n);
 
 double summary(int n)
@@ -2355,6 +2375,115 @@ void chapter_6()
     printf("Chastota chisel :=");
     for (int i = 0; i < n;++i)
         printf(" %d:%d",i,digits[i]);
+    printf("\n\n6.45\n");
+    x1 = 7;//a
+    x2 = 35;//b
+    x3 = 33;//c
+    if (x1 > 0 && x2 > 0 && x3 > 0) {
+        int help_nod_first_step = 0, help_nod_second_step = 0;
+        help_nod_first_step = evklid_first_step(x1,x2);
+        printf("NOD(a,b) = NOD(%d,%d) = %d\n",x1,x2,help_nod_first_step);
+        help_nod_second_step = evklid_first_step(help_nod_first_step,x3);
+        printf("NOD(a,b,c) = NOD(%d,%d,%d) = %d\n\n",x1,x2,x3,help_nod_second_step);
+    } else {
+        printf("You entered incorrect numbers!!\n\n\a");
+    }
+    value = 12345;
+    printf("6.48, value = %d,digits: ",value);
+    sum = 0;
+    k = 7;
+    quantity = 0;
+    int b = 1234;
+    int x = 1;
+    x1 = 0;
+    int y1 = 6, y2 = 0;
+    a1 = 13;
+    int prod_numbers = 1;
+    int m = 3;
+    n = 5;
+    int help = value, help1 = 0;
+    while (help > 0) {
+        help1 = help % 10;
+        help /= 10;
+        sum += help1;
+        prod_numbers *= help1;
+        ++quantity;
+        if (quantity == 1)
+            y2 = help1;
+        printf("%d ",help1);
+    }
+    x1 = help1;
+    printf("\n");
+    if (sum > k)
+        printf("a) Sum numbers(%d) > k(%d), ",sum,k);
+    else
+        printf("a) Sum numbers(%d) < k(%d), ",sum,k);
+    if (value % 2 == 0)
+        printf("value is even;\n");
+    else
+        printf("value is odd;\n");
+    if (quantity % 2 == 0)
+        printf("b) Number of digits(%d) - even number, ",quantity);
+    else
+        printf("b) Number of digits(%d) - odd number, ",quantity);
+    if (value < b)
+        printf("value < b(%d);\n",b);
+    else
+        printf("value > b(%d);\n",b);
+    if (x == x1)
+        printf("v) Number starts with x(%d), ",x);
+    else
+        printf("v) Number does not start with x(%d), ",x);
+    if (y1 == y2)
+        printf("number ends on y(%d);\n",y1);
+    else
+        printf("number does not end on y(%d);\n",y1);
+    if (prod_numbers < a1)
+        printf("g) Product of digits less than a(%d), ",a1);
+    else
+        printf("g) Product of digits greater than a(%d), ",a1);
+    if (value % b == 0)
+        printf("number is divisible by b(%d);\n",b);
+    else
+        printf("number is not divisible by b(%d);\n",b);
+    if (sum > m)
+        printf("d) Sum numbers(%d) > m(%d), ",sum,m);
+    else
+        printf("d) Sum numbers(%d) < m(%d), ",sum,m);
+    if (value % n == 0)
+        printf("number is divisible by n(%d);\n\n",n);
+    else
+        printf("number is not divisible by n(%d);\n\n",n);
+    printf("6.51\n");
+    n = 123321;
+    help = n;
+    k = 0;
+    x = 0;
+    while (help > 0) {
+        help /= 10;
+        ++k;
+    }
+    printf("Value = %d have %d digits: ",n,k);
+    help = n;
+    int mass1[k];
+    k = 0;
+    while (help > 0) {
+        help1 = help % 10;
+        help /= 10;
+        mass1[k] = help1;
+        ++k;
+        printf("%d ",help1);
+    }
+    printf("\nCheck palindrom: ");
+    while (x < k && mass1[x] == mass1[k - 1]) {
+        printf("%d[%d]:%d[%d] ",mass1[x],x,mass1[k - 1],k - 1);
+        ++x;
+        --k;
+    }
+    if (x >= k)
+        printf("\nThis is palindrom\n\n");
+    else
+        printf("\nThis is not palindrom\n\n");
 }
 int main()
 {
