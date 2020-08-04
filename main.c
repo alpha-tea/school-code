@@ -6,6 +6,8 @@
 #include <time.h>
 #define Y CHAR_MAX
 #define Z CHAR_MIN
+#define DIGIT 5
+#define ARRAY_SIZE 15
 
 int evklid_first_step(int a, int b)
 {
@@ -2484,6 +2486,102 @@ void chapter_6()
         printf("\nThis is palindrom\n\n");
     else
         printf("\nThis is not palindrom\n\n");
+    printf("6.54\n");
+    n = 103;
+    x = 0;
+    k = 0;
+    x2 = 0;
+    x1 = 0;
+    printf("Value, digits: %d\n",n);
+    while (n > 0) {
+        x = n % 10;
+        n /= 10;
+        x1 = x;
+        x = n % 10;
+        if (x1 <= x)
+            ++x2;
+        ++k;
+        printf("%d:%d ",x,x1);
+    }
+    if (k > 1) {
+        if (k - 1 == x2)
+            printf("cifry po ne ubyvaniy\n\n");
+        else
+            printf("cifry po ubyvaniy\n\n");
+    } else
+        printf("nedostatochno cifr dla posledovatelnosty\n\n");
+    printf("6.57, double data array, size %d: ",ARRAY_SIZE);
+    double mass2[ARRAY_SIZE];
+    for (int i = 0; i < ARRAY_SIZE ; ++i) {
+        mass2[i] = (double)(rand() % 10) / (double)(1 + rand() % 10);
+        printf("%.2f ",mass2[i]);
+    }
+    printf("\n");
+    y = 3.61; //n
+    a = 0;
+    x = 0;
+    double d1 = 0;
+    d1 = fabs(mass2[0] - y);
+    for (int i = 1;i < ARRAY_SIZE;++i) {
+        a = fabs(mass2[i] - y);
+        if (a < d1) {
+            d1 = a;
+            x = i;
+        }
+    }
+    printf("%.2f:%d\n\n",mass2[x],x + 1);
+    printf("6.60\n");
+    srand(time(NULL));
+    n = 0;
+    int i;
+    printf("Sequence: ");
+    for (i = 1;i <= 10 && n % 10 != 7;++i) {
+        n = rand() % 100;
+        printf("%d ",n);
+    }
+    if (n % 10 == 7)
+        printf("\n%d:%d\n\n",n,i - 1);
+    else
+        printf("\nThere is no number in the sequence that ends in 7\n\n");
+    printf("6.63\n");
+    srand(time(NULL));
+    n = 0;
+    k = 0;
+    printf("Appraisals: ");
+    for (int i = 1; i <= 5; ++i) {
+        n = 1 + rand() % 5;
+        printf("%d ",n);
+        if (n == 2)
+            ++k;
+    }
+    if (k != 0)
+        printf("\nYes!\nTwos in class: %d\n\n",k);
+    else
+        printf("\nNo twos!\n\n");
+    printf("6.66\n");
+    srand(time(NULL));
+    n = 0;
+    k = 1;
+    x = 0;
+    x1 = 0;
+    x2 = 0;
+    printf("Values: ");
+    for (int i = 1; n != -1; ++i) {
+        x = n;
+        n = k + rand() % 10;
+        printf("%d ",n);
+        if (i > 2) {
+            k = -1;
+        }
+        if (x == n && x2 != -1) {
+            x2 = -1;
+            x1 = i;
+        }
+    }
+    if (x2 == -1) {
+        printf("\n%d:%d\n\n",x1 - 1,x1);
+    } else
+        printf("\nNo couple;\n\n");
 }
 int main()
 {
