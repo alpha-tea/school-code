@@ -2582,6 +2582,101 @@ void chapter_6()
         printf("\n%d:%d\n\n",x1 - 1,x1);
     } else
         printf("\nNo couple;\n\n");
+    printf("6.69\n");
+    k = 0;
+    printf("Sequence: ");
+    srand(time(NULL));
+    int mass3[ARRAY_SIZE];
+    x = 1 + rand() % ARRAY_SIZE;
+    for (int i = 0; i < ARRAY_SIZE; ++i)
+        if (i == x)
+            mass3[i] = i + rand() % 2;
+        else
+            mass3[i] = i + 1;
+    for (int i = 0;i < ARRAY_SIZE - 1; ++i)
+        if (mass3[i] < mass3[i + 1])
+            printf("%d ",mass3[i]);
+        else {
+            k = -1;
+            printf("|%d| ",mass3[i]);
+        }
+    if (k != 0)
+        printf("\nThe sequence was broken!!!\n\n");
+    else
+        printf("\nThe sequence is normal!!!\n\n");
+    printf("6.72\n");
+    const int com_table = 3;
+    int commands[com_table];
+    printf("Score:\n");
+    for (int i = 0; i < com_table; ++i) {
+        commands[i] = rand() % 25;
+        printf("%d) %d\n",i + 1, commands[i]);
+    }
+    for (i = 0; i < com_table - 1; ++i) {
+        if (commands[i] < commands[i+1]) {
+            printf("\nItems are not in the correct order!\n\n");
+            break;
+        }
+    }
+    if (i == 2)
+        printf("Everything is OK):D)\n\n");
+    printf("6.75\n");
+    printf("Create bazaar: ");
+    const int bazaar_size = 28;
+    const int bone_size = 2;
+    const int total_dots = 7;
+    int bazaar_mass[bazaar_size][bone_size];
+    for (int i = 0, m = 0, n = 0, j = 0; i < total_dots * total_dots; ++i) {
+        if (m <= n){
+            bazaar_mass[j][0] = m;
+            bazaar_mass[j][1] = n;
+            ++j;
+            printf("%d:%d ",m,n);
+        }
+        ++n;
+        if (n == 7) {
+            n = 0;
+            ++m;
+        }
+    }
+    for (int i = 0; i < bazaar_size; ++i) {
+        int p1 = rand() % bazaar_size;
+        int p2 = rand() % bazaar_size;
+        int m = bazaar_mass[p1][0];
+        int n = bazaar_mass[p1][1];
+        bazaar_mass[p1][0] = bazaar_mass[p2][0];
+        bazaar_mass[p1][1] = bazaar_mass[p2][1];
+        bazaar_mass[p2][0] = m;
+        bazaar_mass[p2][1] = n;
+    }
+    printf("\nbazar ready to game: ");
+    for (int i = 0; i < bazaar_size; ++i)
+        printf("%d:%d ",bazaar_mass[i][0], bazaar_mass[i][1]);
+    int left = bazaar_mass[0][0];
+    int right = bazaar_mass[0][1];
+    printf("\n");
+    printf("Start bone: %d:%d\n", left, right);
+    for (int i = 1; i < bazaar_size; ++i) {
+        if (bazaar_mass[i][0] == left || bazaar_mass[i][1] == left) {
+            printf("left: bazar: %d:%d, old left: %d, ", bazaar_mass[i][0], bazaar_mass[i][1], left);
+            if (bazaar_mass[i][0] == left)
+                left = bazaar_mass[i][1];
+            else
+                left = bazaar_mass[i][0];
+            printf(" new left: %d;\n",left);
+            continue;
+        }
+        if (bazaar_mass[i][0] == right || bazaar_mass[i][1] == right) {
+            printf("right: bazar: %d:%d, old right: %d, ", bazaar_mass[i][0], bazaar_mass[i][1], right);
+            if (bazaar_mass[i][0] == right)
+                right = bazaar_mass[i][1];
+            else
+                right = bazaar_mass[i][0];
+            printf(" new right: %d;\n",right);
+            continue;
+        }
+        break;
+    }
 }
 int main()
 {
