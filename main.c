@@ -9,6 +9,85 @@
 #define DIGIT 5
 #define ARRAY_SIZE 15
 
+int natural_number(int n)
+{
+    int k = 0, x = 0, sum = 0, product = 1, sred_arif = 0;
+    int sum_square = 0, sum_cube = 0, first_number = 0, sum_first_and_last = 0;
+    while (n > 0) {
+        x = n % 10;
+        sum += x;
+        product *= x;
+        sum_square += x * x;
+        sum_cube += pow(x,3);
+        n /= 10;
+        ++k;
+        if (k == 1)
+            first_number = x;
+    }
+    sred_arif = sum / k;
+    sum_first_and_last = first_number + x;
+    printf("a)the number of digits in it: %d\n",k);
+    printf("b)the sum of his digits: %d\n",sum);
+    printf("v)product of its numbers: %d\n",product);
+    printf("g)arithmetic mean of its digits: %d\n",sred_arif);
+    printf("d)the sum of the squares of its digits: %d\n",sum_square);
+    printf("e)the sum of the cubes of its digits: %d\n",sum_cube);
+    printf("zh)its first digit: %d\n",first_number);
+    printf("z)the sum of its first and last digits: %d\n\n",sum_first_and_last);
+    return 0;
+}
+
+int arif_sequence (int n, int f, int s)
+{
+    printf("Sequence: ");
+    for (int i = 0; f < n; ++i, f += s)
+        printf("%d ",f);
+    printf("\n");
+    return f;
+}
+
+int geom_seqence (int m, int g, int z)
+{
+    printf("Sequence: ");
+    for (int i = 0; g < m; ++i, g *= z)
+        printf("%d ",g);
+    printf("\n");
+    return g;
+}
+
+void fibonachi (int n)
+{
+    int a = 1, b = 1, c = 0;
+    printf("Fibonachi: %d %d ", a, b);
+    while (c < n) {
+        c = a + b;
+        a = b;
+        b = c;
+        printf("%d ",c);
+    }
+    if (c == n)
+        printf("\nYes, n is a fibonacci number!\n\n");
+    else
+        printf("\nNo, n is not a Fibonacci number!\n\n");
+}
+
+void number_of_degrees (int n)
+{
+    int i,k,a = 1;
+    for ( i = 3, k = 5; (i <= n || k <= n) && i != n && k != n; i *= 3, k *= 5) {
+        ++a;
+        printf("%d:%d\n",i,k);
+    }
+    if ( i == n)
+        printf("n - %d power of 3\n\n",a);
+    else
+        printf("Number n is not a power of 3\n");
+    if (k == n)
+        printf("n - %d power of 5\n\n",a);
+    else
+        printf("Number n is not a power of 5\n\n");
+}
+
 int evklid_first_step(int a, int b)
 {
     int c,d,i = 0;
@@ -30,6 +109,11 @@ int evklid_first_step(int a, int b)
 }
 
 int factorial(int n);
+
+int lcm (int a, int b)
+{
+    return (abs(a * b) / evklid_first_step(a,b));
+}
 
 double summary(int n)
 {
@@ -2677,6 +2761,262 @@ void chapter_6()
         }
         break;
     }
+    n = 2187;
+    printf("\n6.76(a and b), number: %d\n",n);
+    number_of_degrees(n);
+    n = 113;
+    printf("6.77, n: %d\n",n);
+    fibonachi(n);
+    n = 21;
+    int f = 0;
+    int s = 7;
+    printf("6.78, n = %d, f = %d, s = %d;\n",n,f,s);
+    int result = arif_sequence(n,f,s);
+    if (result == n)
+        printf("Yes;\n\n");
+    else
+        printf("No;\n\n");
+    m = 48;
+    int g = 3;
+    int z = 2;
+    printf("6.79, m = %d, g = %d, z = %d;\n", m, g, z);
+    result = geom_seqence(m,g,z);
+    if (result == m)
+        printf("Yes;\n\n");
+    else
+        printf("No;\n\n");
+    n = 905090955;
+    int nine = 0;
+    int zero = 0;
+    printf("6.80, n = %d;\n",n);
+    while (n > 0) {
+        x = n % 10;
+        printf("%d ",x);
+        n /= 10;
+        if (x == 9)
+            ++nine;
+        if (x == 0)
+            ++zero;
+    }
+    if (nine > zero)
+        printf("\nThere are more nines(%d) than zeros(%d);\n\n",nine,zero);
+    else
+        if (zero > nine)
+            printf("\nThere are more zeros(%d) than nines(%d);\n\n",zero,nine);
+        else
+            printf("\nThe number of zeros(%d) and nines(%d) is the same;\n\n",zero,nine);
+    n = 20311;
+    int max = 0;
+    int min = 9;
+    max_pos = 0;
+    min_pos = 0;
+    k = 0;
+    printf("6.82, 6.84, n = %d\n",n);
+    while (n > 0) {
+        x = n % 10;
+        n /= 10;
+        if (x > max) {
+            max = x;
+            max_pos = k;
+        }
+        if (x < min) {
+            min = x;
+            min_pos = k;
+        }
+        ++k;
+    }
+    printf("(min: %d + max: %d) %% 2 =  ", min, max);
+    if ((min + max) % 2 == 0)
+        printf("even;\n");
+    else
+        printf("odd;\n");
+    if (max_pos > min_pos)
+        printf("Maximum value: %d to the left; Max pos = %d\n\n",max,max_pos);
+    else {
+        if (min_pos > max_pos) {
+            printf("Minimum value: %d to the left; Min pos = %d\n\n",min, min_pos);
+        } else
+            printf("Values(%d:%d), position(%d:%d);\n\n",max,min,max_pos,min_pos);
+    }
+    x = 3; //a
+    b = 4; //b
+    n = 12345;
+    help = 0;
+    help1 = 0;
+    k = 0;
+    printf("6.86, a = %d, b = %d, n = %d\n",x,b,n);
+    while (n > 0) {
+        x1 = n % 10;
+        n /= 10;
+        ++k;
+        if (x1 == x && help == 0)
+            help = k;
+        if (x1 == b && help1 == 0)
+            help1 = k;
+    }
+    if (help < help1)
+        printf("a(%d) is more to the right than b(%d);\n\n",help, help1);
+    else
+        printf("b(%d) is more to the right than a(%d);\n\n",help1, help);
+    printf("6.90\n");
+    i = 10;
+    x = 15;
+    printf("a,number: power 1) ");
+    while (i <= x) {
+        printf("%d:%d ", i, i * i);
+        ++i;
+    }
+    printf("\nb,number: power 2) ");
+    i = 10;
+    x = 15;
+    do {
+        printf("%d:%d ", i, i * i);
+        ++i;
+    } while (i <= x);
+    printf("\n\n");
+    n = 908809;
+    printf("6.91, n = %d\n",n);
+    natural_number(n);
+    printf("6.93\n");
+    srand(time(NULL));
+    int precipitation[31];
+    precipitation[0] = 0;
+    printf("Sequance: %d ", precipitation[0]);
+    for (int i = 1; i <= 30; ++i) {
+        precipitation[i] = rand() % 10;
+        printf("%d ",precipitation[i]);
+    }
+    i = 1;
+    while (precipitation[i] != 0) {
+        printf("\nDay: %d, precipiatation: %d;", i, precipitation[i]);
+        ++i;
+    }
+    if (i == 30) {
+        printf("\nNo precipitation in May\n\n");
+    } else
+        printf("\nfirst dry day: %d\n",i);
+    printf("\n6.95\n");
+    for (i = 5000; i % 39 != 0 && i >= 39; --i)
+        ;
+    printf("i: %d;\n\n",i);
+    printf("6.102\n");
+    int NOK = 0;
+    n = 64;
+    x = 48;
+    NOK = lcm(n,x);
+    printf("NOK(%d,%d):= %d\n\n",n,x,NOK);
+    printf("6.103\n");
+    n = 75; // числитель
+    x = 125; // знаменатель
+    result = evklid_first_step(n,x);
+    printf("NOD = %d;\n",result);
+    printf("Was: %d/%d;\n",n,x);
+    x /= result;
+    n /= result;
+    printf("Became: %d/%d;\n\n",n,x);
+    printf("6.105\n");
+    x = 13;  //a
+    n = 4;  //b
+    i = 1;
+    while (x > 0 && n > 0) {
+        if (x > n) {
+            x -= n;
+            printf("%d)square: %dx%d;\n",i,n,n);
+        } else {
+            n -= x;
+            printf("%d)square: %dx%d;\n",i,x,x);
+        }
+        ++i;
+    }
+    x = 21;
+    b = 7;
+    printf("\n6.106, a = %d, b = %d\n",x,b);
+    i = 0;
+    while (x - b >= 0) {
+        x -= b;
+        ++i;
+    }
+    printf("a) a / b = %d;\n",i);
+    printf("b) a %% b = %d;\n\n",x);
+    m = 64;
+    n = 48;
+    printf("6.107, m = %d, n = %d\n",m,n);
+    for (i = 1; i <= m * n; ++i) {
+        while (m % i == 0) {
+            printf("%d cratno %d\n",i,m);
+            break;
+        }
+        while (n % i == 0) {
+            printf("%d cratno %d\n",i,n);
+            break;
+        }
+    }
+    n = 256;
+    printf("\n6.108, money = %d\n",n);
+    int money[7] = {0,0,0,0,0,0,0};
+    for (i = 0, x = 64; x >= 1; ++i, x /= 2)
+        while (n >= x) {
+            n -= x;
+            ++money[i];
+        }
+    for (i = 0, x = 64; i <= 6; ++i, x /= 2)
+        printf("%d = %d;\n",x,money[i]);
+    printf("\n6.110\n");
+    n = 12345;
+    x = n;
+    m = 3; //a
+    k = 0;
+    printf("a) ");
+    while (x > 0) {
+        x1 = x % 10;
+        x /= 10;
+        printf("%d",x1);
+        ++k;
+    }
+    x1 = k;
+    int number_1[x1];
+    for (i = 0; n > 0; ++i) {
+        x = n % 10;
+        number_1[i] = x;
+        n /= 10;
+    }
+    printf("\nb) N = ");
+    int n1 = 0;
+    for (i = -1, x = 1;i <= x1; ++i, x *= 10) {
+        if (i == -1)
+            n1 += 2;
+        else if (i == x1)
+            n1 += 2 * x;
+        else
+            n1 += number_1[x1 - i - 1] * x;
+        printf("%d, ",n1);
+    }
+    printf("\nv) ");
+    for (i = x1 - 1; i >= 0; --i)
+        if (number_1[i] != m)
+            printf("%d",number_1[i]);
+    printf("\ng) ");
+    x = number_1[0];
+    number_1[0] = number_1[x - 1];
+    number_1[x - 1] = x;
+    for (i = x1 - 1; i >= 0; --i)
+        printf("%d",number_1[i]);
+    number_1[x - 1] = number_1[0];
+    number_1[0] = x;
+    printf("\nd) ");
+    for (i = x1 - 1; i >= 0; --i)
+        printf("%d",number_1[i]);
+    for (i = x1 - 1; i >= 0; --i)
+        printf("%d",number_1[i]);
+    printf("\n\n6.111\n");
+    n = 362880;
+    x = 1;
+    for (i = 0; x < n; ++i)
+        x *= i + 1;
+    if (x == n)
+        printf("Factorial = %d, number = %d;\n", n, i);
+    else
+        printf("This is not a factorial!\n\n");
 }
 int main()
 {
