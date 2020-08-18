@@ -8,6 +8,7 @@
 #define Z CHAR_MIN
 #define DIGIT 5
 #define ARRAY_SIZE 15
+#define SIZE 10
 
 int natural_number(int n)
 {
@@ -3018,9 +3019,186 @@ void chapter_6()
     else
         printf("This is not a factorial!\n\n");
 }
+
+void chapter_7()
+{
+    int a = 10;
+    int b = 20;
+    int c = 5;
+    int help = 0;
+    printf("7.2(7.4), a = %d, b = %d, c = %d\n",a,b,c);
+    if (b > a) {
+        help = a;
+        a = b;
+        b = help;
+    }
+    printf("All numbers devided by %d or 4: ",c);
+    for (; a >= b; a--) {
+        if (a % c == 0)
+            printf("%d(%d) ",a,c);
+        if (a % 4 == 0)
+            printf("%d(4) ",a);
+    }
+    printf("\n\n");
+    printf("7.6, searching numbers from 1000 to 9999, devided by 133 and 134.\n");
+    for (int i = 1000; i <= 9999; ++i)
+        if (i % 133 == 125 && i % 134 == 111)
+            printf("%d ",i);
+    int n = 6;
+    printf("\n\n7.8, In range [100..999], Sum of digits,n = %d\n",n);
+    int sum = 0;
+    b = 0;
+    c = 0;
+    if (n <= 27 && n > 0) {
+        for (int i = 100; i <= 999; ++i, sum = 0, c = i) {
+            while (c > 0) {
+                a  = c % 10;
+                c /= 10;
+                sum += a;
+            }
+            if (sum == n) {
+                ++b;
+                printf("%d ",i);
+            }
+        }
+        printf("\nQuantity: %d", b);
+    } else
+        printf("You entered incorrect value!\n\n");
+    n = 7;
+    printf("\n\n7.10. in range [10..99], devided by n(or digit n), n = %d\n",n);
+    for (int i = 10; i <= 99; ++i) {
+        a = i % 10;
+        b = i / 10;
+        if (i % n == 0 || (a == n || b == n))
+            printf("%d ",i);
+    }
+    printf("\n\n7.12. in range[30..100], devided by 3 and tail 2,4,8;\n");
+    sum = 0;
+    for (int i = 30; i <= 100; ++i)
+        if (i % 3 == 0 && (i % 10 == 2 || i % 10 == 8 || i % 10 == 4)) {
+            printf("%d ",i);
+            sum += i;
+        }
+    printf("\nsum = %d;\n\n",sum);
+    printf("7.14(7.16)\n");
+    srand(time(NULL));
+    double mass_d[8];
+    double sum_d = 0;
+    sum = 0;
+    for (int i = 0; i < 8; ++i) {
+        mass_d[i] = (double)(rand() % 100) / (double)(1 + rand() % 7);
+        if (mass_d[i] < 10.5)
+            sum_d += mass_d[i];
+        printf("double(%.2f)\n",mass_d[i]);
+        a = rand() % 11;
+        if (a % 2 == 0) {
+            sum += a;
+            printf("int(%d)\n",a);
+        }
+    }
+    printf("\nSum(< 10.75) = %.2f",sum_d);
+    printf("\nSum(%% 2 == 0) = %d\n\n",sum);
+    printf("7.20,sequence A, n = %d\n",SIZE);
+    int mass[SIZE];
+    a = 0;
+    b = 1;
+    for (int i = 0; i < SIZE; ++i) {
+        mass[i] = rand() % 21;
+        printf("%d ",mass[i]);
+        a += mass[i] * b;
+        b *= -1;
+    }
+    c = mass[0] + mass[SIZE - 1];
+    help = mass[0] - mass[1];
+    printf("\na(a1 - a2 + a3 ...)) %d\n",a);
+    printf("b(a1 + A)) %d\n",c);
+    printf("c(a1 - a2)) %d\n\n", help);
+    printf("7.24, students in classes, sum of odd;\n");
+    srand(time(NULL));
+    int student_mass[11];
+    sum = 0;
+    for (int i = 0; i < 11; ++i) {
+        student_mass[i] = 1 + rand() % 35;
+        printf("class(%d): %d students\n", i + 1, student_mass[i]);
+        if ((i + 1) % 2 != 0)
+            sum += student_mass[i];
+    }
+    printf("Sum of students: %d\n\n",sum);
+    printf("7.27. Doubles less than 100;\n");
+    srand(time(NULL));
+    a = 0;
+    for (int i = 0; i < 8; ++i) {
+        mass_d[i] = (double)(rand() % 1001) / (double)(1 + rand() % 8);
+        printf("%.2f ",mass_d[i]);
+        if (mass_d[i] < 100)
+            ++a;
+    }
+    printf("\nQuantity: %d\n\n",a);
+    printf("7.32. students and exams;\n");
+    int undergrad_mass[15][2];
+    help = 0;
+    srand(time(NULL));
+    for (a = 0; a < 15; ++a) {
+        undergrad_mass[a][0] = 1 + rand() % 5;
+        undergrad_mass[a][1] = 1 + rand() % 5;
+        if (undergrad_mass[a][1] == 2 || undergrad_mass[a][0] == 2)
+            ++help;
+        printf("student #%d received %d and %d;\n", a + 1, undergrad_mass[a][1], undergrad_mass[a][0]);
+    }
+    printf("Number of students who received 2: %d\n\n",help);
+    printf("7.33 - 7.37. Sequence of digits;\n");
+    srand(time(NULL));
+    help = 0;
+    c = 0;
+    int multiple_three = 0;
+    int multiple_seven = 0;
+    int identical_couples = 0;
+    int zero_couples = 0;
+    int even_couples = 0;
+    int couples_five = 0;
+    int difference = 0;
+    for (int i = 0; i < SIZE; ++i) {
+        a = rand() % 2;
+        if (a == 0)
+            mass[i] = rand() % 10;
+        else
+            mass[i] = -1 * rand() % 10;
+        printf("%d ",mass[i]);
+    }
+    for (int i = 0; i < SIZE; ++i) {
+        if (mass[i] < 0)
+            ++help;
+        if (mass[i] % 3 == 0)
+            ++multiple_three;
+        if (mass[i] % 7 == 0)
+            ++multiple_seven;
+        if (i < SIZE - 1 && mass[i] == mass[i + 1]) {
+            if (mass[i] == 0 && mass[i + 1] == 0)
+                ++zero_couples;
+            if (mass[i] %2 == 0 && mass[i + 1] % 2 == 0)
+                ++even_couples;
+            if (mass[i] % 10 == 5 && mass[i + 1] % 10 == 5)
+                ++couples_five;
+            ++identical_couples;
+        }
+        if (i > 0 && i < SIZE - 1 && mass[i] > mass[i + 1] && mass[i] > mass[i - 1])
+            ++c;
+        if (i < SIZE - 1 && ((mass[i] > 0 && mass[i + 1] < 0) || (mass[i] < 0 && mass[i + 1] > 0)))
+            ++difference;
+    }
+    printf("\n7.33) Number of negative numbers and number of positive numbers: %d:%d;\n", help, SIZE - help);
+    printf("7.34) The number of multiples of three, and the number of multiples of seven: %d:%d;\n", multiple_three, multiple_seven);
+    printf("7.35(a)) The number of pairs of adjacent numbers equal to each other: %d;\n", identical_couples);
+    printf("7.35(b)) The number of pairs of adjacent numbers equal to zero: %d;\n", zero_couples);
+    printf("7.35(v)) The number of pairs of adjacent numbers that are even numbers: %d;\n", even_couples);
+    printf("7.35(g)) The number of pairs of adjacent numbers ending in digit 5: %d;\n", couples_five);
+    printf("7.36) The number of real numbers that are larger than their neighbors: %d;\n", c);
+    printf("7.37) How many signs in the sequence change: %d;\n", difference);
+}
+
 int main()
 {
-    chapter_6();
+    chapter_7();
     //getchar(); - не снимать.
     return 0;
 }
