@@ -3194,6 +3194,83 @@ void chapter_7()
     printf("7.35(g)) The number of pairs of adjacent numbers ending in digit 5: %d;\n", couples_five);
     printf("7.36) The number of real numbers that are larger than their neighbors: %d;\n", c);
     printf("7.37) How many signs in the sequence change: %d;\n", difference);
+    printf("7.39\n");
+    n = 5;
+    const double g = 9.8;
+    int alpha = 0;
+    int start_speed = 0;
+    double y = 0;
+    double t = 0.01;
+    double P = 20000.0, H = 5.0, R = 25.0;
+    a = 0;
+    b = 0;
+    for (int i = 1; i <= n; ++i) {
+        alpha = 1 + rand() % 46;
+        start_speed = 1 + rand() % 1000;
+        printf("%d) alpha = %d;\nstart speed = %d;\n\n",i,alpha,start_speed);
+        /*
+        while (x <= R) {
+            x = start_speed * t * cos(alpha);
+            y = start_speed * t * sin(alpha) - (g * pow(t,2)) / 2;
+            t += 0.01;
+        }
+        */
+        t = R / (cos(alpha) * start_speed);
+        y = start_speed * t * sin(alpha) - (g * pow(t,2)) / 2;
+        if (y <= P + H && y >= H)
+            ++a;
+        else
+            ++b;
+    }
+    c = (100 / (b + a)) * a;
+    printf("Hit percentage: %d; a(%d), b(%d)\n\n",c,a,b);
+    printf("7.42.Score of football team.\n");
+    b = 0;
+    c = 0;
+    help = 0;
+    int score_table[3] = {0, 1, 3};
+    for (int i = 0; i < 5; ++i) {
+        a = rand() % 3;
+        if (score_table[a] == 1)
+            ++help;
+        if (score_table[a] == 0)
+            ++c;
+        if (score_table[a] == 3)
+            ++b;
+        printf("%d[%d] ",score_table[a],a);
+    }
+    printf("\nWin = %d;\nLose = %d;\nDraw = %d;\n\n",b,c,help);
+    srand(time(NULL));
+    n = 8;
+    c = 5;
+    a = 10;
+    sum = 0;
+    help = 0;
+    int sum1 = 0, help1 = 0, rand_1 = 2, rand_2 = 2;
+    printf("7.44, 7.46. Average, n = %d, a = %d\n",n,a);
+    for (int i = 0; i < a; ++i) {
+        if (rand() % (a - rand_1 - rand_2 - i) == 0) {
+            if (rand_1 > 0) {
+                b = 1 + n + rand() % 5;
+                rand_1--;
+            } else if (rand_2 > 0) {
+                b = c * (rand() % 5 + 1);
+                rand_2--;
+            }
+        } else
+            b = rand() % 17;
+        if (b > n) {
+            sum += b;
+            ++help;
+        }
+        if (b % c == 0) {
+            sum1 += b;
+            ++help1;
+        }
+        printf("%d ",b);
+    }
+    printf("\n7.44. More than n) %d;\n",sum / help);
+    printf("7.46. Which are multiples of n) %d, sum = %d, quantity = %d\n\n",sum1 / help1, sum1, help1);
 }
 
 int main()
