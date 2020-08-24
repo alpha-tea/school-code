@@ -3271,6 +3271,177 @@ void chapter_7()
     }
     printf("\n7.44. More than n) %d;\n",sum / help);
     printf("7.46. Which are multiples of n) %d, sum = %d, quantity = %d\n\n",sum1 / help1, sum1, help1);
+    printf("7.51.Find the number of the last negative number, help = %d;\n",help);
+    srand(time(NULL));
+    b = 0;
+    int i = 0;
+    int a1 = 0, b1 = 0;
+    for (i = 1; i <= a; ++i) {
+        if (b1 < help) {
+            a1 = rand() % 6;
+            c = 1 + rand() % 9;
+            if (a1 == 0) {
+                c *= -1;
+                b = i;
+            }
+            if (c > 0)
+                ++b1;
+        } else {
+            if (c > 0) {
+                c = -c;
+                b1 = 0;
+                b = i;
+            }
+        }
+
+        printf("%d ",c);
+    }
+    printf("\nNumber of the last negative number: %d\n\n",b);
+    printf("7.52, 7.54, Finding the minimum and maximum value\n");
+    srand(time(NULL));
+    n = 10;
+    t = 0;
+    help1 = 0;
+    help = 0;
+    double x = 100;
+    y = 0;
+    for (i = 0;i < n; ++i) {
+        y = (double)(rand() % 100) / (double)(1 + rand() % 100);
+        if (y >= t) {
+            help = i;
+            t = y;
+        }
+        if (y <= x) {
+            help1 = i;
+            x = y;
+        }
+        printf("%.2f ",y);
+    }
+    printf("\nMin(%d) = %.2f;\nMax(%d) = %.2f;\n\n",help1,x,help,t);
+    printf("7.56, The longest path:\n");
+    int city = 0;
+    n = 5;
+    a = 0;
+    for (int i =0; i < n; ++i) {
+        city = rand() % 9001;
+        if (city > a)
+            a = city;
+        printf("%d)%d;\n",i + 1, city);
+    }
+    printf("The most remote: %d;\n\n",a);
+    printf("7.59, Finding the diagonal of a square:\n");
+    double S = 0, diagonal = 0, side = 0;
+    x = 0;
+    for (i = 0; i <= 5; ++i) {
+        S = 1 + rand() % 100;
+        side = sqrt(S);
+        diagonal = sqrt(pow(side,2) * 2);
+        if (diagonal > x)
+            x = diagonal;
+        printf("S = %.0f, diagonal = %.2f, side = %.2f;\n",S,diagonal,side);
+    }
+    printf("Max diagonal = %.2f;\n\n",x);
+    printf("7.63, precipitation:\n");
+    a = 0;
+    for (i = 1; i <= 31; ++i) {
+        b = rand() % 15;
+        if (b >= a) {
+            a = b;
+            help = i;
+        }
+        printf("%d ",b);
+    }
+    printf("\nThe largest amount of precipitation was equal to %d, day = %d;\n\n",a,help);
+    printf("7.66,biggest class:\n");
+    a = 0;
+    b = 30;
+    c = b;
+    for (i = 1; i <= 20; ++i) {
+        help = 1 + rand() % c;
+        if (help > a)
+            a = help;
+        if (help < b)
+            b = help;
+        printf("%d ",help);
+    }
+    printf("\nmax = %d, min = %d;\nexcess - %d;\n\n", a, b, a - b);
+    printf("7.67, pairs of numbers:\n");
+    n = 10;
+    sum = 0;
+    int product = n * n;
+    for (i = 0; i < n; ++i) {
+        a = rand() % n;
+        b = rand() % n;
+        if (sum < a + b)
+            sum = a + b;
+        if (product > a * b)
+            product = a * b;
+        printf("%d:%d(sum = %d)(prod = %d)\n",a,b,a + b,a * b);
+    }
+    printf("\nMax sum = %d;\nMin product = %d;\n\n",sum,product);
+    printf("7.70,Minimum population density:\n");
+    for (i = 0; i < 5; ++i) {
+        a = 1 + rand() % 1000; // количество людей
+        b = 1 + rand() % 1000; // площадь
+        y = (double)b / (double)a; // МПН
+        if (i == 0)
+            t = y;
+        if (y < t)
+            t = y;
+        printf("%d:%d(%.2f), ",b,a,y);
+    }
+    printf("\nMinimum population density: %.2f;\n\n",t);
+    printf("7.76, Minimum temperature:\n");
+    help = 0;
+    for (i = 1; i <= 31; ++i) {
+        a = rand() % 15;
+        if (i == 1)
+            b = a;
+        if (a < b) {
+            b = a;
+            help = 0;
+        }
+        if (a == b)
+            ++help;
+        printf("%d ",a);
+    }
+    printf("\nMinimum temperature = %d, quantity = %d;\n\n",b,help);
+    printf("7.79\n");
+    n = 10;
+    b = rand() % 256;
+    printf("%d;\n",b);
+    int binary[CHAR_BIT] = {0, 0, 0, 0, 0, 0, 0, 0};
+    i = CHAR_BIT - 1;
+    while (b > 0) {
+        int bit = b%2;
+        binary[i--] = bit;
+        b /= 2;
+    }
+    printf("binary = ");
+    int bits_len[2] = {CHAR_BIT,CHAR_BIT};
+    int bits_type = binary[0], bits = 1;
+    printf("%d",bits_type);
+    for (i = 1; i < CHAR_BIT; ++i) {
+        if (binary[i] == bits_type) {
+            bits++;
+            printf(".");
+        }
+        else {
+            if ( bits_len[bits_type] > bits)
+                bits_len[bits_type] = bits;
+            bits = 1;
+            bits_type = binary[i];
+            printf("-");
+        }
+        printf("%d",binary[i]);
+    }
+    if ( bits_len[bits_type] > bits)
+        bits_len[bits_type] = bits;
+    printf("\nMin bits(zero) = %d, min bits(one) = %d;\n",bits_len[0], bits_len[1]);
+    if (bits_len[0] > bits_len[1])
+        printf("bits(1) more than bits(0);\n\n");
+    else
+        printf("bits(0) less or equal than bits(1);\n\n");
 }
 
 int main()
