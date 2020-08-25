@@ -3442,6 +3442,179 @@ void chapter_7()
         printf("bits(1) more than bits(0);\n\n");
     else
         printf("bits(0) less or equal than bits(1);\n\n");
+    printf("7.80, customer service:\n");
+    n = 10;
+    int time = 0;
+    a = 0;
+    int people_1[n];
+    b = 0; // номер покупателя
+    for (i = 0; i < n; ++i) {
+        time = 1 + rand() % 10;
+        if (i == 0)
+            a = time;
+        if (time < a)
+            a = time;
+        people_1[i] = time;
+        printf("buyer: #%d, time = %d;\n",i,time);
+    }
+    printf("Fastest customer numbers: ");
+    for (i = 0; i < n; ++i)
+        if (people_1[i] == a)
+            printf("%d; ",i);
+    printf("\n\n");
+    printf("7.81, min and max sum of pairs:\n");
+    n = 20;
+    a = -1;
+    b = 0;
+    c = 0;
+    int min_sum = -1, max_sum = -1;
+    if (n >= 3) {
+        int mass_1[n];
+        for (i = 0; i < n; ++i) {
+            mass_1[i] = rand() % 10;
+            printf("%d ",mass_1[i]);
+        }
+        for (i = 0; i < n - 1; ++i) {
+            sum = mass_1[i] + mass_1[i + 1];
+            if (a == -1) {
+                max_sum = sum;
+                min_sum = sum;
+                a = 0;
+            }
+            if (sum > max_sum) {
+                max_sum = sum;
+                b = i;
+            }
+            if (sum < min_sum) {
+                min_sum = sum;
+                c = i;
+            }
+        }
+        if (max_sum != -1 && min_sum != -1)
+            printf("\nmax sum(%d,%d) = %d;\nmin sum(%d,%d) = %d;\n\n", b, b+1, max_sum, c, c+1, min_sum);
+        else
+            printf("\nNo pairs!;\n\n");
+    } else
+        printf("You entered incorrect value!\n\n");
+    printf("7.82 - 7.83, determine the amount of min and max points:\n");
+    const int amount = 3;
+    n = 10;
+    sum = 0;
+    sum1 = 0;
+    a = 0;
+    b = 0;
+    c = 0;
+    b1 = 0;
+    int b2 = 0, c1 = 0, c2 = 0;
+    int football[n], max_scores[amount], min_scores[amount];
+    for (i = 0; i < amount; ++i) {
+        max_scores[i] = -1;
+        min_scores[i] = 11;
+    }
+    for (i = 0; i < n; ++i) {
+        football[i] = rand() % 11;
+        printf("%d ",football[i]);
+        if (football[i] > a)
+            a = football[i];
+    }
+    for (i = 0; i < n; ++i) {
+        b1 = 0;
+        b2 = 0;
+        c2 = min_scores[b2];
+        c1 = max_scores[b1];
+        for (int j = 1; j < amount; ++j)  {   // Подумать над итерациями!
+            if (max_scores[j] < c1) {
+                c1 = max_scores[j];
+                b1 = j;
+            }
+            if (min_scores[j] > c2) {
+                c2 = min_scores[j];
+                b2 = j;
+            }
+        }
+        if (football[i] > max_scores[b1])
+            max_scores[b1] = football[i];
+        if (football[i] < min_scores[b2])
+            min_scores[b2] = football[i];
+    }
+    printf("\nMax scores: ");
+    for (int j = 0; j < amount; ++j) {
+        sum += max_scores[j];
+        printf("%d ",max_scores[j]);
+    }
+    printf("\nMin scores: ");
+    for (int j = 0; j < amount; ++j) {
+        sum1 += min_scores[j];
+        printf("%d ",min_scores[j]);
+    }
+    printf("\nSum of winners: max = %d, min = %d;\n\n", sum, sum1);
+    printf("7.86 - 7.89;\n");
+    n = 10;
+    b = 50;
+    c = 2;
+    sum = 0;
+    for (i = 0; i < 10; ++i) {
+        a = rand() % 15;
+        sum += a;
+        printf("%d ",a);
+    }
+    printf("\nSum = %d",sum);
+    printf("\n1) Amount is more than(100,78): ");
+    if (sum > 78)
+        printf("78");
+    else
+        printf("-");
+    if (sum > 100)
+        printf("100");
+    printf("\n2) Is it true that the sum numbers less than b(%d)? - ",b);
+    if (sum > b)
+        printf("Yes!\n");
+    else
+        printf("No!\n");
+    printf("3) Sum is even number? - ");
+    if (sum % 2 == 0)
+        printf("Yes!\n");
+    else
+        printf("No!\n");
+    printf("4) It is true that the sum is a multiple of c(%d)? - ",c);
+    if (sum % c == 0)
+        printf("Yes!\n\n");
+    else
+        printf("No!\n\n");
+    printf("7.93, the cheapest item:\n");
+    c = 100;
+    for (i = 0; i < 8; ++i) {
+        a = rand() % 100; // 1
+        b = rand() % 100; // 2
+        printf("%d) 1(%d),2(%d);\n",i,a,b);
+        if (a < c) {
+            c = a;
+            help = 1;
+            help1 = i;
+        }
+        if (b < c) {
+            c = b;
+            help = 2;
+            help1 = i;
+        }
+    }
+    printf("Product number: ");
+    if (help == 1)
+        printf("%d(1)\n\n",help1);
+    else
+        printf("%d(2)\n\n",help1);
+    printf("7.95\n");
+    n = 50;
+    product = 1;
+    for (i = 0; i < 5; ++i) {
+        a = rand() % 10;
+        product *= a;
+        printf("%d ",a);
+    }
+    if (product > n)
+        printf("\nYes, product(%d) > n(%d)",product,n);
+    else
+        printf("\nNo, product(%d) > n(%d)",product,n);
 }
 
 int main()
