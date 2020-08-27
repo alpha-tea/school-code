@@ -3615,6 +3615,182 @@ void chapter_7()
         printf("\nYes, product(%d) > n(%d)",product,n);
     else
         printf("\nNo, product(%d) > n(%d)",product,n);
+    /*
+    srand(time(NULL));
+    int a = 1, mass[CHAR_BIT] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int i = CHAR_BIT - 1;
+    printf("a = %d;\n",a);
+    while (a > 0) {
+        mass[i--] = a % 2;
+        a /= 2;
+    }
+    printf("number: = ");
+    for (i = 1 ;i < CHAR_BIT; ++i) {
+        printf("%d",mass[i]);
+    }
+    printf(";\n");
+    */
+    a = 5; //m
+    b = 2; //p
+    printf("7.100, 7.106, 7.108, checking the multiplicity of the sum, m = %d, p = %d:\n",a,b);
+    n = 10;
+    sum = 0;
+    sum1 = 0;
+    printf("numbers: ");
+    for (i = 0; i < n; ++i) {
+        c = rand() % 10;
+        if (c > a)
+            sum += c;
+        printf("%d ",c);
+        if (c % 2 == 0)
+            sum1 += c;
+    }
+    if (sum % b == 0)
+        printf("\nsum = %d, p = %d, YES! The sum is a multiple of p\n",sum,b);
+    else
+        printf("\nsum = %d, p = %d? NO! The sum is not a multiple of p\n",sum,b);
+    if (sum1 % 3 == 0)
+        printf("the sum of positive numbers is a multiple of 3;\n\n");
+    else
+        printf("the sum of positive numbers is not a multiple of 3;\n\n");
+    printf("7.102, street:\n");
+    n = 10;
+    sum = 0;
+    sum1 = 0;
+    printf("Number of residents: ");
+    for (i = 1; i <= 10; ++i) {
+        a = rand() % 10;
+        if (i % 2 == 0)
+            sum += a;
+        else
+            sum1 += a;
+        printf("%d ",a);
+    }
+    if (sum > sum1)
+        printf("\nMost residents live in houses with even numbers: even = %d, odd = %d;\n\n",sum,sum1);
+    else if (sum1 > sum)
+        printf("\nMost residents live in houses with odd numbers: even = %d, odd = %d;\n\n",sum,sum1);
+    else
+        printf("\nThe even and odd sides have the same number of people: even = %d, odd = %d;\n\n",sum,sum1);
+    printf("7.112, average height of students:\n");
+    n = 15;
+    sum = 0;
+    sum1 = 0;
+    for (i = 0; i < n; ++i) {
+        a = -1 * ((rand() % 51) + 150); // мальчики
+        b = 150 + rand() % 27;          // девочки
+        sum += abs(a);
+        sum1 += b;
+        printf("boy = %d, girl = %d;\n",a,b);
+    }
+    if ((sum / n) - (sum1 / n) > 10)
+        printf("The average height of boys is 10 cm more than girls: boy = %d, girl = %d\n\n",sum / n,sum1 / n);
+    else
+        printf("The average height of boys is 10 cm smaller than girls: boy = %d, girl = %d\n\n",sum / n,sum1 / n);
+    c = rand() % 3;
+    printf("7.115, average:, c = %d\n",c);
+    help = 0;
+    sum = 0;
+    printf("numbers: ");
+    for (i = 0; i < 12; ++i) {
+        if (c == 0) {
+            a = rand() % 9;
+            if (a % 2 == 0)
+                ++a;
+        } else {
+            a = rand() % 10;
+            if (a % 2 == 0) {
+                sum += a;
+                ++help;
+            }
+        }
+        printf("%d ",a);
+    }
+    if (help > 0)
+        printf("\nAverage = %d;\n\n",sum / help);
+    else
+        printf("\nThere are no even numbers in the sequence;\n\n");
+    b = rand() % 3;
+    printf("7.118, Find number by the last negative number, b = %d\n",b);
+    n = 10;
+    help = 0;
+    printf("numbers: ");
+    for (i = 1; i <= n; ++i) {
+        if (b == 0)
+            c = rand() % 10;
+        else {
+            a = rand() % 3;
+            c = 1 + rand() % 9;
+            if (a == 0)
+                c *= -1;
+        }
+        if (c < 0)
+            help = i;
+        printf("%d ",c);
+    }
+    if (help == 0) {
+        printf("\nThere are no negative numbers in the sequence;\n\n");
+    } else
+        printf("\nNumber of the last negative number: %d\n\n",help);
+    printf("7.122, determining the minimum and maximum age among a group of people:\n");
+    n = 10;
+    int min_age = 100, max_age = 0;
+    printf("Age: ");
+    for (i = 0; i < n; ++i) {
+        a = 1 + rand() % 100;
+        if (max_age < a) {
+            max_age = a;
+            help = i;
+        }
+        if (min_age > a) {
+            min_age = a;
+            help1 = i;
+        }
+        printf("%d ",a);
+    }
+    if (help > help1)
+        printf("\nThe person with the minimum age appeared in the sequence earlier \n"
+               "than the person with the maximum age: min = %d, max = %d,"
+               " min and max pos: %d:%d;\n\n", min_age,max_age,help1,help);
+    else
+        printf("\nThe person with the maximum age appeared in the sequence earlier \n"
+               "than the person with the minimum age: min = %d, max = %d,"
+               " min and max pos: %d:%d;\n\n", min_age,max_age,help1,help);
+    printf("7.124 - 7.125, sequence of not descending numbers:\n");
+    int numbers[10];
+    a = 0;
+    help = 0;
+    help1 = 1;
+    numbers[0] = rand() % 10;
+    for (i = 1; i < 10; ++i)
+        numbers[i] = numbers[i - 1] + rand() % 3;
+    for (i = 0; i < 9; ++i) {
+        if (numbers[i] == numbers[i + 1] && a == 0) {
+            ++help;
+            a = 1;
+        } else if (numbers[i] != numbers[i + 1]) {
+            ++help1;
+            a = 0;
+        }
+    }
+    for (i = 0; i < 10; ++i)
+        printf("%d ",numbers[i]);
+    printf("\nSequences = %d,different numbers = %d;\n\n",help,help1);
+    a = 6;
+    printf("7.128, number = %d, multipliers: ",a);
+    b = a;
+    sum = 0;
+    i = 1;
+    while (b >= 1) {
+        sum += i;
+        printf("%d ",i);
+        ++i;
+        b /= i;
+    }
+    if (a == sum)
+        printf("\nNumber is ideal, sum = %d,\n\n",sum);
+    else
+        printf("\nNumber is not ideal, sum = %d,\n\n",sum);
 }
 
 int main()
