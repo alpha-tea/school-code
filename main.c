@@ -10,6 +10,80 @@
 #define ARRAY_SIZE 15
 #define SIZE 10
 
+int string_size_special(char string[]) // ООЧЕНЬ СПЕЦИАЛЬНАЯ ФУНКЦИЯ!!!
+{
+    int c = 0;
+    while (string[c] != '\0')
+        c++;
+    return c;
+}
+
+void string_reverse_special(char string[])   // Специальная функция для ScriptedEngeneer(по особому заказу)
+{
+    int size = string_size_special(string);
+    for (int j = 0; j < size / 2; ++j) {
+        char c = string[j];
+        string[j] = string[size - 1 - j];
+        string[size - 1 - j] = c;
+    }
+}
+
+void to_binary(unsigned char byte, char string[])
+{
+    int i;
+    for (i = 0; i < CHAR_BIT && byte > 0; ++i) {
+        string[i] = byte % 2 + '0';
+        byte = byte >> 1;
+    }
+    string[i] = '\0';
+    //printf("Source string = %s;\n",string);
+    string_reverse_special(string);
+    //printf("Reverse string = %s;\n",string);
+}
+
+void ScriptedEngeneer_1()
+{
+    int cout = 0;
+    unsigned char n = 0;
+    printf("Task from ScriptedEngeneer 1:\n");
+    printf("Size of unsigned char: %d bytes and bits in char: %d;\n",sizeof (n), CHAR_BIT);
+    printf("Size of unsigned short int: %d;\n",sizeof (unsigned short int));
+    char binary[CHAR_BIT + 1];
+    for (int i = 0; i <= CHAR_BIT; ++i)
+        binary[i] = 0;
+    for (unsigned short int j = 0x0000; j < 0x100; ++j) {
+        n = j & 0x00ff;
+        to_binary(n,binary);
+        int size = string_size_special(binary);
+        int i;
+        for (i = 0; i < size && binary[i] == binary[size - i - 1]; ++i)
+            ;
+        if (i == size) {
+            printf("%d\t%s\n",n,binary);
+            ++cout;
+        }
+    }
+    printf("Total palindroms[0..255]: %d", cout);
+}
+
+int ideal_number(int a)
+{
+    printf("Ideal number, multipliers:");
+    int b = a;
+    int sum = 0;
+    int i = 1;
+    while (b > 1) {
+        if (b % i == 0) {
+            sum += i;
+            printf("%d ",i);
+            b /= i;
+        }
+        ++i;
+    }
+    printf(":%d(a == sum)\n",(a == sum));
+    return (a == sum);
+}
+
 int natural_number(int n)
 {
     int k = 0, x = 0, sum = 0, product = 1, sred_arif = 0;
@@ -3777,20 +3851,13 @@ void chapter_7()
         printf("%d ",numbers[i]);
     printf("\nSequences = %d,different numbers = %d;\n\n",help,help1);
     a = 6;
-    printf("7.128, number = %d, multipliers: ",a);
-    b = a;
-    sum = 0;
-    i = 1;
-    while (b >= 1) {
-        sum += i;
-        printf("%d ",i);
-        ++i;
-        b /= i;
-    }
-    if (a == sum)
-        printf("\nNumber is ideal, sum = %d,\n\n",sum);
+    printf("7.128, number = %d:\n",a);
+    int result = ideal_number(a);
+    if (result != 0)
+        printf("Number is ideal\n\n");
     else
-        printf("\nNumber is not ideal, sum = %d,\n\n",sum);
+        printf("Number is not ideal\n\n");
+    ScriptedEngeneer_1();
 }
 
 int main()
