@@ -3860,6 +3860,145 @@ void chapter_7()
     ScriptedEngeneer_1();
 }
 
+void chapter_8()
+{
+    printf("8.3\na)\n");
+    //a
+    int i = 1, j = 0;
+    for (i = 1; i <= 5; ++i) {
+        for (j = 0; j < i; ++j)
+            printf("%d ",i);
+        printf("\n");
+    }
+    printf("\nb)\n");
+    //b
+    int k = 1;
+    j = 5;
+    for (i = 5; i <= 9; ++i){
+        for (j = 1;j <= 10 - i; ++j)
+            printf("%d ",i);
+        printf("\n");
+    }
+    printf("\nc)\n");
+    //c
+    j = 1;
+    for (i = 10; i <= 50;i += 10, ++j) {
+        for (k = 1; k <= j; ++k)
+            printf("%d ",i);
+        printf("\n");
+    }
+    printf("\nd)\n");
+    //d
+    k = 1, j = 5;
+    for (i = 5; i <= 25; i += 5, --j){
+        for (k = 1;k <= j; ++k)
+            printf("%-3d",i);
+        printf("\n");
+    }
+    printf("\n");
+    printf("8.7, Multiplication table:\n");
+    j = 1;
+    for (i = 1; i <= 9; ++i) {
+        for (j = 1; j <= 9; ++j)
+            printf("%d x %d = %2d; ", i, j, i * j);
+        printf("\n");
+    }
+    int n = 5, a = 3;
+    printf("\n8.9, scores of students:, exams = %d, students = %d;\n",a,n);
+    srand(time(NULL));
+    printf("\t1\t2\t3, - lessons:\n\n");
+    for (i = 0; i < n; ++i) {
+        printf("%d)\t",i);
+        for (j = 0; j < a; ++j)
+            printf("%d\t", 1 + rand() % 5);
+        printf("\n");
+    }
+    printf("\nB)\t");
+    for (i = 1; i <= n; ++i)
+        printf("%d\t",i);
+    printf("\n\n");
+    for (k = 0; k < a; ++k) {
+        printf("%d)\t",k);
+        for (j = 1; j <= n; ++j)
+            printf("%d\t", 1 + rand() % 5);
+        printf("\n");
+    }
+    a = 3;
+    n = 5;
+    int sum = 0, sum1 = 0, salary = 0;
+    int salary_mass[a];
+    for (i = 0; i < a; ++i)
+        salary_mass[i] = 0;
+    printf("\n8.11,salary for workers, workers = %d, months = %d;\n",n,a);
+    printf("Worker:\\Month:\t");
+    for (i = 1; i <= a; ++i)
+        printf("%d:\t",i);
+    printf("Total:\n");
+    for (i = 0; i < n; ++i) {
+        printf("%d)\t\t",i);
+        sum1 = 0;
+        for (j = 0; j < a; ++j) {
+            salary = 10 + rand() % 90;
+            sum1 += salary;
+            sum += salary;
+            salary_mass[j] += salary;
+            printf("%d\t",salary);
+        }
+        printf("%d\n",sum1);
+    }
+    printf("Total:\t\t");
+    for (i = 0; i < a ; ++i)
+        printf("%d\t",salary_mass[i]);
+    printf("%d\n\n",sum);
+    n = 5;
+    a = 3;
+    int c = 1, help = 1;
+    printf("8.14, scores of students, students = %d, lessons = %d;\n",n,a);
+    sum = 0;      // Количество студентов, сдавшие экзамены без двоек.
+    sum1 = 0;     // Количество предметов, по которым были получены только оценки "5" и "4".
+    int scores_mass[a], scores_mass1[a];
+    printf("Students:\\Lessons:\t");
+    for (i = 0; i < a; ++i) {
+        scores_mass[i] = 0;
+        scores_mass1[i] = 0;
+    }
+    for (i = 1; i <= a; ++i)
+        printf("%d:\t",i);
+    printf("\n");
+    for (i = 0; i < n; ++i, c = 1, help = 1) {
+        printf("%d)\t\t\t",i);
+        for (j = 0; j < a; ++j) {
+            int score = 1 + rand() % 5;
+            if (score < 3)
+                scores_mass[j]++;
+            if (score < 2 && c == 1)
+                c = 0;
+            if (score < 2)
+                scores_mass1[j]++;
+            printf("%d\t",score);
+        }
+        if (c == 1) {
+            sum++;
+            printf("Passed without negative scores.");
+        } else
+            printf("Passed with negative scores.");
+        printf("\n");
+        if (help == 0)
+            sum1++;
+    }
+    printf("Total negatives:\t");
+    for (i = 0; i < a; ++i)
+        printf("%d\t",scores_mass[i]);
+    printf("\nLucky students: %d;\n",sum);
+    printf("Positive lessons:\t");
+    for (i = 0; i < a; ++i)
+        if (scores_mass1[i] == 0)
+            printf("Yes\t");
+        else
+            printf("No\t");
+    printf("\n\n");
+}
+
 int main()
 {
     chapter_7();
