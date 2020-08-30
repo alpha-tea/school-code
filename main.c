@@ -3997,6 +3997,128 @@ void chapter_8()
         else
             printf("No\t");
     printf("\n\n");
+    n = 5; // кол-во работников.
+    a = 3; // кол-во месяцев.
+    printf("8.17, salary for workers, workers = %d, months = %d;\n",n,a);
+    int salary_month[a];// для каждого месяца.(б)
+    int salary_workers[a];
+    printf("Worker:\\Month:\t");
+    for (k = 0; k < a; ++k) {
+        salary_workers[k] = 0;
+        salary_month[k] = 0;
+    }
+    for (i = 1; i <= a; ++i)
+        printf("%d:\t",i);
+    printf("Max salary on month:\n");
+    for (i = 0; i < n; ++i) {
+        int max_salary = 0;
+        printf("%d)\t\t",i);
+        for (j = 0; j < a; ++j) {
+            salary = 1 + rand() % 100;
+            printf("%d\t",salary);
+            if (salary > max_salary)
+                max_salary = salary;
+            if (i == 0) {
+                salary_workers[j] = i;
+                salary_month[j] = salary;
+            } else if (salary > salary_month[j]) {
+                salary_month[j] = salary;
+                salary_workers[j] = i;
+            }
+        }
+        printf("%d\n",max_salary);
+    }
+    printf("Max salary:\t");
+    for (i = 0; i < a; ++i)
+        printf("%d\t",salary_workers[i]);
+    n = 3;  // магазины.
+    a = 5;  // дни.
+    printf("\n\n8.20, Shop revenue;\n");
+    int income_days[a], income_shops[n];
+    int r1 = 0, r2 = 0, r3 = 0, r4 = 0;
+    int max_income = 0,x = 0, y = 0; // номер дня и магазина с максимальным доходом.
+    printf("Shops:\\Days:\t");
+    for (k = 0; k < a; ++k)
+        income_days[k] = 0;
+    for (k = 0; k < n; ++k)
+        income_shops[k] = 0;
+    for (i = 1; i <= a; ++i)
+        printf("%d:\t",i);
+    printf("Sum of income:\n");
+    for (i = 0; i < n; ++i) {
+        printf("%d)\t\t",i);
+        for (j = 0; j < a; ++j) {
+            int income = 1 + rand() % 100;
+            income_shops[i] += income;
+            income_days[j] += income;
+            printf("%d\t",income);
+            if (income > max_income) {
+                max_income = income;
+                x = j;
+                y = i;
+            }
+        }
+        printf("%d\n",income_shops[i]);
+    }
+    printf("Sum of shops:\t");
+    for (i = 0; i < n; ++i)
+        if (income_shops[i] > r1) {
+            r1 = income_shops[i];
+            r3 = i;
+        }
+    for (i = 0; i < a; ++i) {
+        printf("%d\t",income_days[i]);
+        if (income_days[i] > r2) {
+            r2 = income_days[i];
+            r4 = i;
+        }
+    }
+    printf("\na)Max sum of days: %d;\n",r3);
+    printf("b)Max sum of shops: %d;\n",r4 + 1);
+    printf("c)Shop = %d, Day = %d, Max income = %d;\n\n",y,x + 1, max_income);
+    n = 5;
+    a = 5;
+    printf("8.23,goods and sales in days, goods = %d, sales = %d\n",n,a);
+    int prices[n], sum_days[a];
+    printf("Goods(prices):\\Sales(cost):\t");
+    for (i = 0; i < a; ++i) {
+        printf("%d:\t", i + 1);
+        sum_days[i] = 0;
+    }
+    printf("Total:\n");
+    int all_sum = 0, max_cost = 0, pos_cost= 0, max_day_cost = 0, pos_day_cost = 0;
+    for (i = 0; i < n; ++i) {
+        prices[i] = 1 + rand() % 9;
+        int sum = 0;
+        printf("%d(%d):\t\t\t\t",i,prices[i]);
+        for (j = 0; j < a; ++j) {
+            int quantity = 1 + rand() % 9;
+            printf("%d(%d)\t",quantity,prices[i] * quantity);
+            sum += quantity * prices[i];
+            sum_days[j] += quantity * prices[i];
+        }
+        printf("%d\n",sum);
+        if (sum > max_cost) {
+            max_cost = sum;
+            pos_cost = i;
+        }
+        all_sum += sum;
+    }
+    printf("B) Sum of days:\t\t\t");
+    const int limit = 150;
+    for (i = 0, n = 0; i < a; ++i) {
+        if (sum_days[i] > max_day_cost) {
+            max_day_cost = sum_days[i];
+            pos_day_cost = i + 1;
+        }
+        if (sum_days[i] > limit)
+            ++n;
+        printf("%d\t",sum_days[i]);
+    }
+    printf("\nV) Total sales for all days: %d;\n",all_sum);
+    printf("G) Max cost is: %d and good: %d;\n",max_cost,pos_cost);
+    printf("D) Max cost is: %d and day: %d;\n",max_day_cost, pos_day_cost);
+    printf("E) Days bigger than limit(%d): %d;\n\n",limit,n);
 }
 
 int main()
