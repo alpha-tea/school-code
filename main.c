@@ -10,6 +10,29 @@
 #define ARRAY_SIZE 15
 #define SIZE 10
 
+int ideal_number(int a)
+{
+    int b = a;
+    int sum = 1;
+    int i = 2;
+    while (b > 1) {
+        if (b % i == 0) {
+            sum += i;
+            b /= i;
+        } else
+            ++i;
+    }
+    return (a == sum);
+}
+
+int prime_number(int number)
+{
+    int i = 2;
+    for (i = 2; i < number && number % i != 0; ++i)
+        ;
+    return (i == number);
+}
+
 int string_size_special(char string[]) // ООЧЕНЬ СПЕЦИАЛЬНАЯ ФУНКЦИЯ!!!
 {
     int c = 0;
@@ -64,24 +87,6 @@ void ScriptedEngeneer_1()
         }
     }
     printf("Total palindroms[0..255]: %d", cout);
-}
-
-int ideal_number(int a)
-{
-    printf("Ideal number, multipliers:");
-    int b = a;
-    int sum = 0;
-    int i = 1;
-    while (b > 1) {
-        if (b % i == 0) {
-            sum += i;
-            printf("%d ",i);
-            b /= i;
-        }
-        ++i;
-    }
-    printf(":%d(a == sum)\n",(a == sum));
-    return (a == sum);
 }
 
 int natural_number(int n)
@@ -4119,11 +4124,87 @@ void chapter_8()
     printf("G) Max cost is: %d and good: %d;\n",max_cost,pos_cost);
     printf("D) Max cost is: %d and day: %d;\n",max_day_cost, pos_day_cost);
     printf("E) Days bigger than limit(%d): %d;\n\n",limit,n);
+    n = 20;
+    int divs_sum[n], max_divisor = 0, min_divisor = n, m = 2;
+    c = 3; //k.
+    int max_sum = 0, min_sum = 0, quantity = 0;
+    const char* answ[] = {"NO","YES"};
+    printf("8.25 - 8.38, Finding divisors, N = %d, C = %d, M = %d:\n",n,c,m);
+    printf("T - total, Q - quantity;\n");
+    printf("Number:\tDividers(T,Q):\tDivs=C:\tSum %% M:Prime:\tIdeal:\tPairs:\t\n");
+    for (i = 0; i < n; ++i) {
+        divs_sum[i] = 1;
+        printf("%d:\t%d ",i + 1,divs_sum[i]);
+        a = i + 1; k = 2; quantity = 1;
+        int num = a;
+        while (a > 1) {
+            while (a % k == 0 && a > 1) {
+                printf("%d ",k);
+                divs_sum[i] += k;
+                ++quantity;
+                a /= k;
+            }
+            ++k;
+        }
+        printf("(%d,%d)",divs_sum[i],quantity);
+        if (quantity == 1)
+            printf("\t");
+        printf("\t%s\t%s",answ[quantity == c],answ[divs_sum[i] % m == 0]);
+        printf("\t%s\t%s\t",answ[prime_number(num)], answ[ideal_number(num)]);
+        if (quantity > max_divisor) {
+            max_divisor = quantity;
+            r1 = num;
+        }
+        if (quantity < min_divisor) {
+            min_divisor = quantity;
+            r2 = num;
+        }
+        if (i == 0) {
+            min_sum = divs_sum[i];
+            r3 = num;
+        }
+        if (divs_sum[i] > max_sum) {
+            max_sum = divs_sum[i];
+            r4 = num;
+        }
+        if (divs_sum[i] < min_sum) {
+            min_sum = divs_sum[i];
+            r3 = num;
+        }
+        for (j = i - 1;j > 0; --j)
+            if (divs_sum[j] == divs_sum[i])
+                printf("%d:%d ",j + 1,i + 1);
+        printf("\n");
+    }
+    printf("Number with min divisors: %d, divisors = %d;\n",r2,min_divisor);
+    printf("Number with max divisors: %d, divisors = %d;\n",r1,max_divisor);
+    printf("Number with max sum: %d, max sum = %d;\n",r4,max_sum);
+    printf("Number with min sum: %d, min sum = %d;\n",r3,min_sum);
+    /*
+ *
+        printf("%d:",i);
+        a = i;
+        if (prime_number(a) == 1)
+            printf(" prime number;");
+        if (ideal_number(a) == 1)
+            printf(" ideal number;");
+        printf("\ndivisors: ");
+        for (j = 1; j <= a; ++j) {
+            if (i % j == 0) {
+                printf(" %d",j);
+                sum += j;
+                ++mults;
+                if (j % m == 0)
+                    printf("+");
+            }
+        }
+        printf("\nTotal = %d, Sum = %d;\n\n",b,sum);
+*/
 }
 
 int main()
 {
-    chapter_7();
+    chapter_8();
     //getchar(); - не снимать.
     return 0;
 }
