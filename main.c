@@ -4200,6 +4200,81 @@ void chapter_8()
         }
         printf("\nTotal = %d, Sum = %d;\n\n",b,sum);
 */
+    //Complex code!!
+    int s = 48;
+    printf("\n8.39.Find the dimensions of all rectangles, S = %d;\n",s);
+    for (i = 1; i <= s; ++i)
+        for (j = 1; j <= s; ++j) {
+            if (j * i == s && j >= i)
+                printf("b)a = %d, b = %d;\n",i,j);
+            if (j * i == s)
+                printf("a)a = %d, b = %d;\n",i,j);
+        }
+    a = 10;
+    printf("\n8.41.Find all natural solutions x and y, k = %d, X^2 + Y^2 = K^2;\n", a);
+    for (k = 1;k <= a; ++k) {
+        printf("%d(%d): ",k, k * k);
+        for (i = 1; i <= k; ++i)
+            for (j = i; j <= k; ++j)
+                if (pow(j,2) + pow(i,2) == pow(k,2))
+                    printf("x = %d, y = %d, ",j * j,i * i);
+        printf("\n");
+    }
+    n = 5;
+    sum = 0;
+    printf("\n8.43.Calculate: 1^1 + 2^2 ... + n^n, n = %d;\n",n);
+    for (i = 1; i <= n; ++i) {
+        a = i;
+        for (j = 1; j < i; ++j)
+            a *= i;
+        sum += a;
+        printf("%d ",a);
+        if (i != n)
+            printf("+ ");
+    }
+    printf("\nSum = %d;\n\n",sum);
+    n = 3;
+    if (n > 27 || n < 1)
+        printf("You entered incorrect value!\n\n");
+    else {
+        printf("8.44, sum of digits of a three-digit number, n = %d;\n",n);
+        for (i = 1; i <= 9; ++i)
+            for (j = 0; j <= 9; ++j)
+                for (k = 0;k <= 9; ++k)
+                    if (i + j + k == n)
+                        printf("%d%d%d, %d + %d + %d = %d;\n",i,j,k,i,j,k,n);
+    }
+    n = 10;
+    quantity = 0;
+    printf("\n8.48, banknotes = 1,2,5,10 and sum = %d;\n", n);
+    const int cost[] = {1, 2, 5, 10};
+    for (i = 0; i <= n; ++i)
+        for (j = 0; j <= n / 2; ++j)
+            for (k = 0; k <= n / 5; ++k)
+                for (int l = 0; l <= n / 10; ++l)
+                    if (cost[0] * i + cost[1] * j + cost[2] * k + cost[3] * l == n) {
+                        printf("1: %d, 2: %d, 5: %d, 10: %d;\n",i,j,k,l);
+                        ++quantity;
+                    }
+    printf("Quantity of variants: %d;\n\n",quantity);
+    n = 20;
+    m = 10;
+    printf("8.49, sum of digits n = %d, if n^2 < m = %d;\n",n,m);
+    for (i = 1; i <= n; ++i) {
+        a = i; sum = 0;
+        printf("n = %d; ",i);
+        while (a > 0) {
+            k = a % 10;
+            printf("%d ",k);
+            sum += k;
+            a /= 10;
+        }
+        printf("sum = %d, ",sum);
+        if (sum * sum < m)
+            printf("%d < m;\n",sum * sum);
+        else
+            printf("%d > m;\n", sum * sum);
+    }
 }
 
 int main()
