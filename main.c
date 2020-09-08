@@ -10,6 +10,22 @@
 #define ARRAY_SIZE 15
 #define SIZE 10
 
+int digital_root(int n)
+{
+    int a = 0, sum = 0;
+    printf("Digital root: n = %d;",n);
+    while (n > 0) {
+        a = n % 10;
+        sum += a;
+        printf("%d ",a);
+        n /= 10;
+    }
+    printf(": sum = %d\n",sum);
+    if (sum > 9)
+        sum = digital_root(sum);
+    return sum;
+}
+
 int ideal_number(int a)
 {
     int b = a;
@@ -4274,6 +4290,60 @@ void chapter_8()
             printf("%d < m;\n",sum * sum);
         else
             printf("%d > m;\n", sum * sum);
+    }
+    printf("\n8.50, banknotes = 1, 2, 4, 8, 16, 32, 64; n = %d; n, n + 1...n + 10\n",n);
+    printf("Money:\\Banknote:\t64\t32\t16\t8\t4\t2\t1\n");
+    for (i = 0; i <= 10; ++i) {
+        a = i + n;
+        printf("%d:\t\t\t",a);
+        for (j = 64; j >= 1; a %= j, j = j >> 1)
+            printf("%d\t", a / j);
+        printf("\n");
+    }
+    n = 2147483647;
+    printf("\n8.51, digital root of the number, n = %d;\n",n);
+    a = digital_root(n);
+    printf("Digital root of the number n = %d;\n\n",a);
+    n = 46;
+    i = 2;
+    printf("8.53 - 8.54, Simple divisors, n = %d;\n",n);
+    while (n > 1) {
+        while (n % i == 0 && prime_number(i) == 1) {
+            printf("%d ", i);
+            n /= i;
+        }
+        ++i;
+    }
+    n = 176; // q
+    a = 8;  // p
+    printf("\n\n8.55 - 8.57, divisors of q(%d) coprime to p(%d);\n",n,a);
+    i = 2;
+    while (n > 1) {
+        while (n % i == 0) {
+            printf("%d", i);
+            if (evklid_first_step(i,a) == 1)
+                printf("!");
+            n /= i;
+            printf(":%d ",n);
+        }
+        ++i;
+    }
+    n = 72;
+    printf("\n\n8.58,sum of cubes, n = %d;\n",n);
+    for (i = 1; i <= 5; ++i)
+        for (j = i; j <= 5; ++j) {
+            if ((j * j * j + i * i * i) <= n)
+                printf("%d:%d ",i,j);
+        }
+    n = 1; // числитель
+    a = 1; // знаменатель
+    c = 10; // ограничитель
+    printf("\n\n8.59, irreducible fractions, c = %d;\n",c);
+    for (; a <= c; ++a) {
+        for (n = 1; n < a; ++n)
+            if (evklid_first_step(n,a) == 1)
+                printf("%d/%d ",n,a);
+        printf("\n");
     }
 }
 
