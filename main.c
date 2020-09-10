@@ -9,6 +9,15 @@
 #define DIGIT 5
 #define ARRAY_SIZE 15
 #define SIZE 10
+#define STRING_MAX 256
+
+void string_exchange(char** s1, char** s2)
+{
+    char *addr;
+    addr = *s1;
+    *s1 = *s2;
+    *s2 = addr;
+}
 
 int digital_root(int n)
 {
@@ -4345,6 +4354,66 @@ void chapter_8()
                 printf("%d/%d ",n,a);
         printf("\n");
     }
+}
+
+void chapter_9()
+{
+    int i = 0, j = 0, k = 0;
+    //printf("[%ld]%d\n",(long)&i,i);
+    printf("Size of char: %d bytes, min = %d, max = %d, bits in char =  %d;\n\n",
+           sizeof(char), CHAR_MIN, CHAR_MAX, CHAR_BIT);
+    printf("9.1;\nEnter name: ");
+    char name[STRING_MAX] = "daniil";
+    //scanf("%s", name);
+    i = sizeof (name);
+    printf("a)%s, size of string = %d;\n",name,i);
+    printf("b)Hello! My dear %s!;\n\n",name);
+    printf("9.6 - 9.11, two countries;\n");
+    char s1[STRING_MAX] = "first";
+    char s2[STRING_MAX] = "second";
+    printf("s1 = %s;\ns2 = %s;\n",s1,s2);
+    char help_char[STRING_MAX];
+    for (i = 0; s1[i] != '\0'; ++i)
+        help_char[i] = s1[i];
+    help_char[i] = '\0';
+    printf("temp string = %s;\n", help_char);
+    for (i = 0; s2[i] != '\0'; ++i)
+        s1[i] = s2[i];
+    s1[i] = '\0';
+    for (i = 0; help_char[i] != '\0'; ++i)
+        s2[i] = help_char[i];
+    s2[i] = '\0';
+    printf("s1 = %s;\ns2 = %s;\n\n",s1,s2);
+    printf("9.7 - 9.10, 9.12;\n");
+    char* words[] = {"alpha","beta","gamma"};
+    int max = 0, min = STRING_MAX, index_max = 0, index_min = 0;
+    for (i = 0; i < 3; ++i) {
+        printf("%s,",words[i]);
+        for (j = 0; words[i][j] != '\0'; ++j)
+            ;
+        printf(" size of string: %d(sizeof addr: %d), ",j,sizeof(words[i]));
+        if (j > max) {
+            max = j;
+            index_max = i;
+        }
+        if (j < min) {
+            min = j;
+            index_min = i;
+        }
+        if (j % 2 == 0)
+            printf("even;\n");
+        else
+            printf("odd;\n");
+    }
+    printf("min = %d, max = %d;\n\n",index_min,index_max);
+    char *addr;
+    addr = words[1];
+    words[1] = words[2];
+    words[2] = words[0];
+    words[0] = addr;
+    printf("a)Words after exchange, a = %s, b = %s, c = %s;\n",words[0],words[1],words[2]);
+    string_exchange(&words[1],&words[0]);
+    printf("b)Words after exchange, a = %s, b = %s, c = %s;\n\n",words[0],words[1],words[2]);
 }
 
 int main()
