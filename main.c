@@ -11,12 +11,59 @@
 #define SIZE 10
 #define STRING_MAX 256
 
+int string_length(char s[])
+{
+    int len = 0;
+    while (s[len] != '\0') {
+        ++len;
+    }
+    return len;
+}
+
+void string_clear(char s[], int len)
+{
+    for (int i = 0; i < len; ++i)
+        s[i] = '\0';
+}
+
 void string_exchange(char** s1, char** s2)
 {
     char *addr;
     addr = *s1;
     *s1 = *s2;
     *s2 = addr;
+}
+
+int string_copy_substr(char src[], char dst[], int start, int length)
+{
+    if (string_length(src) < length + start)
+        return -1;
+    int i = 0;
+    for (i = 0; i < length; ++i)
+        dst[i] = src[i + start];
+    dst[i] = '\0';
+    return i;
+}
+
+int string_concat(char src[], char dst[])
+{
+    int src_len = string_length(src), dst_length = string_length(dst);
+    int i = 0;
+    for (i = 0; i < src_len; ++i)
+        dst[i + dst_length] = src[i];
+    dst[i + dst_length] = '\0';
+    return i;
+}
+
+int string_find_char(char s[],  char c)
+{
+    int index = 0;
+    while (s[index] != '\0'){
+        if (s[index] == c)
+            return index;
+        index++;
+    }
+    return -1;
 }
 
 int digital_root(int n)
@@ -4414,6 +4461,48 @@ void chapter_9()
     printf("a)Words after exchange, a = %s, b = %s, c = %s;\n",words[0],words[1],words[2]);
     string_exchange(&words[1],&words[0]);
     printf("b)Words after exchange, a = %s, b = %s, c = %s;\n\n",words[0],words[1],words[2]);
+    k = 3;
+    int help = 0;
+    char letter[] = "people";
+    printf("9.15, find k letter, k = %d\n",k);
+    printf("word = %s;\nletter = %c;\n\n",letter,letter[k - 1]);
+    printf("9.18, comparison of letters in a words;\n");
+    char word_1[] = "Hello";
+    char word_2[] = "People"; // must be more than 4 letters and even quantity
+    printf("1) %s;\n2) %s;\n",word_1,word_2);
+    help = string_length(word_2);
+    if (word_1[0] == word_2[help - 1])
+        printf("Yes they are the same(%c:%c).\n\n",word_1[0], word_2[help - 1]);
+    else
+        printf("No, they are different(%c:%c).\n\n",word_1[0], word_2[help - 1]);
+    printf("9.21, output part of a word, chars 2,3,4;\n");
+    printf("word = %s;\noutput = ",word_2);
+    for (k = 1; k <= 3; ++k)
+        printf("%c",word_2[k]);
+    printf("\n\n9.22, print the first half of a word;\nword = %s;",word_2);
+    help /= 2;
+    word_2[help] = '\0';
+    printf("%s",word_2);
+    char color_1[] = "Green", color_2[] = "Black",color_3[] = "White";
+    printf("\n\n9.24 - 9.30, word conversion, cut and copy: %s, %s, %s;\n",color_1,color_2,color_3);
+    char string_1[STRING_MAX], string_2[STRING_MAX];
+    string_clear(string_1,STRING_MAX);
+    string_clear(string_2,STRING_MAX);
+    string_copy_substr(color_2,string_1,1,1);
+    string_copy_substr(color_3,string_2,2,3);
+    string_concat(string_2,string_1);
+    printf("%s\n",string_1);
+    string_copy_substr(color_3,string_1,3,1);
+    string_copy_substr(color_1,string_2,2,3);
+    string_concat(string_2,string_1);
+    printf("%s\n",string_1);
+    printf("9.31 - 9.36,find and replace chars in words: %s, %s;\n",color_2, color_3);
+    const char tab_replacment[] = "aAeEiIsS";
+    for (i = 0; color_3[i] != '\0'; ++i)
+        for (k = 0; tab_replacment[k] != '\0'; k += 2)
+            if (color_3[i] == tab_replacment[k])
+                color_3[i] = tab_replacment[k + 1];
+    printf("%s\n", color_3);
 }
 
 int main()
