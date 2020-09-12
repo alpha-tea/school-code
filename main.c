@@ -20,6 +20,16 @@ int string_length(char s[])
     return len;
 }
 
+int string_is_equal(char string_1[], char string_2[])
+{
+    if (string_length(string_1) == 0 || string_length(string_2) == 0)
+        return -1;
+    for (int i = 0; string_1[i] != '\0' &&  string_2[i] != '\0'; ++i)
+        if (string_1[i] != string_2[i])
+            return 0;
+    return 1;
+}
+
 void string_clear(char s[], int len)
 {
     for (int i = 0; i < len; ++i)
@@ -4503,6 +4513,25 @@ void chapter_9()
             if (color_3[i] == tab_replacment[k])
                 color_3[i] = tab_replacment[k + 1];
     printf("%s\n", color_3);
+    /*
+    char even_string[] = {"Programmer"};
+    printf("9.37 - 9.40, Replacing halves of a word with each other: %s;\n",even_string);
+    string_swap(even_string);
+    printf("a)%s\n\n",even_string);
+    */
+    char* colors[] = {"Red","Orange","Yellow","Blue","Brown"};
+    printf("Task from Cefeiko(searching in array of strings, Color: Blue).\n");
+    int r1 = 0;
+    for (i = 0; i < 5 && r1 == 0; ++i) {
+        printf("Color[%d] = %s; ",i,colors[i]);
+        r1 = string_is_equal(colors[i],"Blue");
+        if (r1 == 1)
+            printf("Yes! Color Blue founded;\n");
+        else if (r1 == 0)
+            printf("No! Color Blue not founded;\n");
+        else
+            printf("Error, one or both strings are empty;\n");
+    }
 }
 
 int main()
