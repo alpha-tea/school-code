@@ -20,6 +20,61 @@ int string_length(char s[])
     return len;
 }
 
+int string_char_counter(char s[], char c)
+{
+    int index = 0, src_len = string_length(s);
+    for (int i = 0; i < src_len; ++i)
+        if (s[i] == c)
+            ++index;
+    return index;
+}
+
+
+int string_palindrom(char c[])
+{
+    int i = 0, src_len = string_length(c);
+    if (src_len == 0)
+        return -1;
+    for (i = 0; i < src_len && c[i] == c[src_len - i - 1]; ++i)
+        ;
+    if (i == src_len)
+        return 0;
+    return -1;
+}
+
+int string_char_find(char s[], char c, int direct, int debug)
+{
+    int index = string_length(s);
+    if (index == 0) {
+        if (debug == 1)
+            printf("No chars in string;\n");
+        return -1;
+    }
+    if (debug == 1)
+        printf("Char before find: ");
+    if (direct == 0) {
+        index = 0;
+        while (s[index] != c && s[index] != '\0') {
+            if (debug == 1)
+                printf("%c",s[index]);
+            index++;
+        }
+    } else {
+        index--;
+        while (s[index] != c && index >= 0) {
+            if (debug == 1)
+                printf("%c",s[index]);
+            index--;
+        }
+    }
+    if (debug == 1)
+        printf("\n");
+    if (s[index] == c)
+        return index;
+    else
+        return -1;
+}
+
 int string_is_equal(char string_1[], char string_2[])
 {
     if (string_length(string_1) == 0 || string_length(string_2) == 0)
@@ -4532,6 +4587,25 @@ void chapter_9()
         else
             printf("Error, one or both strings are empty;\n");
     }
+    char string_3[] = "This is a simple string.";
+    char a = 'T';
+    printf("\n9.75-9.77, search for a character in a string;\n%s\n",string_3);
+    printf("Index(%c) = %d;\n",a,string_char_find(string_3,a,0,1));
+    printf("Index(%c) = %d;\n",a,string_char_find(string_3,a,1,1));
+    a = '.';
+    printf("Index(%c) = %d;\n",a,string_char_find(string_3,a,0,1));
+    printf("Index(%c) = %d;\n\n",a,string_char_find(string_3,a,1,1));
+    printf("9.78, palindrom, Yes(0),No(-1);\n%s;\n","abab");
+    printf("(ab)%d;\n",string_palindrom("ab"));
+    printf("(a)%d;\n",string_palindrom("a"));
+    printf("(-11-)%d;\n",string_palindrom("-11-"));
+    printf("()%d;\n",string_palindrom(""));
+    printf("(aba)%d;\n",string_palindrom("aba"));
+    printf("(  )%d;\n",string_palindrom("  "));
+    a = 'T';
+    printf("\n9.79, counter, find char = %c;\n%s\n",a,string_3);
+    printf("%d\n",string_char_counter(string_3,a));
+    printf("%d\n",string_char_counter(string_3,' '));
 }
 
 int main()
