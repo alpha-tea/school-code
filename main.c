@@ -77,12 +77,20 @@ int string_char_find(char s[], char c, int direct, int debug)
 
 int string_is_equal(char string_1[], char string_2[])
 {
-    if (string_length(string_1) == 0 || string_length(string_2) == 0)
-        return -1;
+    int help = 0;
+    if (string_length(string_1) == 0 || string_length(string_2) == 0) {
+        printf("String or substring are empty;\n");
+        return -2;
+    }
     for (int i = 0; string_1[i] != '\0' &&  string_2[i] != '\0'; ++i)
-        if (string_1[i] != string_2[i])
-            return 0;
-    return 1;
+        if (string_1[i] == string_2[i])
+            ++help;
+    if (help > 0 && help < string_length(string_1))
+        return help;
+    else if (help == string_length(string_1))
+        return 0;
+    else
+        return -1;
 }
 
 void string_clear(char s[], int len)
@@ -344,6 +352,25 @@ double summary(int n)
     return result;
 }
 
+int string_find_sub(char s1[], char s2[])
+{
+    int help = -1, j = 0, src_1 = string_length(s1), src_2 = string_length(s2);
+    if (src_1 == 0 || src_2 == 0 || src_1 < src_2)
+        return -2;
+    for (int i = 0; i < src_1 && j < src_2; ++i)
+        if (s1[i] == s2[j]) {
+            if (j == 0)
+                help = i;
+            ++j;
+        } else
+            j = 0;
+    if (j == src_2)
+        return help;
+    else
+        return -1;
+}
+
+
 int factorial(int n)
 {
     int result = 1;
@@ -433,6 +460,18 @@ int numerical_generation_int()
     }
     printf("\n");
     return sum;
+}
+
+int string_find_seq(char s[], char c, int start, int length)
+{
+    int src_len = string_length(s), index = 0;
+    if (src_len < start + length) {
+        printf("Sequence length more than string length.\n");
+        return -1;
+    }
+    for (index = start; index < start + length && s[index] == c; ++index)
+        ;
+    return (index == start + length);
 }
 
 void invert_1(const char s[], int len)
@@ -4580,11 +4619,11 @@ void chapter_9()
     for (i = 0; i < 5 && r1 == 0; ++i) {
         printf("Color[%d] = %s; ",i,colors[i]);
         r1 = string_is_equal(colors[i],"Blue");
-        if (r1 == 1)
+        if (r1 == 0)
             printf("Yes! Color Blue founded;\n");
-        else if (r1 == 0)
+        else if (r1 == -1)
             printf("No! Color Blue not founded;\n");
-        else
+        else if (r1 == -2)
             printf("Error, one or both strings are empty;\n");
     }
     char string_3[] = "This is a simple string.";
@@ -4606,6 +4645,25 @@ void chapter_9()
     printf("\n9.79, counter, find char = %c;\n%s\n",a,string_3);
     printf("%d\n",string_char_counter(string_3,a));
     printf("%d\n",string_char_counter(string_3,' '));
+    char string_4[] = "adggfds";
+    printf("\n9.80, search for a sequence of identical letters(%c) in a string;\n%s;\n",'g',string_4);
+    printf("start = %c, length = %c;\n",'2','3');
+    printf("%d;\n\n", string_find_seq(string_4,'g',2,3));
+    char string_5[] = "abcda", string_6[] = "";
+    printf("9.81, string comparison;\n1) %s;\n2) %s;\n", string_5, string_6);
+    int result = string_is_equal(string_5,string_6);
+    if (result == -1)
+        printf("Strings different;\n\n");
+    else if (result == 0)
+        printf("Strings are equal;\n\n");
+    else if (result > 0)
+        printf("Strings partly equal: %d;\n\n",result);
+    char string_7[] = "dsfabc";
+    char string_8[] = "abc";
+    printf("9.86 - 9.87, search for a substring in a string;\n");
+    printf("string = %s;\n",string_7);
+    printf("substring = %s;\n",string_8);
+    printf("%d;\n",string_find_sub(string_7,string_8));
 }
 
 int main()
