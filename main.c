@@ -30,6 +30,22 @@ int string_char_counter(char s[], char c)
 }
 
 
+int string_find_sub(char s1[], char s2[])
+{
+    int j = 0, src_1 = string_length(s1), src_2 = string_length(s2);
+    if (src_1 == 0 || src_2 == 0 || src_1 < src_2)
+        return -2;
+    for (int i = 0; i < src_1; ++i) {
+        if (s1[i] == s2[j])
+            ++j;
+        else
+            j = 0;
+        if (j == src_2)
+            return i - j + 1;
+    }
+    return -1;
+}
+
 int string_palindrom(char c[])
 {
     int i = 0, src_len = string_length(c);
@@ -234,6 +250,22 @@ void ScriptedEngeneer_1()
     printf("Total palindroms[0..255]: %d", cout);
 }
 
+int string_rep_sub(char src[], char find[],char rep[],int all)
+{
+    int j = 0, src_len = string_length(src), find_len = string_length(find), quantity = 0;
+    if (src_len == 0 || find_len == 0 || src_len < find_len || find_len != string_length(rep) ||
+            string_is_equal(find, rep) == 0)
+        return -1;
+    while ((j = string_find_sub(src,find)) >= 0 && all >= 0) {
+        for (int k = 0; k < find_len; ++k)
+            src[j + k] = rep[k];
+        if (all == 0)
+            --all;
+        ++quantity;
+    }
+    return quantity;
+}
+
 int natural_number(int n)
 {
     int k = 0, x = 0, sum = 0, product = 1, sred_arif = 0;
@@ -352,24 +384,45 @@ double summary(int n)
     return result;
 }
 
-int string_find_sub(char s1[], char s2[])
+int string_swap_parts(char src[], int parts, int mode)
 {
-    int help = -1, j = 0, src_1 = string_length(s1), src_2 = string_length(s2);
-    if (src_1 == 0 || src_2 == 0 || src_1 < src_2)
-        return -2;
-    for (int i = 0; i < src_1 && j < src_2; ++i)
-        if (s1[i] == s2[j]) {
-            if (j == 0)
-                help = i;
-            ++j;
-        } else
-            j = 0;
-    if (j == src_2)
-        return help;
-    else
+    int src_len = string_length(src), parts_size = src_len / parts;
+    if (mode < 1 && mode > 2 && (src_len == 0 || src_len % parts != 0)) {
+        printf("String is empty or parts not fit or mode error;\n");
         return -1;
-}
+    }
+    printf("Exchange %d parts in string %s, parts size = %d;\n", parts, src, parts_size);
+    if (mode == 1)
+        printf("Swap parts in string in reverse mode;\n");
+    else
+        printf("Swap parts in string in pairs mode;\n");
+    for (int i = 0; i < parts / 2; ++i) {
+        int left_part, right_part;
+        switch (mode) {
+        case 1:
+            left_part = i * parts_size;
+            right_part = (parts - i - 1) * parts_size;
+            break;
+        case 2:
+            left_part = i * 2 * parts_size;
+            right_part = (i * 2 + 1) * parts_size;
+            break;
+        default:
+            printf("Error in mode return;\n");
+            return -1;
+        }
 
+        printf("Parts move %d:%d, chars move:",left_part, right_part);
+        for (int k = 0; k < parts_size; ++k) {
+            printf("%c:%c ",src[left_part + k], src[right_part + k]);
+            char tmp = src[left_part + k];
+            src[left_part + k] = src[right_part + k];
+            src[right_part + k] = tmp;
+        }
+    }
+    printf("Result = %s;\n",src);
+    return 0;
+}
 
 int factorial(int n)
 {
@@ -4659,11 +4712,33 @@ void chapter_9()
     else if (result > 0)
         printf("Strings partly equal: %d;\n\n",result);
     char string_7[] = "dsfabc";
-    char string_8[] = "abc";
+    char string_8[] = "abc", string_9[] = "gda";;
     printf("9.86 - 9.87, search for a substring in a string;\n");
     printf("string = %s;\n",string_7);
     printf("substring = %s;\n",string_8);
     printf("%d;\n",string_find_sub(string_7,string_8));
+    printf("Replace substring '%s' with substring '%s' in previous string\n",string_8, string_9);
+    result = string_rep_sub(string_7,string_8,string_9,1);
+    printf("quantity = %d, result string = %s;\n\n", result, string_7);
+    char string_10[] = "color green red blue yellow,";
+    printf("9.88, source string '%s', using comma;\n",string_10);
+    int x = string_char_find( string_10, ',', 0, 0);
+    if (x != -1) {
+        int y = string_char_find( &string_10[x + 1], ',', 0, 0);
+        if (y == -1)
+            y = string_length(string_10);
+        else
+            y += x + 1;
+        char string_11[STRING_MAX];
+        string_copy_substr(string_10,string_11, x + 1, y - x - 1);
+        printf("Source string first comma %d, second comma %d, word = %s;\n\n",x,y,string_11);
+    } else
+        printf("No comma found;\n\n");
+    char c1 = 'r', c2 = 'y';
+    if (string_char_find(string_10,c1,0,0) < string_char_find(string_10,c2,0,0))
+        printf("9.89, First char %c, second char %c;\n",c1,c2);
+    else
+        printf("9.89, First char %c, second char %c;\n",c2,c1);
 }
 
 int main()
