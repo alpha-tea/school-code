@@ -560,6 +560,52 @@ double exponentiation(double a, unsigned int n)
     return r;
 }
 
+int number_system_check(int system,int char_in_int[],int len)
+{
+    for (int i = 0; i < len; ++i)
+        if (char_in_int[i] >= system)
+            return 1;
+    return 0;
+}
+
+int num_radix(char src[], char dst[], int from, int to)
+{
+    int src_len = string_length(src), quantity = 0, sum = 0, help = 1;
+    char numbers[] = "0123456789ABCDEF";
+    int mass1[STRING_MAX], mass[src_len];
+    for (int i = 0; src[i] != '\0'; ++i)
+        for (int k = 0; numbers[k] != '\0'; ++k)
+            if (numbers[k] == src[i]) {
+                mass[i] = k;
+                break;
+            }
+    if (number_system_check(from,mass,src_len) == 1 || to == from ||
+            from < 1 || from > 16 || to < 1 || to > 16) {
+        printf("Error in parameters.\n");
+        return -1;
+    }
+    if (from != 10) {
+        printf("base = %d\n",from);
+        for (int j = src_len - 1, g = 0; j >= 0; --j, ++g) {
+            sum += mass[j] * help;
+            help *= from;
+        }
+    }
+    int l = 0;
+    for (l = 0; sum > 0; ++l) {
+        mass1[l] = sum % to;
+        sum /= to;
+    }
+    for (int p = 0; p < 16; ++p)
+        for (int i = l - 1; i >= 0; --i)
+            for (int k = 0; k < 16; ++k)
+                if (k == mass1[l - i - 1]) {
+                    dst[i] = numbers[k];
+                    ++quantity;
+                }
+    return quantity;
+}
+
 int group_values(int n,int g)
 {
     if (n % g != 0) {
@@ -4739,6 +4785,50 @@ void chapter_9()
         printf("9.89, First char %c, second char %c;\n",c1,c2);
     else
         printf("9.89, First char %c, second char %c;\n",c2,c1);
+    printf("\nSpecial task;\n");
+    char* string_special[] = {"123","796","60452","101001","32674","306973","2F4B","1C2AB"};
+    unsigned int special_size = sizeof (string_special) / sizeof (char*);
+    printf("Idx:\tSource:\tBase:\tDecimal:\n");
+    for (unsigned int g = 0; g < special_size; ++g) {
+        printf("%d)\t%s\t",g,string_special[g]);
+        int num_sys = 0, sum = 0, str_len = string_length(string_special[g]);
+        char numbers[] = "0123456789ABCDEF";
+        int str_number[str_len];
+        for (int j = 0; j < str_len; ++j)
+            str_number[j] = -1;
+        help = 1; max = 0;
+        for (i = 0; string_special[g][i] != '\0'; ++i) {
+            for (int k = 0; numbers[k] != '\0' && str_number[str_len - i - 1] == -1; ++k)
+                if (numbers[k] == string_special[g][i]) {
+                    str_number[str_len - i - 1] = k;
+                    if (k > max)
+                        max = k;
+                }
+        }
+        if (max > 0 && max < string_length(numbers)) {
+            num_sys = max + 1;
+            printf("%d\t", num_sys);
+            if (num_sys != 10) {
+                for (int i = 0; i < str_len; ++i) {
+                    if (i == 0)
+                        sum += str_number[i];
+                    else
+                        sum += str_number[i] * help;
+                    help *= num_sys;
+                }
+                printf("%d\n",sum);
+            } else
+                printf("Your number is already in decimal;\n");
+        } else
+            printf("You entered incorrect number!;\n");
+    }
+    printf("\nSpecial task 2;\n");
+    char string_start[] = "1010101111101111";
+    char string_end[STRING_MAX] = "\0";
+    int start = 2, end = 10;
+    printf("from %d to %d;\nSource string = %s;\n",start,end,string_start);
+    result = num_radix(string_start,string_end,start,end);
+    printf("Length = %d;\nNumber = %s\n\n",result,string_end);
 }
 
 int main()
