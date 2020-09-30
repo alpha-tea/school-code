@@ -10,6 +10,19 @@
 #define ARRAY_SIZE 15
 #define SIZE 10
 #define STRING_MAX 256
+#define SIXTEEN 16
+
+void print_binary_byte(unsigned char byte)
+{
+    for (int i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d", (byte >> i) & 0x01);
+}
+
+void print_binary_word(unsigned short int word)
+{
+    print_binary_byte((unsigned char)(word >> CHAR_BIT));
+    print_binary_byte((unsigned char)(word & 0xFF));
+}
 
 int string_length(char s[])
 {
@@ -44,6 +57,39 @@ int string_find_sub(char s1[], char s2[])
             return i - j + 1;
     }
     return -1;
+}
+
+int num_radix(char src[], char dst[], int from, int to)
+{
+    int src_len = string_length(src), quantity = 0, sum = 0, number = 0, help1 = 0;
+    int help = 1;
+    char numbers[] = "0123456789ABCDEF";
+    if (to == from || from < 1 || from > 16 || to < 1 || to > 16) {
+        printf("Error in parameters.\n");
+        return -1;
+    }
+    for (int i = src_len - 1; i >= 0; --i) {
+        for (int k = 0; numbers[k] != '\0' && k <= from; ++k)
+            if (numbers[k] == src[i]) {
+                if (k >= from)
+                    return -1;
+                number = k;
+            }
+        sum += number * help;
+        help *= from;
+    }
+    help = sum;
+    while (help > 0) {
+        help /= to;
+        ++help1;
+    }
+    for (int l = help1 - 1; l >= 0; --l) {
+        number = sum % to;
+        sum /= to;
+        dst[l] = numbers[number];
+        ++quantity;
+    }
+    return quantity;
 }
 
 int string_palindrom(char c[])
@@ -566,44 +612,6 @@ int number_system_check(int system,int char_in_int[],int len)
         if (char_in_int[i] >= system)
             return 1;
     return 0;
-}
-
-int num_radix(char src[], char dst[], int from, int to)
-{
-    int src_len = string_length(src), quantity = 0, sum = 0, help = 1;
-    char numbers[] = "0123456789ABCDEF";
-    int mass1[STRING_MAX], mass[src_len];
-    for (int i = 0; src[i] != '\0'; ++i)
-        for (int k = 0; numbers[k] != '\0'; ++k)
-            if (numbers[k] == src[i]) {
-                mass[i] = k;
-                break;
-            }
-    if (number_system_check(from,mass,src_len) == 1 || to == from ||
-            from < 1 || from > 16 || to < 1 || to > 16) {
-        printf("Error in parameters.\n");
-        return -1;
-    }
-    if (from != 10) {
-        printf("base = %d\n",from);
-        for (int j = src_len - 1, g = 0; j >= 0; --j, ++g) {
-            sum += mass[j] * help;
-            help *= from;
-        }
-    }
-    int l = 0;
-    for (l = 0; sum > 0; ++l) {
-        mass1[l] = sum % to;
-        sum /= to;
-    }
-    for (int p = 0; p < 16; ++p)
-        for (int i = l - 1; i >= 0; --i)
-            for (int k = 0; k < 16; ++k)
-                if (k == mass1[l - i - 1]) {
-                    dst[i] = numbers[k];
-                    ++quantity;
-                }
-    return quantity;
 }
 
 int group_values(int n,int g)
@@ -4829,6 +4837,48 @@ void chapter_9()
     printf("from %d to %d;\nSource string = %s;\n",start,end,string_start);
     result = num_radix(string_start,string_end,start,end);
     printf("Length = %d;\nNumber = %s\n\n",result,string_end);
+    /*
+        1101 = 13
+        1011 = 11
+        ----
+       11000 = 24
+*/
+    unsigned char a1 = 157, a2 = 231;
+    unsigned short int r = 0;
+    printf("Size of char = %d, size of short int = %d;\n",sizeof (unsigned char),sizeof (unsigned short int));
+    printf("Multiply numbers %d and %d, without operators '*' and '+'.\n",a1,a2);
+    printf("a1:\t");
+    print_binary_byte(a1);
+    printf("\na2:\t");
+    print_binary_byte(a2);
+    printf("\n\t--------\n");
+    int mask = 0x01;
+    for (i = 0; i < CHAR_BIT; ++i, mask <<= 1) {
+        unsigned char bit = a2 & mask;
+        unsigned char carry_flag = 0x00;
+        unsigned short int add = 0x0000;
+        int mask_xor = 0x01;
+        for (k = 0; k < CHAR_BIT - i; ++k)
+            printf(" ");
+        if (bit != 0) {
+            add = (unsigned short int)(a1) << i;
+            print_binary_byte(a1);
+        } else
+            print_binary_byte(0);
+        for (j = 0, mask_xor = 0x01; j < SIXTEEN; ++j, mask_xor <<= 1) {
+            unsigned short int bit_a = add & mask_xor, bit_r = r & mask_xor;
+            r = r ^ bit_a ^ (unsigned short int)(carry_flag << j);
+            carry_flag = ((bit_a != 0 && bit_r != 0) || (carry_flag != 0 && (bit_a != 0 || bit_r != 0)));
+        }
+        if (i != 0)
+        printf("\t");
+        printf(":result = ");
+        print_binary_word(r);
+        printf("\n");
+    }
+    printf("-----------------\n");
+    print_binary_word(r);
+    printf("\ndecimal = %d;\n",r);
 }
 
 int main()
