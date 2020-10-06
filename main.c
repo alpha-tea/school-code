@@ -561,6 +561,135 @@ int numerical_generation_int()
     return sum;
 }
 
+#define BYTE_NUMS 256
+
+static unsigned char bits_nums[BYTE_NUMS][CHAR_BIT];
+
+unsigned char set_register(unsigned char* num, unsigned char byte[])
+{
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix)
+        byte[ix] = bits_nums[*num][ix];
+    return 0x01;
+}
+
+unsigned char get_register(unsigned char* num, unsigned char byte[])
+{
+    for (unsigned short ix = 0; ix != BYTE_NUMS; ++ix) {
+        unsigned char zero_flag = 0x01;
+        for (unsigned char iy = 0; iy != CHAR_BIT; ++iy)
+            if (byte[iy] != bits_nums[ix][iy])
+                zero_flag = 0x00;
+        if (zero_flag == 0x01) {
+            *num = (unsigned char)(ix);
+            return 0x01;
+        }
+    }
+    return 0x00;
+}
+unsigned char not_gate(unsigned char bit_1)
+{
+    if (bit_1 == 0x01)
+        return 0x00;
+    else
+        return 0x01;
+}
+
+unsigned char and_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 0x01)
+        if (bit_2 == 0x01)
+            return 0x01;
+    return 0x00;
+}
+
+unsigned char or_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 0x01)
+        return 0x01;
+    else if (bit_2 == 0x01)
+        return 0x01;
+    return 0x00;
+}
+
+unsigned char xor_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == bit_2)
+        return 0x00;
+    return 0x01;
+}
+
+unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 1)
+        if (bit_2 == 1)
+            return 0x00;
+    return 0x01;
+}
+
+unsigned char not_logical (unsigned char dst[])
+{
+    unsigned char zero_flag = 0x00;
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix) {
+        dst[ix] = not_gate(dst[ix]);
+        zero_flag = or_gate(zero_flag,dst[ix]);
+    }
+    return not_gate(zero_flag);
+}
+
+unsigned char and_logical(unsigned char dst[], unsigned char src[]) // возвращает признак нуля.
+{
+    unsigned char zero_flag = 0x00;
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix) {
+        dst[ix] = and_gate(dst[ix],src[ix]);
+        zero_flag = or_gate(zero_flag,dst[ix]);
+    }
+    return not_gate(zero_flag);
+}
+
+unsigned char or_logical(unsigned char dst[], unsigned char src[])
+{
+    unsigned char zero_flag = 0x00;
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix) {
+        dst[ix] = or_gate(dst[ix],src[ix]);
+        zero_flag = or_gate(zero_flag,dst[ix]);
+    }
+    return not_gate(zero_flag);
+}
+
+unsigned char xor_logical(unsigned char dst[], unsigned char src[])
+{
+    unsigned char zero_flag = 0x00;
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix) {
+        dst[ix] = xor_gate(dst[ix],src[ix]);
+        zero_flag = or_gate(zero_flag,dst[ix]);
+    }
+    return not_gate(zero_flag);
+}
+
+unsigned char shift_logical_left(unsigned char dst[], unsigned char counter) // возвращает последний бит, вышедший за пределы.
+{
+    unsigned char carry_flag = 0x00;
+    for (unsigned char ix = 0; ix != counter; ++ix) {
+        carry_flag = dst[CHAR_BIT - 1];
+        for (unsigned char iy = CHAR_BIT - 1; iy != 0; --iy)
+            dst[iy] = dst[iy - 1];
+        dst[0] = 0x00;
+    }
+    return carry_flag;
+}
+
+unsigned char shift_logical_right(unsigned char dst[], unsigned char counter)
+{
+    unsigned char carry_flag = 0x00;
+    for (unsigned char ix = 0; ix != counter; ++ix) {
+        carry_flag = dst[0];
+        for (unsigned char iy = 0; iy != CHAR_BIT - 1; ++iy)
+            dst[iy] = dst[iy + 1];
+        dst[CHAR_BIT - 1] = 0x00;
+    }
+    return carry_flag;
+}
+
 int string_find_seq(char s[], char c, int start, int length)
 {
     int src_len = string_length(s), index = 0;
@@ -4879,6 +5008,97 @@ void chapter_9()
     printf("-----------------\n");
     print_binary_word(r);
     printf("\ndecimal = %d;\n",r);
+    unsigned char number_1 = 0;
+    int number_2 = 15;
+    printf("number_1:= %d;\n",number_1);
+    //add_byte(&number_1,number_2);
+    printf("number_2:= %d;\nTotal = %d\n\n",number_2,number_1);
+    printf("Truth table for logical gates:\n");
+    printf("Bit A:\tBit B:\tNot A:\tAnd:\tOr:\tXor:\tNand:\n");
+    for (i = 0; i <= 1; ++i) {
+        for (j = 0; j <= 1; ++j) {
+            printf("%d\t%d\t",i,j);
+            printf("%d\t",not_gate(i));
+            printf("%d\t",and_gate(i,j));
+            printf("%d\t",or_gate(i,j));
+            printf("%d\t",xor_gate(i,j));
+            printf("%d\t\n",nand_gate(i,j));
+        }
+    }
+    printf("\nMake bits table, size %d bytes;\n",sizeof (bits_nums));
+    for (i = 0; i < BYTE_NUMS; ++i) {
+        unsigned char n = i;
+        for (j = 0; j < CHAR_BIT; ++j) {
+            bits_nums[i][j] = n % 2;
+            n /= 2;
+        }
+        //printf("%d: ",i);
+        //for (k = CHAR_BIT - 1; k >= 0; --k)
+            //printf("%d",bits_nums[i][k]);
+        //printf("\n");
+    }
+    printf("Get and set registers from byte array:\n");
+    unsigned char byte_a[CHAR_BIT], byte_b[CHAR_BIT];
+    /*
+    for (i = 0; i < BYTE_NUMS; ++i) {
+        printf("%3d:",i);
+        unsigned char num = (unsigned char)(i);
+        set_register(&num,byte_a);
+        for (j = CHAR_BIT - 1; j >= 0; --j)
+            printf("%d",byte_a[j]);
+        get_register(&num,byte_a);
+        printf(":%3d\n",num);
+    }
+    */
+    unsigned char bytes[] = {0xAA, 0xFF, 0x00, 0xAA, 0xCB, 0x13};
+    printf("\nDebug logical operators and shifts:\n");
+    printf("Bytes:\t1:\t\t2:\t\t3:\t\tZero and carry flags:\n");
+    for (i = 0; i < 2; ++i) {
+        if (i == 0)
+            printf("Byte A:\t");
+        else
+            printf("Byte B:\t");
+        for (j = 0; j < 3; ++j) {
+            print_binary_byte(bytes[j * 2 + i]);
+            printf("\t");
+        }
+        printf("\n");
+    }
+    char* operators[] = {"NOT","AND","OR","XOR","SHL","SHR"};
+    for (i = 0; i < 6; ++i) {
+        unsigned char carry_flag = 0x00, zero_flag = 0x00, num = 0x00;
+        printf("%s:\t",operators[i]);
+        for (j = 0; j < 3; j++) {
+            set_register(&bytes[j * 2], byte_a);
+            set_register(&bytes[j * 2 + 1], byte_b);
+            switch (i) {
+            case 0:
+                zero_flag = not_logical(byte_a);
+                break;
+            case 1:
+                zero_flag = and_logical(byte_a,byte_b);
+                break;
+            case 2:
+                zero_flag = or_logical(byte_a,byte_b);
+                break;
+            case 3:
+                zero_flag = xor_logical(byte_a,byte_b);
+                break;
+            case 4:
+                carry_flag = shift_logical_left(byte_a,3);
+                break;
+            case 5:
+                carry_flag = shift_logical_right(byte_a,2);
+                break;
+            default:
+                printf("Error! Something went wrong!");
+            }
+            get_register(&num,byte_a);
+            print_binary_byte(num);
+            printf(":[%d:%d]\t",zero_flag,carry_flag);
+        }
+        printf("\n");
+    }
 }
 
 int main()
