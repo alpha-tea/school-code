@@ -565,27 +565,6 @@ int numerical_generation_int()
 
 static unsigned char bits_nums[BYTE_NUMS][CHAR_BIT];
 
-unsigned char set_register(unsigned char* num, unsigned char byte[])
-{
-    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix)
-        byte[ix] = bits_nums[*num][ix];
-    return 0x01;
-}
-
-unsigned char get_register(unsigned char* num, unsigned char byte[])
-{
-    for (unsigned short ix = 0; ix != BYTE_NUMS; ++ix) {
-        unsigned char zero_flag = 0x01;
-        for (unsigned char iy = 0; iy != CHAR_BIT; ++iy)
-            if (byte[iy] != bits_nums[ix][iy])
-                zero_flag = 0x00;
-        if (zero_flag == 0x01) {
-            *num = (unsigned char)(ix);
-            return 0x01;
-        }
-    }
-    return 0x00;
-}
 unsigned char not_gate(unsigned char bit_1)
 {
     if (bit_1 == 0x01)
@@ -624,6 +603,31 @@ unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2)
         if (bit_2 == 1)
             return 0x00;
     return 0x01;
+}
+
+unsigned char set_register(unsigned char* num, unsigned char byte[])
+{
+    for (unsigned char ix = 0; ix != CHAR_BIT; ++ix)
+        byte[ix] = bits_nums[*num][ix];
+    return 0x01;
+}
+
+unsigned char get_register(unsigned char* num, unsigned char byte[])
+{
+    for (unsigned short ix = 0; ix != BYTE_NUMS; ++ix) {
+        unsigned char zero_flag = 0x01;
+        for (unsigned char iy = 0; iy != CHAR_BIT; ++iy) {
+            unsigned char bit_r = not_gate(xor_gate(byte[iy],bits_nums[ix][iy]));
+            zero_flag = and_gate(zero_flag,bit_r);
+            //if (byte[iy] != bits_nums[ix][iy])
+            //  zero_flag = 0x00;
+        }
+        if (zero_flag == 0x01) {
+            *num = (unsigned char)(ix);
+            return 0x01;
+        }
+    }
+    return 0x00;
 }
 
 unsigned char not_logical (unsigned char dst[])
@@ -700,6 +704,20 @@ int string_find_seq(char s[], char c, int start, int length)
     for (index = start; index < start + length && s[index] == c; ++index)
         ;
     return (index == start + length);
+}
+
+unsigned char add_byte(unsigned char dst[], unsigned char src[]) // возвращает признак нуля.
+{
+    int i, help = 0, help2 = 0;
+    for (i = 0; i < CHAR_BIT; ++i) {
+        help2 = dst[i];
+        dst[i] = xor_gate(xor_gate(dst[i],src[i]),help);
+        if (and_gate(help2,src[i]) == 1)
+            help = 1;
+        else if (xor_gate(help2,src[i]) != 1)
+            help = 0;
+    }
+    return help;
 }
 
 void invert_1(const char s[], int len)
@@ -5065,8 +5083,8 @@ void chapter_9()
         printf("\n");
     }
     char* operators[] = {"NOT","AND","OR","XOR","SHL","SHR"};
+    unsigned char carry_flag = 0x00, zero_flag = 0x00, num = 0x00;
     for (i = 0; i < 6; ++i) {
-        unsigned char carry_flag = 0x00, zero_flag = 0x00, num = 0x00;
         printf("%s:\t",operators[i]);
         for (j = 0; j < 3; j++) {
             set_register(&bytes[j * 2], byte_a);
@@ -5099,6 +5117,73 @@ void chapter_9()
         }
         printf("\n");
     }
+    printf("\nTesting byte adder.\n");
+    printf("Bytes:\t1:\t\t2:\t\t3:\t\tZero and carry flags:\n");
+    for (i = 0; i < 2; ++i) {
+        if (i == 0)
+            printf("Byte A:\t");
+        else
+            printf("Byte B:\t");
+        for (j = 0; j < 3; ++j) {
+            print_binary_byte(bytes[j * 2 + i]);
+            printf("(%d)\t",bytes[j * 2 + i]);
+        }
+        printf("\n");
+    }
+    printf("Result:\t");
+    for (i = 0; i < 3; ++i) {
+        set_register(&bytes[i * 2],byte_a);
+        set_register(&bytes[i * 2 + 1],byte_b);
+        carry_flag = add_byte(byte_a,byte_b);
+        get_register(&num,byte_a);
+        print_binary_byte(num);
+        printf(":%d(%d)\t",carry_flag,num);
+    }
+    /*
+    set_register(&number,mass_1);
+    set_register(&number2,mass_2);
+    for(i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d",mass_1[i]);
+    printf(" - %d\n",number);
+    for(i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d",mass_2[i]);
+    printf(" - %d\n",number2);
+    add_byte(mass_1,mass_2);
+    for(i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d",mass_1[i]);
+    get_register(&number,mass_1);
+    printf(" - %d\n",number);
+    */
+    printf("\nEnd of Special task.");
+    char string[] = "This is text";
+    printf("\n\n9.41 - 9.42, given a string, print it in a column and in reverse order;\n");
+    printf("string = %s;\n",string);
+    help = string_length(string);
+    printf("reverse string = ");
+    for (i = help - 1; i >= 0; --i)
+        printf("%c",string[i]);
+    printf("\nstring to column:\n");
+    for (i = 0; i < help; ++i)
+        printf("%c\n",string[i]);
+    printf("\n9.43,The word was given. Get the word formed by the odd letters of the word.\n");
+    printf("string = %s;\n",string);
+    printf("Odd letters = ");
+    for(i = 0; i < help; ++i)
+        if (i % 2 != 0)
+            printf("%c[%d] ",string[i],i);
+    char letter_1 = 'A';
+    int n = 5;
+    char string2[STRING_MAX];
+    printf("\n\n9.47 - 9.49, add a character and their number to a word, set parametrically;\n");
+    for (i = 0; i < n; ++i)
+        string2[i] = letter_1;
+    for (j = 0; j < help; ++i, ++j)
+        string2[i] = string[j];
+    for (j = 0; j < n; ++i, ++j)
+        string2[i] = letter_1;
+    string2[i] = '\0';
+    printf("string_result = %s;\n\n",string2);
+    printf("9.50\n");
 }
 
 int main()
