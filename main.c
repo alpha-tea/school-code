@@ -5182,8 +5182,75 @@ void chapter_9()
     for (j = 0; j < n; ++i, ++j)
         string2[i] = letter_1;
     string2[i] = '\0';
+    int b = 0;
     printf("string_result = %s;\n\n",string2);
-    printf("9.50\n");
+    printf("9.50, Replacing characters, a = %d, b = %d, n = %d;\n",a,b,n);
+    char mass_1[] = "0123456789";
+    char mass_2[] = "0123456789";
+    printf("word_1 = %s;\n",mass_1);
+    printf("Was:\nword_2 = %s;\n",mass_2);
+    int help_1 = string_length(mass_1);
+    int help_2 = string_length(mass_2);
+    if (b <= help_2 - n && a + b <= help_1 && help_1 > 0 && help_2 > 0)
+        for (i = a; i < a + b; ++i, ++n)
+            mass_2[n] = mass_1[i];
+    else
+        printf("error: length does not meet requirements;\n\n");
+    printf("Became:\nword_2 = %s;\n\n",mass_2);
+    printf("9.51 - 9.65, searching letters\n");
+    char array[] = "ooorammggg"; //Pneumonoultramicroscopicsilicovolcanoconiosis
+    char search_letters[] = "oma";
+    int len_array = string_length(array);
+    int len_letters = string_length(search_letters);
+    int counters[len_letters], sum = 0, quantity = 0;
+    n = 7; help = 0; a = 2; b = 0;
+    for (i = 0; i < len_letters; ++i)
+        counters[i] = 0;
+    printf("string = %s;\n\n\t",array);
+    for (i = 0; i < len_letters; ++i)
+        printf("%c\t",search_letters[i]);
+    printf("N(%d)\tSeq(%d).\n",n,a);
+    for (i = 0; i < len_array; ++i) {
+        printf("%c(%d):\t",array[i],i);
+        for (j = 0; j < len_letters; ++j)
+            if (array[i] == search_letters[j]) {
+                printf("+\t");
+                counters[j]++;
+                sum++;
+            } else
+                printf("-\t");
+        if (i % n == 0 )
+            printf("YES\t");
+        else
+            printf("NO\t");
+        for (k = 0; k < a && k + i < len_array && array[i] == array [i + k]; ++k)
+            ;
+        if (k == a) {
+            printf("+");
+            ++quantity;
+        }
+        printf("\n");
+    }
+    printf("Total:  ");
+    for (j = 0; j < len_letters; ++j)
+        printf("%d(%d/%d)\t",counters[j],counters[j],sum);
+    printf("\nQuantity = %d;\n\n",quantity);
+    int is_word = 0;
+    char line[] = "This is at\t\tsimple line that\ndoes\nnot carry a semantic\t\n\tmeaning";
+    printf("Source string = %s;\n",line);
+    printf("Word counter in line and word first char and index: ");
+    quantity = 0;
+    for (i = 0; line[i] != '\0'; ++i) {
+        if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            if (!is_word) {
+                ++quantity;
+                is_word = 1;
+                printf("%c[%d] ",line[i],i);
+            }
+        } else
+            is_word = 0;
+    }
+    printf("words = %d;\n",quantity);
 }
 
 int main()
