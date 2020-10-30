@@ -5018,7 +5018,7 @@ void chapter_9()
             carry_flag = ((bit_a != 0 && bit_r != 0) || (carry_flag != 0 && (bit_a != 0 || bit_r != 0)));
         }
         if (i != 0)
-        printf("\t");
+            printf("\t");
         printf(":result = ");
         print_binary_word(r);
         printf("\n");
@@ -5052,7 +5052,7 @@ void chapter_9()
         }
         //printf("%d: ",i);
         //for (k = CHAR_BIT - 1; k >= 0; --k)
-            //printf("%d",bits_nums[i][k]);
+        //printf("%d",bits_nums[i][k]);
         //printf("\n");
     }
     printf("Get and set registers from byte array:\n");
@@ -5235,22 +5235,91 @@ void chapter_9()
     for (j = 0; j < len_letters; ++j)
         printf("%d(%d/%d)\t",counters[j],counters[j],sum);
     printf("\nQuantity = %d;\n\n",quantity);
-    int is_word = 0;
-    char line[] = "This is at\t\tsimple line that\ndoes\nnot carry a semantic\t\n\tmeaning";
-    printf("Source string = %s;\n",line);
-    printf("Word counter in line and word first char and index: ");
+    n = 18; // ограничитель ширины строки.
+    printf("9.66-9.74, line break by word, length = %d;\n",n);
+    int is_word = 0, counter = 0, tab_size = 8; // флаг слова и счётчик столбцов.
+    char line[] = "\ta \tbc d efg \tggf   w\n";
+    //char line[] = "\tab   bcd\te 0123\n4567\ta bcdf"; //  several different models or storage classes for storing data in memory. To    understand the options it's helpful to go over a few concepts and terms first.
+    printf("Source string = '%s';\n",line);
+    printf("0123456789A:\n");
     quantity = 0;
-    for (i = 0; line[i] != '\0'; ++i) {
+    help = string_length(line);
+    for (i = 0; i <= help; ++i) {
+        if (line[i] == ' ' || line[i] == '\t' || line[i] == '\n' || line[i] == '\0') {
+            if (counter <= n) {
+                while (is_word < i)
+                    printf("%c",line[is_word++]);
+            } else if (counter > n && i - is_word <= n) {
+                printf(":\n");
+                counter -= n;
+                while (is_word < i)
+                    printf("%c",line[is_word++]);
+            } else {
+                counter -= (i - is_word);
+                while (is_word < i) {
+                    if (counter == n) {
+                        printf("+\n");
+                        counter = 0;
+                    }
+                    printf("%c",line[is_word++]);
+                    counter++;
+                }
+            }
+            if (line[i] == '\t') {
+                counter += tab_size - (counter % tab_size);
+                printf("!%d", counter);
+            } else if (line[i] == '\n') {
+                printf("*%d",counter);
+                counter = 0;
+            } else if (line[i] == ' ')
+                counter++;
+            if (counter > n) {
+                printf("#%d\n",counter);
+                counter = 1;    // Если что это учёт последнего символа!
+            }
+            if (line[i] != '\0') {
+                printf("%c",line[is_word]);
+                if (line[is_word] == '\t' && n <= tab_size){
+                    printf("@\n");
+                    counter = 0;
+                }
+                is_word++;
+            } else {
+                printf("[EOF]\n");
+            }
+        } else
+            counter++;
+    }
+    /*
+    for (i = 0; line[i] != '\0'; ++i, ++counter) {
         if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            if (is_word == 0) {
+                for (j = 0; line[j + i] != ' ' && line[j + i] != '\t' &&
+                     line[j + i] != '\n' && line[j + i] != '\0'; ++j)
+                    ;
+                if (j + counter > n) {
+                    printf("\n");
+                    counter = 0;
+                }
+            }
             if (!is_word) {
                 ++quantity;
                 is_word = 1;
-                printf("%c[%d] ",line[i],i);
             }
-        } else
+        } else {
             is_word = 0;
+            if (line[i] == '\t') { // поколдовать с табуляцией.
+                counter += tab_size - (counter % tab_size);
+                if (counter > n) {
+                    printf("\n");
+                    counter = 0;
+                }
+            }
+        }
+        printf("%c",line[i]);
     }
-    printf("words = %d;\n",quantity);
+    printf("\nWords = %d;\n\n",quantity);
+    */
 }
 
 int main()
