@@ -5235,15 +5235,46 @@ void chapter_9()
     for (j = 0; j < len_letters; ++j)
         printf("%d(%d/%d)\t",counters[j],counters[j],sum);
     printf("\nQuantity = %d;\n\n",quantity);
-    n = 18; // ограничитель ширины строки.
+    n = 10; // ограничитель ширины строки.
     printf("9.66-9.74, line break by word, length = %d;\n",n);
     int is_word = 0, counter = 0, tab_size = 8; // флаг слова и счётчик столбцов.
-    char line[] = "\ta \tbc d efg \tggf   w\n";
-    //char line[] = "\tab   bcd\te 0123\n4567\ta bcdf"; //  several different models or storage classes for storing data in memory. To    understand the options it's helpful to go over a few concepts and terms first.
+    //char line[] = "\ta \tbc d efg \tggf   w\n";
+    char line[] = "\ta \tbc d efg \tggf   w\tr"; //  several different models or storage classes for storing data in memory. To    understand the options it's helpful to go over a few concepts and terms first.
     printf("Source string = '%s';\n",line);
     printf("0123456789A:\n");
     quantity = 0;
     help = string_length(line);
+    for (i = 0; line[i] != '\0'; ++i, ++counter) {
+        if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            if (is_word == 0) {
+                for (j = 0; line[j + i] != ' ' && line[j + i] != '\t' &&
+                     line[j + i] != '\n' && line[j + i] != '\0'; ++j)
+                    ;
+                if (j + counter > n) {
+                    printf("\n");
+                    counter = 0;
+                }
+            }
+            if (!is_word) {
+                ++quantity;
+                is_word = 1;
+            }
+        } else {
+            is_word = 0;
+            if (line[i] == '\t') {
+                help = counter + tab_size - (counter % tab_size);
+                if (help > n && i != 0) {
+                    printf("\n");
+                    counter = tab_size - 1;
+                } else
+                    counter = help - 1;
+            }
+            if (line[i] == '\n')
+                counter = 0;
+        }
+        printf("%c",line[i]);
+    }
+    /*
     for (i = 0; i <= help; ++i) {
         if (line[i] == ' ' || line[i] == '\t' || line[i] == '\n' || line[i] == '\0') {
             if (counter <= n) {
@@ -5275,7 +5306,10 @@ void chapter_9()
                 counter++;
             if (counter > n) {
                 printf("#%d\n",counter);
-                counter = 1;    // Если что это учёт последнего символа!
+                if (line[is_word] == '\t')
+                    counter = tab_size;
+                else
+                    counter = 1;    // Если что это учёт последнего символа!
             }
             if (line[i] != '\0') {
                 printf("%c",line[is_word]);
@@ -5290,36 +5324,117 @@ void chapter_9()
         } else
             counter++;
     }
-    /*
-    for (i = 0; line[i] != '\0'; ++i, ++counter) {
-        if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-            if (is_word == 0) {
-                for (j = 0; line[j + i] != ' ' && line[j + i] != '\t' &&
-                     line[j + i] != '\n' && line[j + i] != '\0'; ++j)
-                    ;
-                if (j + counter > n) {
-                    printf("\n");
-                    counter = 0;
-                }
-            }
-            if (!is_word) {
-                ++quantity;
-                is_word = 1;
-            }
-        } else {
-            is_word = 0;
-            if (line[i] == '\t') { // поколдовать с табуляцией.
-                counter += tab_size - (counter % tab_size);
-                if (counter > n) {
-                    printf("\n");
-                    counter = 0;
-                }
-            }
-        }
-        printf("%c",line[i]);
-    }
-    printf("\nWords = %d;\n\n",quantity);
     */
+    printf("\nWords = %d;\n\n",quantity);
+    char pairs_string[] = "txel";
+    char line_1[] = "ee hta tet tt";
+    printf("9.90-9.91, replace all characters specified in pairs;\n");
+    printf("Pairs of replace: '%s'\n",pairs_string);
+    printf("was = '%s'\n",line_1);
+    if (string_length(pairs_string) % 2 == 0) {
+        for (j = 0; pairs_string[j] != '\0'; j += 2)
+            while ((b = string_char_find(line_1,pairs_string[j],0,0)) != -1)
+                line_1[b] = pairs_string[j + 1];
+        printf("became = '%s'\n\n",line_1);
+    } else
+        printf("Array of replace table not even!\n\n");
+    char line_3[] = "Text po dlinee, long text.";
+    b = string_length(line_3);
+    char interval[] = {'a',3,'c',2,'f',5,'\0'};
+    printf("9.92 - 9.93, replace chars on intervals in string\n");
+    printf("source string = '%s', length = %d\n",line_3,b);
+    printf("chars and intervals: ");
+    for (i = 0; interval[i] != '\0'; i += 2)
+        printf("%c:%d ",interval[i], interval[i + 1]);
+    printf("\n");
+    for (i = 0; interval[i] != '\0'; i += 2)
+        for (j = 0; j < b; j += interval[i + 1])
+            line_3[j] = interval[i];
+    printf("result string = '%s';\n\n",line_3);
+    printf("9.94-9.99, substring replacement;\n");
+    char line_2[] = "is This is simple textThis";
+    char* words_1[] = {"This","Blue","text","word","is","IS"};
+    int value_size = (sizeof (words_1) / sizeof (char*)) / 2;
+    printf("sourc string = '%s', words to replace: %d\n",line_2,value_size);
+    for (i = 0, is_word = 1; i < value_size; ++i) {
+        if (string_length(words_1[i * 2]) != string_length(words_1[i * 2 + 1]))
+            is_word = 0;
+        printf("'%s':'%s' ",words_1[i * 2],words_1[i * 2 + 1]);
+    }
+    if (is_word == 1) {
+        for (i = 0; i < value_size; ++i) {
+            help = string_length(words_1[i * 2]);
+            while((b = string_find_sub(line_2,words_1[i * 2])) != -1)
+                for (j = 0; j < help; ++j)
+                    line_2[j + b] = words_1[i * 2 + 1][j];
+        }
+        printf("\nresult string = '%s'\n\n",line_2);
+    } else
+        printf("Error: pairs is not match;\n\n");
+    char src[] = "123456";
+    int table[] = {0,5,1,4,2,3};
+    b = (sizeof (table) / sizeof (int)) / 2;
+    printf("9.100 - 9.102, swap characters in a string, count = %d;\n",b);
+    printf("replace table: ");
+    for (i = 0; i < b * 2; ++i)
+        printf("%d ",table[i]);
+    printf("\nsource string = '%s'\n",src);
+    n = string_xchg_chars(src,table,b);
+    printf("result string = '%s'\nresult = %d;\n\n",src,n);
+    printf("9.103-107, replace chars in text with generators.\n");
+    n = 4; // generators
+    int b1 = 2, b2 = 10;
+    srand(time(NULL));
+    char src_1[STRING_MAX];
+    int tab_rep[STRING_MAX * 2];
+    for (k = 0; k < n; ++k) {
+        for (j = 0; j < 15; ++j)
+            src_1[j] = 'a' + rand() % 26;
+        src_1[15] = '\0';
+        switch (k) {
+        case 0:
+            printf("gen = %d;\nexchange chars in pairs\n",k);
+            for (i = 0; i < 15; ++i)
+                tab_rep[i] = i;
+            counter = 7;
+            break;
+        case 1:
+            printf("gen = %d;\nreverse string\n",k);
+            for (i = 0, j = 14; i < j; ++i, --j) {
+                tab_rep[i * 2] = i;
+                tab_rep[i * 2 + 1] = j;
+            }
+            counter = 7;
+            break;
+        case 2:
+            printf("gen = %d;\nreverse string from %d to %d\n",k,b1,b2);
+            int l = 0;
+            for (i = b1 + 1, j = b2 - 1; i < j; ++i, --j, l++) {
+                tab_rep[l * 2] = i;
+                tab_rep[l * 2 + 1] = j;
+            }
+            counter = l;
+            break;
+        case 3:
+            printf("gen = %d;\nexchange first 'a' and last 'o'\n",k);
+            tab_rep[0] = string_char_find(src_1,'a',0,0);
+            tab_rep[1] = string_char_find(src_1,'o',1,0);
+            counter = 1;
+            break;
+        default:
+            printf("gen out of range;\n");
+        }
+        printf("source string = '%s'\n",src_1);
+        printf("table replace: ");
+        for (i = 0; i < counter; ++i)
+            printf("%d:%d ",tab_rep[i * 2],tab_rep[i * 2 + 1]);
+        printf("\n");
+        b = string_xchg_chars(src_1,tab_rep,counter);
+        if (b == 0)
+            printf("result string = '%s'\n",src_1);
+        else
+            printf("error: in generator.\n");
+    }
 }
 
 int main()
