@@ -1139,6 +1139,33 @@ double kalk (int c1, int c2)
     return c3;
 }
 
+int string_delete(char src[], int start, int length)
+{
+    int help = string_length(src), i;
+    if (start < 0 || start + length > help || length <= 0)
+        return -1;
+    for (i = start; i + length < help; ++i)
+        src[i] = src[i + length];
+    src[i] = '\0';
+    return 0;
+}
+
+int string_xchg_chars(char src[], int table[], int count)
+{
+    char help1 = string_length(src), help;
+    if (count == 0 || help1 == 0)
+        return -2;
+    for (int i = 0; i < count * 2; i += 2) {
+        if (table[i] < help1 && table[i] >= 0 && table[i + 1] < help1 && table[i + 1] >= 0) {
+            help = src[table[i]];
+            src[table[i]] = src[table[i + 1]];
+            src[table[i + 1]] = help;
+        } else
+            return -1;
+    }
+    return 0;
+}
+
 int chars_counter(char s[],  char c)
 {
     int index = 0, counter = 0;
@@ -1157,6 +1184,18 @@ int length(char s[])
         ++len;
     }
     return len;
+}
+
+int string_insert( char dst[], char ins[], int start, int limit)
+{
+    int ins_len = string_length(ins), dst_len = string_length(dst), i;
+    if (ins_len == 0 || ins_len + start >= limit)
+        return -1;
+    for (i = ins_len + dst_len; i >= start + ins_len; --i)
+        dst[i] = dst[i - ins_len];
+    for (int j = start, i = 0; j < ins_len + start; ++j, ++i)
+        dst[j] = ins[i];
+    return 0;
 }
 
 void invert(char s[])
@@ -5434,6 +5473,27 @@ void chapter_9()
             printf("result string = '%s'\n",src_1);
         else
             printf("error: in generator.\n");
+        printf("9.114, removing duplicate letters;\n");
+        int length = 40; quantity = 0;
+        char src_4[STRING_MAX];
+        for (j = 0; j < length; ++j)
+            src_4[j] = 'a' + rand() % 26;
+        src_4[j] = '\0';
+        printf("source string: '%s' %d\n",src_4, string_length(src_4));
+        printf("indexes to delete: ");
+        for (i = 0; i < length - 1; ++i)
+            while ((k = string_char_find(&src_4[i + 1],src_4[i],0,0)) != -1) {
+                string_delete(&src_4[i + 1],k,1);
+                ++quantity;
+                printf("%d ",i + 1 + k);
+            }
+        printf("\nstring: '%s' %d\nquantity = %d;\n\n",src_4,string_length(src_4),quantity);
+        char src_5[STRING_MAX] = "acbdefgh!";
+        char word_ins[] = "";
+        start = 9;
+        printf("string to insert: '%s', '%s', %d\n",src_5,word_ins,start);
+        string_insert(src_5,word_ins,start,STRING_MAX);
+        printf("result string: '%s';",src_5);
     }
 }
 
