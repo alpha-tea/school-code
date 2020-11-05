@@ -1198,6 +1198,30 @@ int string_insert( char dst[], char ins[], int start, int limit)
     return 0;
 }
 
+void string_rrc(char src[], int counter)
+{
+    int help = string_length(src), j;
+    char help_2;
+    for (int i = 0; i < counter; ++i) {
+        help_2 = src[help - 1];
+        for (j = help - 1; j > 0; --j)
+            src[j] = src[j - 1];
+        src[j] = help_2;
+    }
+}
+
+void string_rlc(char src[], int counter)
+{
+    int help = string_length(src),j;
+    char help_2;
+    for (int i = 0; i < counter; ++i) {
+        help_2 = src[0];
+        for (j = 0; j < help - 1; ++j)
+            src[j] = src[j + 1];
+        src[help - 1] = help_2;
+    }
+}
+
 void invert(char s[])
 {
     int len = length(s);
@@ -5494,6 +5518,80 @@ void chapter_9()
         printf("string to insert: '%s', '%s', %d\n",src_5,word_ins,start);
         string_insert(src_5,word_ins,start,STRING_MAX);
         printf("result string: '%s';",src_5);
+        printf("9.124-9.137, error correction;\n");
+        char src_6[] = "JreeH black reT Grobn GRue oPiHE";
+        char* vocabulary[] = {"black","brown","olive","green","red","blue"};
+        int voc_size = sizeof (vocabulary) / sizeof (char*);
+        double correct = 0.5;
+        quantity = 0;
+        is_word = 0;
+        len_array = string_length(src_6);
+        printf("source string: '%s', correct = %.2f;\nvocabulary:",src_6,correct);
+        for (i = 0; i < voc_size; ++i)
+            printf(" %s",vocabulary[i]);
+        printf(";\nIndex:\tWord:\tEqual(%%):\tFound:\tCorrected:\n");
+        for (i = 0; i < len_array; ++i) {
+            if (src_6[i] != ' ' && is_word == 0) {
+                char word[STRING_MAX];
+                int end = i, voc_pos = -1;
+                while (src_6[end] != ' ' && src_6[end] != '\0')
+                    ++end;
+                double actual = 0.0, current = 0.0;
+                string_copy_substr(src_6, word, i, end - i);
+                for (j = 0; j < voc_size; ++j) {
+                    quantity = 0;
+                    for (k = 0; vocabulary[j][k] != '\0'; ++k)
+                        if (vocabulary[j][k] == word[k])
+                            ++quantity;
+                    current = (double)(quantity) / (double)(end - i);
+                    if (current > actual) {
+                        voc_pos = j;
+                        actual = current;
+                    }
+                }
+                printf("%d:\t\t%s:\t%.2f:\t",i,word,actual);
+                if (actual < 1 && actual >= correct) {
+                    printf("%s:\treplaced\n",vocabulary[voc_pos]);
+                    string_rep_sub(src_6, word, vocabulary[voc_pos],1);
+                } else if (actual < current)
+                    printf("Not found.\n");
+                else
+                    printf("Word correct.\n");
+                is_word = 1;
+            }
+            if (src_6[i] == ' ')
+                is_word = 0;
+        }
+        printf("result string: '%s';\n\n",src_6);
+        counter = 10;
+        n = 1;
+        printf("9.124-9.137, line shift, counter = %d, type = %d;\n",counter,n);
+        char src_7[] = "Hello";
+        printf("source string = '%s'\n",src_7);
+        if (n == 0)
+            string_rrc(src_7,counter);
+        else
+            string_rlc(src_7,counter);
+        printf("result string: '%s';\n\n",src_7);
+        printf("9.138-9.141, string to digits;\n");
+        quantity = 0;
+        int max_digit = 0;
+        sum = 0;
+        char src_8[] = "5A3B1C02z";
+        printf("source string: '%s';\n",src_8);
+        printf("Char:\tIsDigit:\tDigit:\n");
+        for (i = 0; src_8[i] != '\0'; ++i) { //48 57
+            if (src_8[i] >= '0' && src_8[i] <= '9') {
+                int digit = src_8[i] - '0';
+                ++quantity;
+                sum += digit;
+                if (digit > max_digit)
+                    max_digit = digit;
+                printf("%c:\tYES:\t\t%d:\n",src_8[i],digit);
+            } else
+                printf("%c:\tNO:\t\t-\n",src_8[i]);
+        }
+        printf("Sum = %d;\nQuantity = %d;\nMax digit = %d;\n\n",sum,quantity,max_digit);
     }
 }
 
