@@ -670,6 +670,39 @@ unsigned char xor_logical(unsigned char dst[], unsigned char src[])
     return not_gate(zero_flag);
 }
 
+int string_to_int(char src[], int base)
+{
+    const int base_min = 2, base_max = 16;
+    char digits[] = "0123456789ABCDEF";
+    if (base < base_min || base > base_max)
+        return 0;
+    int idx = 0, number = 0, sign = 0; // 0 - пока не определили знак.
+    while (!sign && src[idx] != '\0') {
+        if (src[idx] == '-')
+            sign = -1;
+        if (src[idx] == '+')
+            sign = 1;
+        int idx_2 = 0;
+        while (src[idx] != digits[idx_2] && idx_2 < base) // Здесь можно использовать if для анализа.
+            ++idx_2;
+        if (idx_2 != base)
+            sign = 1;
+        else
+            ++idx;
+    }
+    //printf("Sign = %d\nIdx = %d\n",sign,idx);
+    while (src[idx] != '\0') {
+        int j = 0; // Здесь тоже можно через if.
+        while (src[idx] != digits[j] && j < base)
+            ++j;
+        if (src[idx] == digits[j] && j != base)
+            number = number * base + j;
+        //printf("Src = %c, idx = %d, number = %d\n",src[idx],idx,number);
+        ++idx;
+    }
+    return sign * number;
+}
+
 unsigned char shift_logical_left(unsigned char dst[], unsigned char counter) // возвращает последний бит, вышедший за пределы.
 {
     unsigned char carry_flag = 0x00;
@@ -5592,6 +5625,22 @@ void chapter_9()
                 printf("%c:\tNO:\t\t-\n",src_8[i]);
         }
         printf("Sum = %d;\nQuantity = %d;\nMax digit = %d;\n\n",sum,quantity,max_digit);
+    }
+    char* nums_ints[] = {"bin: +10210", "bin: 5-100101017",
+                         "oct: R0274AY", "oct: 89-81",
+                         "dec: AB9-8F", "3dec: 40+1FA5",
+                         "hex: 07F35H-S", "-hex: F"};
+    int nums_base[] = {2,2,8,8,10,10,16,16};
+    int nums_total = sizeof (nums_base) / sizeof (int);
+    printf("9.142 - 9.144, convert strings to integers and reverse, nums = %d;\n",nums_total);
+    printf("String:\t\tLength:\tBase:\tNumber:\tString[Length]:\n");
+    for (i = 0; i < nums_total; ++i) {
+        int str_ln = string_length(nums_ints[i]);
+        result = string_to_int(nums_ints[i], nums_base[i]);
+        printf("'%s'\t",nums_ints[i]);
+        if (str_ln < tab_size)
+            printf("\t");
+        printf("%d\t%d\t%d\n",str_ln, nums_base[i],result);
     }
 }
 
