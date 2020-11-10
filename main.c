@@ -715,6 +715,16 @@ unsigned char shift_logical_left(unsigned char dst[], unsigned char counter) // 
     return carry_flag;
 }
 
+void string_reverse(char string[])
+{
+    int size = string_length(string);
+    for (int j = 0; j < size / 2; ++j) {
+        char c = string[j];
+        string[j] = string[size - 1 - j];
+        string[size - 1 - j] = c;
+    }
+}
+
 unsigned char shift_logical_right(unsigned char dst[], unsigned char counter)
 {
     unsigned char carry_flag = 0x00;
@@ -737,6 +747,34 @@ int string_find_seq(char s[], char c, int start, int length)
     for (index = start; index < start + length && s[index] == c; ++index)
         ;
     return (index == start + length);
+}
+
+int int_to_string(char dst[], int num, int base)
+{
+    const int base_min = 2, base_max = 16;
+    char digits[] = "0123456789ABCDEF";
+    int i = 0;
+    if (base < base_min || base > base_max)
+        return -1;
+    if (num < 0) {
+        dst[i++] = '-';
+        num *= -1;
+    }
+    for (;num > 0; ++i) {
+        dst[i] = digits[num % base];
+        num /= base;
+    }
+    dst[i] = '\0';
+    if (dst[0] == '-')
+        string_reverse(&dst[1]);
+    else
+        string_reverse(dst);
+    return 0;
+}
+
+char uppercase(char c)
+{
+    return (c >= 'a' && c <= 'z') ? c -= ('a' - 'A') : c;
 }
 
 unsigned char add_byte(unsigned char dst[], unsigned char src[]) // возвращает признак нуля.
@@ -5635,13 +5673,48 @@ void chapter_9()
     printf("9.142 - 9.144, convert strings to integers and reverse, nums = %d;\n",nums_total);
     printf("String:\t\tLength:\tBase:\tNumber:\tString[Length]:\n");
     for (i = 0; i < nums_total; ++i) {
+        char num_str[STRING_MAX];
         int str_ln = string_length(nums_ints[i]);
         result = string_to_int(nums_ints[i], nums_base[i]);
         printf("'%s'\t",nums_ints[i]);
-        if (str_ln < tab_size)
+        if (str_ln < tab_size - 2) // не забыть учесть кавычки.
             printf("\t");
-        printf("%d\t%d\t%d\n",str_ln, nums_base[i],result);
+        printf("%d\t%d\t%d\t",str_ln, nums_base[i],result);
+        int_to_string(num_str,result,nums_base[i]);
+        printf("'%s'[%d]\n",num_str,string_length(num_str));
     }
+    char src_11[] = "1-2+3+15-7+309-216";
+    printf("\n\n9.147, calculate string %s;\n",src_11);
+    sum = 0;
+    printf("integers from text: ");
+    for (i = 0; src_11[i] != '\0'; i = j) {
+        char num[STRING_MAX];
+        j = i + 1;
+        while (src_11[j] != '+' && src_11[j] != '-' && src_11[j] != '\0')
+            ++j;
+        string_copy_substr(src_11, num, i, j - i);
+        k = string_to_int(num,10);
+        sum += k;
+        printf("%d[%d] ",k, sum);
+    }
+    printf("\nsum = %d;\n\n",sum);
+    char text[] = "qqqqqqqqqqwertyppasdfghjjjkkllzxcvbmmmnn";
+    printf("9.152-9.153, find longest seq of char in text: '%s'\n",text);
+    quantity = 1;
+    max = 0;
+    j = -1;
+    for (i = 0; text[i] != '\0'; ++i) {
+        while (text[i] == text[i + 1]) {
+            quantity++;
+            i++;
+        }
+        if (max < quantity) {
+            j = i;
+            max = quantity;
+        }
+        quantity = 1;
+    }
+    printf("max seq = %d, char = '%c'\n\n",max,text[j]);
 }
 
 int main()
