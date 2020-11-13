@@ -5715,6 +5715,42 @@ void chapter_9()
         quantity = 1;
     }
     printf("max seq = %d, char = '%c'\n\n",max,text[j]);
+    char src_12[] = "ammferetftu";
+    quantity = 0;
+    printf("9.154-9.155, search for unique letters;\nsource string = '%s'\nunique: ",src_12);
+    for (i = 0; src_12[i] != '\0'; ++i) {
+        for (j = 0; src_12[j] != '\0'; ++j)
+            if (src_12[i] == src_12[j] && i != j)
+                break;
+        if (src_12[j] == '\0') {
+            printf("%c ",src_12[i]);
+            ++quantity;
+        }
+    }
+    printf("\nquantity = %d;\n\n",quantity);
+    char* words_2[] = {"green","red"};
+    printf("9.156-9.159, search for similar letters;\n");
+    printf("word_1: %s\nword_2: %s\n",words_2[0],words_2[1]);
+    for (i = 0; i < 2; ++i) {
+        int unique = 0, diffs = 0, ix;
+        printf("Compare chars in %d word and %d word: \n",i,(i + 1) % 2);
+        for (j = 0; words_2[i][j] != '\0'; ++j) {
+            k = string_char_find(words_2[(i + 1) % 2],words_2[i][j],0,0);
+            for (ix = 0; ix < j && words_2[i][ix] != words_2[i][j]; ++ix)
+                ;
+            if (k == -1) {
+                if (ix == j) {
+                    printf("'%c': unique ",words_2[i][j]);
+                    ++unique;
+                }
+            } else
+                if (ix == j) {
+                    printf("'%c': not unique ",words_2[i][j]);
+                    ++diffs;
+                }
+        }
+        printf("Total: unique = %d\ndiffs = %d\n",unique,diffs);
+    }
 }
 
 int main()
