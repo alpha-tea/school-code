@@ -5751,11 +5751,54 @@ void chapter_9()
         }
         printf("Total: unique = %d\ndiffs = %d\n",unique,diffs);
     }
+    printf("\n9.160, build word from chars of other word;\n");
+    char* word_pairs[] = { "blue", "cyan", "magenta", "tag", "red", "deer", "a", "aa"};
+    value_size = sizeof (word_pairs) / sizeof (char*);
+    int strict, not_strict;
+    for (i = 0; i < value_size; i += 2) {
+        strict = 1; not_strict = 1;
+        printf("'%s':'%s'\n",word_pairs[i], word_pairs[i + 1]);
+        for (j = 0; word_pairs[i + 1][j] != '\0'; ++j) {
+            if (string_char_find(word_pairs[i], word_pairs[i + 1][j],0,0) != -1) {
+                quantity = string_char_counter(word_pairs[i],word_pairs[i + 1][j]); // В каком ищем.
+                counter = string_char_counter(word_pairs[i + 1],word_pairs[i + 1][j]); // Какое ищем.
+                printf("%c(%d)(%d): ",word_pairs[i + 1][j],quantity,counter);
+                if (counter > quantity)
+                    strict = 0;
+            } else {
+                strict = 0;
+                not_strict = 0;
+            }
+        }
+        if (strict == 1)
+            printf("strict compliance;\n");
+        else if (not_strict == 1)
+            printf("not strict compliance;\n");
+        else
+            printf("no matches;\n");
+    }
+    char src_9[] = "Red blue green     white  black  brown      yellow magenta";
+    printf("\n9.164, working with words from string;\nsource string = '%s'\n",src_9);
+    char wrd_colors[STRING_MAX][STRING_MAX];
+    int idx_word = 0;
+    for (i = 0, j = 0; src_9[i] != '\0' || idx_word != i;) {
+        if ((src_9[i] == ' ' || src_9[i] == '\0') && idx_word < i) {
+            string_copy_substr(src_9,wrd_colors[j++],idx_word,i - idx_word);
+            idx_word = i;
+        } else {
+            ++i;
+            if (src_9[idx_word] == ' ')
+                idx_word = i;
+        }
+    }
+    int colors_total = j;
+    for (i = 0; i < colors_total; ++i)
+        printf("'%s'\n",wrd_colors[i]);
 }
 
 int main()
 {
-    chapter_8();
+    chapter_9();
     //getchar(); - не снимать.
     return 0;
 }
