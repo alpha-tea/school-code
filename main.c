@@ -749,6 +749,20 @@ int string_find_seq(char s[], char c, int start, int length)
     return (index == start + length);
 }
 
+int string_is_symmetrical(char string[])
+{
+    int help = 0, len_1 = string_length(string) - 1;
+    if (len_1 < 1) {
+        printf("error, string is empty;\n");
+        return -1;
+    }
+    while (help < len_1 && string[help] == string[len_1]) {
+        ++help;
+        --len_1;
+    }
+    return (help >= len_1);
+}
+
 int int_to_string(char dst[], int num, int base)
 {
     const int base_min = 2, base_max = 16;
@@ -5794,6 +5808,76 @@ void chapter_9()
     int colors_total = j;
     for (i = 0; i < colors_total; ++i)
         printf("'%s'\n",wrd_colors[i]);
+    printf("\n9.171-9.179, working with word strings;\n");
+    int idx = 0; int idx_min = 0; int idx_max = 0; min = STRING_MAX; int length = 0; max = 0;
+    int wrd_length[colors_total]; int unique = 0;
+    printf("string[idx]:\tlength:\tunique:\tsymmet:\n");
+    for (i = 0; i < colors_total; ++i) {
+        wrd_length[i] = i;
+        unique = 1;
+        idx = 1;
+        length = string_length(wrd_colors[i]);
+        if (length < min) {
+
+            min = length;
+            idx_min = i;
+        }
+        if (length > max) {
+            max = length;
+            idx_max = i;
+        }
+        for (j = 0; j < colors_total && (unique != 0 || idx == 1); ++j)
+            if (j != i) {
+                result = string_is_equal(wrd_colors[i], wrd_colors[j]);
+                help = string_is_symmetrical(wrd_colors[i]);
+                if (help == 0)
+                    idx = 0;
+                if (result == 0)
+                    unique = 0;
+            }
+        printf("'%s'[%d]\tlen: %d\t",wrd_colors[i],i,length);
+        if (unique == 1)
+            printf(" YES\t");
+        else
+            printf(" NO\t");
+        if (idx == 1)
+            printf(" YES\n");
+        else
+            printf(" NO\n");
+    }
+    printf("biggest: '%s'[%d], len = %d;\n",wrd_colors[idx_max],idx_max,max);
+    printf("smallest: '%s'[%d], len = %d;\n",wrd_colors[idx_min],idx_min,min);
+    for (i = 1; i < colors_total; ++i)
+        for (j = i; j > 0; --j) {
+            if (string_length(wrd_colors[wrd_length[j]]) < string_length(wrd_colors[wrd_length[j - 1]])) {
+                help = wrd_length[j - 1];
+                wrd_length[j - 1] = wrd_length[j];
+                wrd_length[j] = help;
+            }
+        }
+    printf("buble sort, ascending;\n");
+    for (i = 0; i < colors_total; ++i)
+        printf("'%s'\n",wrd_colors[wrd_length[i]]);
+    printf("insertion sort, descending\n");
+    int wrd_sort[STRING_MAX];
+    printf("Word:\tInsert:\tArray:\n");
+    for (i = 0; i < colors_total; ++i) {
+        for (j = 0; j < i; ++j) {
+            int l1 = string_length(wrd_colors[wrd_length[i]]);
+            int l2 = string_length(wrd_colors[wrd_length[wrd_sort[j]]]);
+            if (l1 >= l2)
+                break;
+        }
+        for (k = i; k != j; --k)
+            wrd_sort[k] = wrd_sort[k - 1];
+        wrd_sort[j] = i;
+        printf("%d\t%d\t",wrd_length[i],j);
+        for (k = 0; k <= i; ++k)
+            printf("%d ",wrd_sort[k]);
+        printf("\n");
+    }
+    for (i = 0; i < colors_total; ++i)
+        printf("'%s'\n",wrd_colors[wrd_length[wrd_sort[i]]]);
 }
 
 int main()
