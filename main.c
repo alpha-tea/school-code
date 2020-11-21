@@ -630,6 +630,23 @@ unsigned char get_register(unsigned char* num, unsigned char byte[])
     return 0x00;
 }
 
+int string_to_words(char text[], char words[STRING_MAX][STRING_MAX])    // Fix later...
+{
+    int idx_word = 0, i, j, words_total = 0;
+    for (i = 0, j = 0; text[i] != '\0' || idx_word != i;) {
+        if ((text[i] == ' ' || text[i] == '\0') && idx_word < i) {
+            string_copy_substr(text,words[j++],idx_word,i - idx_word);
+            idx_word = i;
+            words_total++;
+        } else {
+            ++i;
+            if (text[idx_word] == ' ')
+                idx_word = i;
+        }
+    }
+    return words_total;
+}
+
 unsigned char not_logical (unsigned char dst[])
 {
     unsigned char zero_flag = 0x00;
@@ -5794,36 +5811,25 @@ void chapter_9()
     char src_9[] = "Red blue green     white  black  brown      yellow magenta";
     printf("\n9.164, working with words from string;\nsource string = '%s'\n",src_9);
     char wrd_colors[STRING_MAX][STRING_MAX];
-    int idx_word = 0;
-    for (i = 0, j = 0; src_9[i] != '\0' || idx_word != i;) {
-        if ((src_9[i] == ' ' || src_9[i] == '\0') && idx_word < i) {
-            string_copy_substr(src_9,wrd_colors[j++],idx_word,i - idx_word);
-            idx_word = i;
-        } else {
-            ++i;
-            if (src_9[idx_word] == ' ')
-                idx_word = i;
-        }
-    }
-    int colors_total = j;
+    int colors_total;
+    colors_total = string_to_words(src_9,wrd_colors);
     for (i = 0; i < colors_total; ++i)
         printf("'%s'\n",wrd_colors[i]);
     printf("\n9.171-9.179, working with word strings;\n");
-    int idx = 0; int idx_min = 0; int idx_max = 0; min = STRING_MAX; int length = 0; max = 0;
-    int wrd_length[colors_total]; int unique = 0;
+    int idx = 0; int idx_min = 0; int idx_max = 0; min = STRING_MAX; max = 0;
+    int wrd_indexes[colors_total]; int unique = 0; int wrd_length[colors_total];
     printf("string[idx]:\tlength:\tunique:\tsymmet:\n");
     for (i = 0; i < colors_total; ++i) {
-        wrd_length[i] = i;
+        wrd_indexes[i] = i;
         unique = 1;
         idx = 1;
-        length = string_length(wrd_colors[i]);
-        if (length < min) {
-
-            min = length;
+        wrd_length[i] = string_length(wrd_colors[i]);
+        if (wrd_length[i] < min) {
+            min = wrd_length[i];
             idx_min = i;
         }
-        if (length > max) {
-            max = length;
+        if (wrd_length[i] > max) {
+            max = wrd_length[i];
             idx_max = i;
         }
         for (j = 0; j < colors_total && (unique != 0 || idx == 1); ++j)
@@ -5835,7 +5841,7 @@ void chapter_9()
                 if (result == 0)
                     unique = 0;
             }
-        printf("'%s'[%d]\tlen: %d\t",wrd_colors[i],i,length);
+        printf("'%s'[%d]\tlen: %d\t",wrd_colors[i],i,wrd_length[i]);
         if (unique == 1)
             printf(" YES\t");
         else
@@ -5849,35 +5855,76 @@ void chapter_9()
     printf("smallest: '%s'[%d], len = %d;\n",wrd_colors[idx_min],idx_min,min);
     for (i = 1; i < colors_total; ++i)
         for (j = i; j > 0; --j) {
-            if (string_length(wrd_colors[wrd_length[j]]) < string_length(wrd_colors[wrd_length[j - 1]])) {
-                help = wrd_length[j - 1];
-                wrd_length[j - 1] = wrd_length[j];
-                wrd_length[j] = help;
+            if (string_length(wrd_colors[wrd_indexes[j]]) < string_length(wrd_colors[wrd_indexes[j - 1]])) {
+                help = wrd_indexes[j - 1];
+                wrd_indexes[j - 1] = wrd_indexes[j];
+                wrd_indexes[j] = help;
             }
         }
     printf("buble sort, ascending;\n");
     for (i = 0; i < colors_total; ++i)
-        printf("'%s'\n",wrd_colors[wrd_length[i]]);
+        printf("'%s'\n",wrd_colors[wrd_indexes[i]]);
     printf("insertion sort, descending\n");
     int wrd_sort[STRING_MAX];
     printf("Word:\tInsert:\tArray:\n");
     for (i = 0; i < colors_total; ++i) {
         for (j = 0; j < i; ++j) {
-            int l1 = string_length(wrd_colors[wrd_length[i]]);
-            int l2 = string_length(wrd_colors[wrd_length[wrd_sort[j]]]);
-            if (l1 >= l2)
+            if (wrd_length[i] >= wrd_length[wrd_sort[j]])
                 break;
         }
         for (k = i; k != j; --k)
             wrd_sort[k] = wrd_sort[k - 1];
         wrd_sort[j] = i;
-        printf("%d\t%d\t",wrd_length[i],j);
+        printf("%d\t%d\t",wrd_indexes[i],j);
         for (k = 0; k <= i; ++k)
             printf("%d ",wrd_sort[k]);
         printf("\n");
     }
     for (i = 0; i < colors_total; ++i)
-        printf("'%s'\n",wrd_colors[wrd_length[wrd_sort[i]]]);
+        printf("'%s'\n",wrd_colors[wrd_sort[i]]);
+    char src_search[] = "red";
+    printf("\n9.165-9.167, permutation of words in a line;\n");
+    printf("source string: \n");
+    for (i = 0; i < colors_total; ++i)
+        printf("'%s' ",wrd_colors[i]);
+    printf("\n");
+    char* wrd_addr[colors_total];
+    for (i = 0; i < 3; ++i) {
+        switch (i) {
+        case 0:
+            printf("9.165, reverse string\n");
+            for (k = 0; k < colors_total; ++k)
+                wrd_addr[k] = wrd_colors[colors_total - k - 1];
+            break;
+        case 1:
+            printf("9.166, exchange first and last word\n");
+            for (k = 1; k < colors_total - 1; ++k)
+                wrd_addr[k] = wrd_colors[k];
+            wrd_addr[0] = wrd_colors[colors_total - 1];
+            wrd_addr[colors_total - 1] = wrd_colors[0];
+            k = colors_total;
+            break;
+        case 2:
+            printf("9.167, all words except = '%s'\n",src_search);
+            for (j = 0, k = 0; j < colors_total; ++j) {
+                result = string_is_equal(wrd_colors[j],src_search);
+                if (result != 0 && result != -2)
+                    wrd_addr[k++] = wrd_colors[j];
+            }
+            break;
+        default:
+            printf("error: wrong parametr\n");
+        }
+        for (j = 0; j < k; ++j)
+            printf("'%s' ",wrd_addr[j]);
+        printf("\n");
+    }
+    char src_10[] = "yellow red white purple";
+    char wrd_colors_2[STRING_MAX][STRING_MAX];
+    int colors_total_2 = string_to_words(src_10,wrd_colors_2);
+    printf("\n9.180 - 9.183, searching words in strings\n");
+    for (i = 0; i < colors_total_2; ++i)
+        printf("'%s' ",wrd_colors_2[i]);
 }
 
 int main()
