@@ -1427,16 +1427,49 @@ void chapter_3()
     scanf("%d %d",&a1,&a2);
     kalk(a1,a2);
     //glava 3
+    //3.6
+    printf("3.6:\n");
+    int x = 1, y = 0, z = 0; int help1, help2, help3;
+    help1 = (x || y) && !z;
+    printf("a)(%d OR %d) AND NOT %d = %d\n", x, y, z, help1);
+    help2 = !x && !y;
+    printf("b)NOT %d && NOT %d = %d\n", x, y, help2);
+    help3 = !(x && z) || y;
+    printf("v)NOT (%d AND %d) OR %d = %d\n", x, z, y, help3);
+    help1 = (x && !y) || z;
+    printf("g)%d AND (NOT %d OR %d) = %d\n",x,y,z,help1);
+    help2 = x && (!y || z);
+    printf("d) %d AND (NOT %d OR %d) = %d\n",x,y,z,help2);
+    help3 = x || (!(y || z));
+    printf("e) %d || (NOT(%d OR %d)) = %d\n\n",x,y,z,help3);
+    //3.7
+    printf("3.7:\n");
+    int a = 0, b = 1, c = 0;
+    help1 = a || !(a && b) || c;
+    printf("a) %d OR NOT (%d AND %d) OR %d = %d\n",a,a,b,c,help1);
+    help2 = !a || (a && (b || c));
+    printf("b) NOT %d OR (%d AND (%d OR %d)) = %d\n", a, a, b, c, help2);
+    help3 = (a || (b && !c)) && c;
+    printf("v) (%d OR (%d AND NOT %d)) AND %d = %d\n\n", a, b, c, c, help3);
+    //3.8
+    printf("3.8:\n");
+    x = 0; y = 0; z = 0;
+    help1 = (x && !(z || y)) || !z;
+    printf("a) %d AND NOT (%d OR %d) OR NOT %d = %d\n", x, z, y, z, help1);
+    help2 = !x || (x && (y || z));
+    printf("b) NOT %d OR %d AND (%d OR %d) = %d\n", x, x, y, z, help2);
+    help3 = (x || (y && !z)) && z;
+    printf("v) (%d OR %d AND NOT %d) AND %d = %d\n\n", x, y, z, z, help3);
     //3.9
     printf("3.9:\n");
-    int X1 = 1, Y1 = 0, Z1 = 0, help1, help2, help3;
-    help1 = !X1 || !Y1 || !Z1;
-    help2 = (!X1 || !Y1) && (X1 || Y1);
-    help3 = (X1 && Y1) || (X1 && Z1) || !Z1;
-    printf("NOT X OR NOT Y OR NOT Z = !%d || !%d || !%d = %d\n",X1,Y1,Z1,help1);
-    printf("(NOT X OR NOT Y) AND (X OR Y) = (!%d || !%d) && (%d || %d) = %d\n",X1,Y1,X1,Y1,help2);
-    printf("X AND Y OR X AND Z OR NOT Z = ");
-    printf("%d && %d || %d && %d || !%d = %d\n\n",X1,Y1,X1,Z1,Z1,help3);
+    x = 1, y = 0, z = 0;
+    help1 = !x || !y || !z;
+    help2 = (!x || !y) && (x || y);
+    help3 = (x && y) || (x && z) || !z;
+    printf("NOT x OR NOT y OR NOT z = !%d || !%d || !%d = %d\n",x,y,z,help1);
+    printf("(NOT x OR NOT y) AND (x OR y) = (!%d || !%d) && (%d || %d) = %d\n",x,y,x,y,help2);
+    printf("x AND y OR x AND z OR NOT z = ");
+    printf("%d && %d || %d && %d || !%d = %d\n\n",x,y,x,z,z,help3);
     //3.10
     printf("3.10:\n");
     int A = 0, B = 0, C = 1;
@@ -1447,7 +1480,7 @@ void chapter_3()
     help3 = (A && B) || (A && C) || !C;
     printf("(A AND B) OR (A AND C) OR !C = (%d && %d) || (%d && %d) || !%d = %d\n\n",A,B,A,C,C,help3);
     //3.11
-    int x = 1, y = 2, help = 0;
+    x = 1, y = 2; int help = 0;
     help = (!(x * y < 0)) || (y > x);
     printf("3.11(x = 1, y = 2):\n");
     printf("zh:(!(x * y < 0)) || (y > x) = %d\n",help);
@@ -1457,7 +1490,7 @@ void chapter_3()
     printf("d:((x * y) != 0) || (y > x) = %d\n\n",help);
 
     //3.13
-    int a = 0, b = 0;
+    a = 0; b = 0;
     printf("3.13:\n");
     while (a <= 1) {
         b = 0;
@@ -1472,56 +1505,31 @@ void chapter_3()
         }
         ++a;
     }
-    //3.26
-    int n = 0;
-    printf("3.26:\na)");
-    while (n < 8) {
-        X1 = n % 2;
-        Y1 = n % 4 / 2;
-        Z1 = n / 4;
-        printf("x = %d, y = %d,z = %d\n",X1,Y1,Z);
-        help = !(X1 || Y1) && (!X1 || !Z) ;
-        printf("a: NOT(X OR Y) AND (NOT X OR NOT Z) = ");
-        printf("!(%d || %d) && (!%d || !%d) = %d\n",X1,Y1,X1,Z,help);
-        help = !(!X1 && Y1) || (X1 && !Z);
-        printf("b: NOT (NOT X AND Y) OR (X AND NOT Z) = ");
-        printf("!(!%d && %d) || (%d && !%d) = %d\n",X1,Y1,X1,Z,help);
-        help = X1 || (!Y1 && !(X1 || !Z));
-        printf("c: X OR (NOT Y AND NOT(X OR NOT Z)) = ");
-        printf("%d || (!%d && !(%d || !%d)) = %d\n\n",X1,Y1,X1,Z,help);
-        ++n;
-    }
-    //3.27
-    x = 5;
-    y = 4;
-    printf("a)3.27: a)X > 2 && Y > 3 = %d > 2 &&  %d > 3 = %d\n", x, y, (x > 2 && y > 3));
-    help = 0 < (y <= 4) && (x < 5);
-    printf("i)0 < y <= 4 && x < 5 = 0 < %d <= 4 && %d < 5 = %d\n",x,y,help);
-    help = !((x > 0) && (x < 5));
-    printf("zh)NOT((x > 0) AND (x < 5)) = %d\n",help);
-    help = (x >= 0) && (y < 5);
-    printf("v)(x >= 0) AND (y < 5) = %d\n\n",help);
-    //3.31
-    x = 10;
-    help = (x % 5 == 0) || (x % 7 == 0);
-    printf("3.31:\na)(N %% 5 == 0) || (N %% 7 == 0) = (%d %% 5 == 0) || (%d %% 7 == 0) = %d\n",x,x,help);
-    help = (x % 4 == 0) || (x % 10 != 0);
-    printf("b)(x %% 4 == 0) || (x %% 10 != 0) = (%d %% 4 == 0) || (%d %% 10 != 0) = %d\n\n",x,x,help);
+    //3.17
+    printf("3.17\n");
+    a = 0, b = 1;
+    help1 = (!a && !b) || a;
+    printf("a) NOT %d AND NOT %d OR %d = %d\n", a, b, a, help1);
+    help2 = b || (!a && !b);
+    printf("b) %d OR NOT %d AND NOT %d = %d\n", b, a, b, help2);
+    help3 = b && !(a && !b);
+    printf("v) %d AND NOT (%d AND NOT %d) = %d\n\n", b, a, b, help3);
     //3.19
-    int a3 = 0, b1 = 0;
+    int b1 = 0;
+    a1 = 0;
     printf("3.19:\n");
-    while (a3 <= 1) {
+    while (a1 <= 1) {
         b1 = 0;
         while (b1 <= 1) {
-            help = !(! a3 && ! b1) && a3;
-            printf("NOT (NOT A AND NOT B) AND A = !(!%d && !%d) && %d = %d\n",a3,b1,a3,help);
-            help = !(!a3 || !b1) || a3;
-            printf("NOT (NOT A OR NOT B) OR A = !(!%d || !%d) || %d = %d\n",a3,b1,a3,help);
-            help = !(!a3 || !b1) && b1;
-            printf("NOT (NOT A OR NOT B) AND B = !(!%d || !%d) && %d = %d\n\n",a3,b1,b1,help);
+            help = !(! a1 && ! b1) && a1;
+            printf("NOT (NOT A AND NOT B) AND A = !(!%d && !%d) && %d = %d\n",a1,b1,a1,help);
+            help = !(!a1 || !b1) || a1;
+            printf("NOT (NOT A OR NOT B) OR A = !(!%d || !%d) || %d = %d\n",a1,b1,a1,help);
+            help = !(!a1 || !b1) && b1;
+            printf("NOT (NOT A OR NOT B) AND B = !(!%d || !%d) && %d = %d\n\n",a1,b1,b1,help);
             ++b1;
         }
-        ++a3;
+        ++a1;
     }
     //3.25
     int n1 = 0, c1 = 0;
@@ -1539,6 +1547,56 @@ void chapter_3()
         printf("A AND NOT B OR NOT (A OR NOT C) = %d\n\n",help);
         ++n1;
     }
+    //3.26
+    int n = 0;
+    printf("3.26:\na)");
+    while (n < 8) {
+        x = n % 2;
+        y = n % 4 / 2;
+        z = n / 4;
+        printf("x = %d, y = %d,z = %d\n",x,y,z);
+        help = !(x || y) && (!x || !z) ;
+        printf("a: NOT(x OR y) AND (NOT x OR NOT z) = ");
+        printf("!(%d || %d) && (!%d || !%d) = %d\n",x,y,x,z,help);
+        help = !(!x && y) || (x && !z);
+        printf("b: NOT (NOT x AND y) OR (x AND NOT z) = ");
+        printf("!(!%d && %d) || (%d && !%d) = %d\n",x,y,x,z,help);
+        help = x || (!y && !(x || !z));
+        printf("c: x OR (NOT y AND NOT(x OR NOT z)) = ");
+        printf("%d || (!%d && !(%d || !%d)) = %d\n\n",x,y,x,z,help);
+        ++n;
+    }
+    //3.27
+    x = 5;
+    y = 4;
+    printf("a)3.27: a)x > 2 && y > 3 = %d > 2 &&  %d > 3 = %d\n", x, y, (x > 2 && y > 3));
+    help = 0 < (y <= 4) && (x < 5);
+    printf("i)0 < y <= 4 && x < 5 = 0 < %d <= 4 && %d < 5 = %d\n",x,y,help);
+    help = !((x > 0) && (x < 5));
+    printf("zh)NOT((x > 0) AND (x < 5)) = %d\n",help);
+    help = (x >= 0) && (y < 5);
+    printf("v)(x >= 0) AND (y < 5) = %d\n\n",help);
+    //3.29
+    x = 254; y = 0; z = -259;
+    printf("3.29: x = %d, y = %d, z = %d\n", x, y, z);
+    help1 = (x % 2) && (y % 2);
+    printf("a) x AND y odd = %d\n", help1);
+    help2 = (x < 20) ^ (y < 20);
+    printf("b) (x < 20) xOR (y < 20) = %d\n", help2);
+    help3 = (x == 0) || (y == 0);
+    printf("v) (x == 0) OR (y == 0) = %d\n",help3);
+    help1 = x < 0 && y < 0 && z < 0;
+    printf("g) x,y and z negative = %d\n", help1);
+    help2 = ((x % 5 == 0) + (y % 5 == 0) + (z % 5 == 0)) == 1;
+    printf("d) only 1 of x,y,z divided by 5 = %d\n",help2);
+    help3 = (x > 100) || (y > 100) || (z > 100);
+    printf("e) At least one of X,Y,Z more than 100 = %d\n\n", help3);
+    //3.31
+    x = 10;
+    help = (x % 5 == 0) || (x % 7 == 0);
+    printf("3.31:\na)(N %% 5 == 0) || (N %% 7 == 0) = (%d %% 5 == 0) || (%d %% 7 == 0) = %d\n",x,x,help);
+    help = (x % 4 == 0) || (x % 10 != 0);
+    printf("b)(x %% 4 == 0) || (x %% 10 != 0) = (%d %% 4 == 0) || (%d %% 10 != 0) = %d\n\n",x,x,help);
     x = 3;
     y = 1;
     //3.32(А - З)
@@ -1571,10 +1629,45 @@ void chapter_3()
     c_d = 6;
     help = abs(c_c - c_a) == abs(c_d - c_b);
     printf("b)slon on (%d,%d) and peshka (%d,%d) = %d\n",c_a,c_b,c_c,c_d,help);
+    c_a = 3; // король
+    c_b = 4;
+    c_c = 3; // пешка
+    c_d = 5;
+    help = (abs(c_c - c_a) <= 1) || (abs(c_d - c_b) <= 1);
+    printf("v)korol on (%d,%d) and peshka (%d,%d) = %d\n", c_a, c_b, c_c, c_d,help);
     c_a = 5; // Ферзь
     c_b = 4;
     help = ((c_a == c_c) || (c_d == c_b)) || (abs(c_c - c_a) == abs(c_d - c_b));
-    printf("v)ferz on (%d,%d) and peshka on(%d,%d) = %d\n",c_a,c_b,c_c,c_d,help);
+    printf("g)ferz on (%d,%d) and peshka on(%d,%d) = %d\n",c_a,c_b,c_c,c_d,help);
+    //3.35
+    printf("3.35\n");
+    c_a = 3; // ладья
+    c_b = 4;
+    c_c = 5; // ферзь
+    c_d = 5;
+    int c_e = 3; // нужно сюда попасть
+    int c_f = 7;
+    help = ((c_a == c_e) ^ (c_b == c_f));
+    help = help && (((c_e == c_c) || (c_d == c_f)) || (abs(c_c - c_e) == abs(c_d - c_f)));
+    printf("b)Rook on %d:%d moves to %d:%d, queen on %d:%d = %d;\n", c_a, c_b, c_e, c_f, c_c, c_d, help);
+    c_a = 1; // ферзь
+    c_b = 2;
+    c_c = 7; // слон
+    c_d = 8;
+    c_e = 5; // нужно сюда попасть
+    c_f = 6;
+    help = ((c_e == c_a) || (c_b == c_f)) || (abs(c_a - c_e) == abs(c_b - c_f));
+    help = help && (abs(c_c - c_e) == abs(c_d - c_f));
+    printf("z)Queen on %d:%d moves to %d:%d, bishop on %d:%d = %d;\n", c_a, c_b, c_e, c_f, c_c, c_d, help);
+    c_a = 4; // конь
+    c_b = 4;
+    c_c = 7; // слон
+    c_d = 8;
+    c_e = 5; // нужно сюда попасть
+    c_f = 6;
+    help = (abs(c_a - c_e) == 1 && abs(c_b - c_f) == 2) || (abs(c_a - c_e) == 2 && abs(c_b - c_f) == 1);
+    help = help && (abs(c_c - c_e) == abs(c_d - c_f));
+    printf("m)Knight on %d:%d moves to %d:%d, bishop on %d:%d = %d;\n\n", c_a, c_b, c_e, c_f, c_c, c_d, help);
 }
 
 void chapter_4()
@@ -5919,12 +6012,112 @@ void chapter_9()
             printf("'%s' ",wrd_addr[j]);
         printf("\n");
     }
+    char src_14[] = "green grey blue black alpha wow magenta yellow win";
+    char wrd_text[STRING_MAX][STRING_MAX];
+    counter = string_to_words(src_14,wrd_text);
+    char rules[] = "SgEnBaBwMa1Ll2Qe1";
+    printf("9.168-9.169, searching words, using rules\n");
+    printf("Format, command and data. 'S' - start char: char, 'E' - end char: char, "
+           "'B' - both start and end char: char, 'M' - more than chars: char + digit, "
+           "'L' - less than chars: char + digit, 'Q' - equal chars: char + digit.\n");
+    printf("source string: '%s'\nwords = %d:",src_14,counter);
+    for (i = 0; i < counter; ++i)
+        printf("'%s' ",wrd_text[i]);
+    printf("\n");
+    printf("Index:\tRule:\tWords:\n");
+    int length = string_length(rules);
+    for (i = 0; rules[i] != '\0'; i += k) {
+        printf("%d\t%c:%c", i, rules[i], rules[i + 1]);
+        if (rules[i] == 'M' || rules[i] == 'Q' || rules[i] == 'L')
+            printf(":%d", rules[i + 2] - '0');
+        printf("\t");
+        for (j = 0; j < counter; ++j) {
+            switch (rules[i]) {
+            case 'S':
+                if (wrd_text[j][0] == rules[i + 1])
+                    printf("%s ",wrd_text[j]);
+                k = 2;
+                break;
+            case 'B':
+                length = string_length(wrd_text[j]);
+                if (wrd_text[j][0] == rules[i + 1] && wrd_text[j][length - 1] == rules[i + 1])
+                    printf("%s ",wrd_text[j]);
+                k = 2;
+                break;
+            case 'E':
+                length = string_length(wrd_text[j]);
+                if (wrd_text[j][length - 1] == rules[i + 1])
+                    printf("%s ",wrd_text[j]);
+                k = 2;
+                break;
+            case 'L':
+                quantity = string_char_counter(wrd_text[j],rules[i + 1]);
+                if (quantity < rules[i + 2] - '0')
+                    printf("%s ",wrd_text[j]);
+                k = 3;
+                break;
+            case 'M':
+                quantity = string_char_counter(wrd_text[j],rules[i + 1]);
+                if (quantity > rules[i + 2] - '0')
+                    printf("%s ",wrd_text[j]);
+                k = 3;
+                break;
+            case 'Q':
+                quantity = string_char_counter(wrd_text[j],rules[i + 1]);
+                if (quantity == rules[i + 2] - '0')
+                    printf("%s ",wrd_text[j]);
+                k = 3;
+                break;
+            default:
+                k = 1;
+                printf("?");
+            }
+        }
+        printf("\n");
+    }
     char src_10[] = "yellow red white purple";
     char wrd_colors_2[STRING_MAX][STRING_MAX];
     int colors_total_2 = string_to_words(src_10,wrd_colors_2);
     printf("\n9.180 - 9.183, searching words in strings\n");
-    for (i = 0; i < colors_total_2; ++i)
-        printf("'%s' ",wrd_colors_2[i]);
+    printf("\nFirst string: '%s'\n",src_9);
+    printf("string:\tunique:\tonce in both strings:\n");
+    for (i = 0; i < colors_total; ++i) {
+        quantity = 0; counter = 0;
+
+        printf("%s",wrd_colors[i]);
+        if (string_length(wrd_colors[i]) < 8)
+            printf("\t");
+        for (k = 0; k < colors_total; ++k)
+            if (string_is_equal(wrd_colors[i],wrd_colors[k]) == 0)
+                counter++;
+        for (k = i - 1; k >= 0 && string_is_equal(wrd_colors[i],wrd_colors[k]) != 0; --k)
+            ; //  отслеживаем уникальные.
+        if (k == -1) {
+            for (j = 0; j < colors_total_2; ++j)
+                if (string_is_equal(wrd_colors[i],wrd_colors_2[j]) == 0)
+                    quantity++;
+            if (quantity > 0)
+                printf(" NO\t\t");
+            else
+                printf(" YES\t\t");
+        } else
+            printf("recurr.\t\t");
+        if (counter == quantity && counter == 1)
+            printf("Yes\n");
+        else
+            printf("No\n");
+    }
+    printf("Second string: '%s'\n",src_10);
+    printf("string:\tunique:\n");
+    for (i = 0; i < colors_total_2; ++i) {
+        printf("%s:\t",wrd_colors_2[i]);
+        for (j = 0; j < colors_total && string_is_equal(wrd_colors_2[i],wrd_colors[j]) != 0; ++j)
+            ;
+        if (j != colors_total)
+            printf(" NO\n");
+        else
+            printf(" YES\n");
+    }
 }
 
 int main()
