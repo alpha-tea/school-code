@@ -6118,6 +6118,83 @@ void chapter_9()
         else
             printf(" YES\n");
     }
+    n = 15; // ограничитель ширины строки.
+    printf("\n9.186, formating text, width = %d\n",n);
+    char src_15[STRING_MAX] = "\na b \n cab   de s\n\n  \nf\n";
+    char words_line[STRING_MAX];
+    printf("Source string:\n'");
+    help = string_length(src_15);
+    for (i = 0; src_15[i] != '\0'; ++i) {
+        if (src_15[i] == '\n')
+            printf("(n)");
+        else
+            printf("%c",src_15[i]);
+    }
+    printf("'\n");
+    printf("0123456789ABCDEF:\n");
+    quantity = 0;
+    int mode = 4; //(left edge - 1; centered - 2; right edge - 3; in width - 4)
+    for (i = 0; src_15[i] != '\0'; i = k) {
+        int words_length = 0;
+        for (j = i + 1, k = i; src_15[k] != '\n' && src_15[k] != '\0' && words_length + (j - k) <= n; ++j) {
+            if (src_15[k] == ' ')
+                k = j;
+            if ((k < j) && (src_15[j] == ' ' || src_15[j] == '\n' || src_15[j] == '\0')) {
+                string_copy_substr(src_15, &words_line[words_length], k, j - k + 1);
+                words_length += j - k + 1;
+                k = j;
+                words_line[words_length] = '\0';
+                //printf("j = %d, k = %d, length = %d, '%s'\n", j, k, words_length, words_line);
+            }
+        }
+        if (words_length == 0) {
+            for (;words_length < n && src_15[k] != '\n' && src_15[k] != '\0'; ++words_length)
+                words_line[words_length] = src_15[k++];
+            if (src_15[k] == '\n')
+                ++k;
+            words_line[words_length] = '\0';
+        } else {
+            if (words_line[k] == '\n') {
+                words_length -= 2;          // extra paragraph
+                words_line[words_length] = '\0';
+            } else
+                words_line[--words_length] = '\0';      // remove separator
+        }
+        switch (mode) {
+        case 1:
+            break;
+        case 2:
+            for (j = 0; string_length(words_line) < n; ++j) {
+                if (j % 2 == 0)
+                    string_insert(words_line," ",0,STRING_MAX);
+                else
+                    string_insert(words_line," ",string_length(words_line),STRING_MAX);
+            }
+            break;
+        case 3:
+            length = n - string_length(words_line);
+            for (j = 0; j < length; ++j)
+                string_insert(words_line," ",0,STRING_MAX);
+            break;
+        case 4: {
+            int sp = 0, sp_idx[STRING_MAX], spaces = 0, offset;
+            while ((offset = string_char_find(&words_line[sp],' ',0,0)) != -1) {
+                sp_idx[spaces++] = sp + offset;
+                sp += offset + 1;
+            }
+            for (int l = 0; words_length < n && spaces > 0; l = ((l + 1) % spaces)) {
+                string_insert(words_line, " ", sp_idx[l], STRING_MAX);
+                words_length++;
+                for (int m = l + 1; m < spaces; ++m)
+                    sp_idx[m]++;
+            }
+            break;
+        }
+        default:
+            printf("error: wrong mode parametr\n");
+        }
+        printf("%s\n",words_line);
+    }
 }
 
 int main()
