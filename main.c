@@ -1252,6 +1252,107 @@ int string_delete(char src[], int start, int length)
     return 0;
 }
 
+int string_checking_brackets(char src[])
+{
+    int i = 0, counter = 0;
+    for (i = 0; src[i] != '\0' && counter >= 0; ++i) {
+        if (src[i] == '(')
+            counter++;
+        if (src[i] == ')')
+            counter--;
+    }
+    if (counter == 0)
+        return i;
+    else
+        return -1 * (i - 1);
+}
+
+int string_length_brackets(char src[], int start)
+{
+    int i = 0, counter = 1;
+    if (src[start] != '(')
+        return -1;
+    for (i = start + 1; src[i] != '\0' && counter > 0; ++i) {
+        if (src[i] == '(')
+            counter++;
+        if (src[i] == ')')
+            counter--;
+    }
+    return i - 1;
+}
+
+char boolean_calculator(char src[])
+{
+    int i = 0, counter = 0, idx = 0, operand_a = 0, operand_b = 0;
+    char result_string[STRING_MAX];
+    char sub_string[STRING_MAX];
+    char signs[] = "!&^|";      // Идут в порядке уменьшения приоритета си.
+    printf("Starting calculator:\n");
+    for (i = 0; src[i] != '\0'; ++i) {
+        if (src[i] != ' ') {
+            if (src[i] == '(') {
+                idx = string_length_brackets(src,i);
+                string_copy_substr(src,sub_string, i + 1, idx - i - 1);
+                printf("index of brackets: [%d:%d], sub_string = '%s'\n", i, idx, sub_string);
+                result_string[counter++] = boolean_calculator(sub_string); // Рекурсия
+                i = idx;
+            } else
+                result_string[counter++] = src[i];
+        }
+    }
+    result_string[counter] = '\0';
+    printf("Calculate string: '%s'\n", result_string);
+    printf("Source string: '%s'\n", src);
+    for (i = 0; signs[i] != '\0' && result_string[1] != '\0'; ++i) {
+        while ((idx = string_char_find(result_string,signs[i],0,0)) != -1) {
+            switch (signs[i]) {
+            case '!':
+                if (result_string[idx + 1] == '1' || result_string[idx + 1] == '0') {
+                    operand_a = result_string[idx + 1] - '0';
+                    result_string[idx] = !(operand_a) + '0';
+                    string_delete(result_string,idx + 1,1);
+                } else
+                    printf("error: not expect 0 or 1, idx = %d;\n", idx);
+                break;
+            case '&':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a & operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: and expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            case '^':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a ^ operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: xor expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            case '|':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a | operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: or expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            default:
+                printf("error:");
+            }
+        }
+        printf("\t:'%c': '%s'\n",signs[i], result_string);
+    }
+    return result_string[0];
+}
+
 int string_xchg_chars(char src[], int table[], int count)
 {
     char help1 = string_length(src), help;
@@ -6195,6 +6296,14 @@ void chapter_9()
         }
         printf("%s\n",words_line);
     }
+    char src_13[] = "!(!1 ^ 0) & (0 | 1 & !1 ^ (1 | (0 | 1 & !0)) ^ (1 & (!1 ^ 1 & (1 | 0))) & !0)";
+    //char src_13[] = "!(!1 ^ 0) & (0 ^ 1 | 1) & 0";
+    result = string_checking_brackets(src_13);
+    if (result > 0) {
+        printf("source string:\n'%s'\n",src_13);
+        printf("result = %c\n\n",boolean_calculator(src_13));
+    } else
+        printf("You entered incorrect string, error at: %d\n\n", result * -1);
 }
 
 int main()
