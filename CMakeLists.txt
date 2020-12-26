@@ -4,4 +4,4 @@ project(school-code LANGUAGES C)
 
 set(CMAKE_C_FLAGS "-Wall -Wextra")
 
-add_executable(school-code main.c)
+add_executable(school-code main.c chapter_01.c chapter_02.c)

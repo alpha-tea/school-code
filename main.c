@@ -1,16 +1,69 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <time.h>
+#include "global.h"
+
 #define Y CHAR_MAX
 #define Z CHAR_MIN
 #define DIGIT 5
 #define ARRAY_SIZE 15
 #define SIZE 10
-#define STRING_MAX 256
 #define SIXTEEN 16
+
+double calc_exp_10_1(int numbers[], int is_sqrt[], int exp_size, int terms)
+{
+    int i = 0, num_den_size = exp_size / terms / 2;
+    double num = 0.0, denum = 0.0, result = 0.0, value = 0.0, lim = 0.000000000000001;
+    if ((exp_size <= 0 || terms < 1) && exp_size % terms == 0)
+        return -1.0;
+    printf("(");
+    for (i = 0; i <= exp_size; ++i) {
+        if (i > 0 && i % num_den_size == 0) {
+            printf(")");
+            if (i % (exp_size / terms) == 0) {
+                if (i != exp_size)
+                    printf(" + (");
+                if (denum > lim) {
+                    result += num / denum;
+                } else {
+                    printf("error: %d - %0.2f\n", i, denum);
+                }
+                num = 0.0;
+                denum = 0.0;
+            } else
+                printf(" / (");
+        }
+        if (i != exp_size) {
+            value = numbers[i];
+            if (is_sqrt[i] == 1) {
+                value = sqrt(value);
+                printf("sqrt(%d)", numbers[i]);
+            } else
+                printf("%d", numbers[i]);
+            if (i % (exp_size / terms) < num_den_size)
+                num += value;
+            else
+                denum += value;
+            if (i % num_den_size == 0)      // add terms
+                printf(" + ");
+        }
+    }
+    printf(" = %.5f\n", result);
+    return result;
+}
+
+int sign(int number)
+{
+    if (number > 0)
+        return 1;
+    else if (number < 0)
+        return -1;
+    else
+        return 0;
+}
+
+double hypotenuse(double a, double b)
+{
+    return sqrt(pow(a,2) + pow(b,2));
+}
+
 
 void print_binary_byte(unsigned char byte)
 {
@@ -918,303 +971,6 @@ void intro()
     printf("X^2 = %d\n", x * x);
     printf("-7.5 * x^2 = %f\n", -7.5 * x * x);
     printf("sin (0..1) = %3.2f..%3.2f\n", sin(0.0), sin(1.0));
-}
-
-void chapter_1()
-{
-    //Задачи Златопольского
-    //Глава 1
-    double a = 5,b = 5,c = 5,d = 0,x = 5;
-    double r = (-b + 1 / a) / (2 / c);
-    printf("1.15g:(-b + 1 / a) / (2 / c) = (-%1.0f + 1 / %1.0f) / (2 - %1.0f) = %3.2f\n",b,a,c,r);
-    r = 1 / (1 + (a + b) / 2 );
-    printf("1.15z:1 / (1 + (a + b) / 2) = 1 / (1 + (%1.0f + %1.0f) / 2) = %1.2f\n",a,b,r);
-    int m = 2, n = 3;
-    printf("1.15k:(2 ^ (m ^ n)) = 2 ^ %d ^ %d = %d\n",m,n,(int)pow(2,pow(m,n)));
-    printf("1.16F:\na * x + b \n---------\nc * x + d = \n");
-    a = 1, b = 2, c = 3, d = 4, x = 5;
-    double r1 = a * x + b;
-    double r2 = c * x + d;
-    printf("r1 / r2 = %.2f / %.2f = %.2f\n",r1,r2,r1 / r2);
-    printf("1.16H:\n2 * sin a + b \n-------------\n2 * cos a - b\n-------------\n      2\n");
-    r1 = 2 * sin(a) + b;
-    r2 = 2 * cos(a) - b;
-    printf("r1 / r2 = %.2f / %.2f = %.2f\n",r1,r2,r1 / r2);
-    double Pi = 3.14;
-    int R = 5;
-    printf("1.17g:2PiR = 2 * %1.2f * %d = %3.1f\n",Pi,R, 2 * Pi * R);
-    a = 20,b = 15,c = 56,d = 17;
-    printf("1.17H:(a * d) + (b * c) / a * d = (%2.1f * %2.1f) + (%2.1f * %2.1f) / %2.1f * %2.1f = %1.3f\n",
-           a,d,b,c,a,d,((a * d) + (b * c)) / (a * d));
-
-    double m1 = 5, v = 10, g = 10, h = 50;
-    printf("1.17G:((m * v ^ 2) / 2) + (m * g * h) = ");
-    r = (m1 * v * v) / 2 + (m1 * g * h);
-    printf("(%1.0f * %2.0f ^ 2) / 2) + (%1.0f * %2.0f * %2.0f) = %4.0f\n",m1,v,m1,g,h,r);
-    int s1 = 14,k1 = -3,d1 = 0;
-    printf("d:= s + 1 = %d + 1 = %d\n",s1,s1 + 1);
-    d = s1 + 1;
-    printf("s:= d = %d\n",d1);
-    s1 = d1;
-    k1 = 2 * s1;
-    printf("k:= 2 * s = 2 * %d = %d\n",s1,k1);
-    s1 = 0,d1 = 0,k1 = 30;
-    d1 = k1 - 5;
-    printf("d:= k - 5 = %d - 5 = %d\n",k1,d1);
-    k1 = 2 * d1;
-    printf("k:= 2 * d = 2 * %d = %d\n",d1,k1);
-    s1 = k1 - 100;
-    printf("s:= k - 100 = %d - 100 = %d\n",k1,s1);
-    //1.23 Вычисление по известным формулам.
-    printf("1.23:y = (a ^ 2 + 10) / (sqrt(a ^ 2 + 1)) = ");
-    a = 3;
-    r1 = pow(a,2) + 10;
-    r2 = sqrt(pow(a,2) + 1);
-    printf("r1 / r2 = %.3f / %.3f = %.3f\n",r1,r2,r1 / r2);
-    printf("abs(-10.0)%f\n",fabs(-10.0));
-    int x1 = 3 , y1 = 0;
-    printf("1.22a:y = 7 * x ^ 2 - 3 * x + 6 = 7 * %d ^ 2 - 3 * %d + 6 = ",x1,x1);
-    y1 = 7 * (x1 * x1) - (3 * x1) + 6;
-    printf("%d\n",y1);
-    double h1 = 10, r3, r4, R1 = 6350;
-    printf("1.27:Gorizont = (R + h1) ^ 2 - (R ^ 2) = (%.2f + %.2f) ^ 2 - %.2f = ",R1,h1,R1);
-    r3 = pow((R1 + h1),2);
-    r4 = pow(R1,2);
-    printf("r3 - r4 = %.2f - %.2f = %.2f\n",r3,r4,sqrt(r3 - r4));
-    int s = 0, v_i = 0, a_i = 10;
-    v_i = pow(a_i,3);
-    s = 6 * pow(a_i,2);
-    printf("1.28:V = a ^ 3 = %d ^ 3 = %d; ",a_i,v_i);
-    printf("S = 6 * a ^ 2 = 6 * %d ^ 2 = %d\n",a_i,s);
-    double  z = 0, x2 = 5, y = 8;
-    printf("1.30a:z = x ^ 3 - 2.5xy + 1.78x ^ 2 - 2.5y + 1 = ");
-    z = pow(x2,3) - (2.5 * x2 * y) + (1.78 * pow(x2,2)) - (2.5 * y) + 1;
-    printf("%.1f ^ 3 - 2.5 * %.1f * %.1f + 1.78 * %.1f ^ 2 - 2.5 * %.1f + 1 = ",x2,x2,y,x2,y);
-    printf("%3.2f\n",z);
-    int n1 = 13, f = 42;
-    double sred_arif = 0, sred_geom = 0;
-    sred_arif = (n1 + f) / 2;
-    printf("1.31: sred_arif = (n + f) / 2 = (%d + %d) / 2 = %3.1f;\n",n1,f,sred_arif);
-    sred_geom = pow(n1 * f, 1.0 / 2.0);
-    printf("\tsred_geom = pow(n * f, 1.0 / 2.0) = pow(%d * %d, 1.0 / 2.0) = ",n1,f);
-    printf("%0.2f\n",sred_geom);
-    int kat_1 = 3, kat_2 = 4, gip = 0 , P = 0;
-    gip = sqrt(pow(kat_1,2) + pow(kat_2,2));
-    printf("1.37: Gipoteniza = sqrt(pow(kat_1,2) + pow(kat_2,2)) = ");
-    printf("sqrt(pow(%d,2) + pow(%d,2)) = %d;\n",kat_1,kat_2,gip);
-    P = kat_1 + kat_2 + gip;
-    printf("P = kat_1 + kat_2 + gip = %d + %d + %d = %d\n",kat_1,kat_2,gip,P);
-    double b1 = 5, a1 = 5;
-    x = 0;
-    y = 0;
-    x = ((2 / (pow(a1,2) + 25)) + b1) / (sqrt(b1) + (a1 + b1) / 2);
-    printf("1.40:x = ((2 / (pow(a,2) + 25)) + b) / (sqrt(b) + (a + b) / 2) = \n");
-    printf("((2 / (pow(%.2f,2) + 25)) + %.2f) / (sqrt(%.2f) + (%.2f + %.2f) / 2) = ",a1,b1,b1,a1,b1);
-    printf("%.3f\n",x);
-    y = (fabs(a1) + 2 * sin(b1)) / (5.5 * a1);
-    printf("y = (abs(a) + 2 * sin(b)) / (5.5 * a) = ");
-    printf("(abs(%.2f) + 2 * sin(%.2f)) / (5.5 * %.2f) = ",a1,b1,a1);
-    printf("%.3f\n",y);
-    double apple = 30.5, candy = 115, cookies = 20.99, m4 = 1, m2 = 2, m3 = 3, SUMM = 0;
-    printf("1.52: SUMM = apple * m1 + candy * m2 + cookies * m3 = ");
-    SUMM = apple * m4 + candy * m2 + cookies * m3;
-    printf("%.2f * %.2f + %.2f * %.2f + %.2f * %.2f = %.2f\n",apple,m4,candy,m2,cookies,m3,SUMM);
-    double t_age = 11, m_age = 24;
-    printf("1.54:Average age = (t_age + m_age) / 2 = ");
-    b = (t_age + m_age) / 2;
-    printf("(%.1f + %.1f) / 2 = %.1f\n",t_age,m_age,b);
-    x = fabs(t_age - b);
-    y = fabs(m_age - b);
-    printf("difference_Tanya = %.1f\n",x);
-    printf("difference_Mitya = %.1f\n",y);
-    double cl = 20 , kv , fg;
-    fg = cl * 1.8 + 32;
-    printf("1.57: Fahrenheit = cl * 1.8 + 32 = %.1f * 1.8 + 32 = %.1f\n",cl,fg);
-    kv = (cl + 273.15);
-    printf("Kelvin = cl + 273.15 = %.1f + 273.15 = %.1f",cl,kv);
-    fg = 451;
-    cl = (fg - 32) / 1.8;
-    printf("1.58:cl = (fg - 32) / 1.8 = (%.1f - 32) / 1.8 = %0.1f\n",fg,cl);
-    int t = 5, u = 2;
-    printf("1.59: t = %d; u = %d > ",t,u);
-    t = t - u;
-    u = t + u;
-    t = u - t;
-    printf("t = %d; u = %d\n",t,u);
-    int b2 = 5, c1 = 10, a2 = 1;
-    t = 0;
-    printf("1.60a: b = %d; a = %d; c = %d > b = c = %d;",b2,a2,c1,c1);
-    t = b2;
-    b2 = c1;
-    c1 = a2;
-    a2 = t;
-    printf(" a = b = %d;",a2);
-    printf(" c = a = %d\n",c1);
-    b2 = 5;
-    c1 = 10;
-    a2 = 1;
-    t = b2;
-    b2 = a2;
-    printf("1.60b: b = %d; a = %d; c = %d > b = a = %d;",t,a2,c1,b2);
-    a2 = c1;
-    c1 = t;
-    printf(" c = b = %d;",c1);
-    printf(" a = c = %d\n", a2);
-    int j = 2, k = 0, l = 0, m5 = 0;
-    k = j * j;
-    k = k * j;
-    k = k * k;
-    k = k * j;
-    printf("1.61v:j = %d ;j ^ 7 = %d\n",j,k);
-    j = 2;
-    k = 0;
-    l = 0;
-    k = j * j; // j^2
-    l = k * j; // j^3
-    m5 = k * l; // j^5
-    printf("m = j^5 = %d\n",m5);
-    n = m5 * m5 * l * l * l;
-    printf("n = m ^ 2 + l ^ 3 = %d ^ 2 * %d ^ 3 = %d\n",m5,l,n);
-    printf("j ^ 3 = %d;",l);
-    k = l * k; // j^5
-    k = k * k; // j^10
-    printf("j ^ 10 = %d",k);
-    printf("7 / 3 = %d,%d\n",7/3,7%3);
-}
-
-void chapter_2()
-{
-    //Задачи Златопольского
-    //Глава 2
-    printf("2.1\n");
-    int sm = 134, m = 100;
-    m = sm / m;
-    printf("%dsm in m = %d\n\n",sm,m);
-    printf("2.3\n");
-    int kg = 1500, t = 0;
-    t = kg / 1000;
-    printf("kg / 1000 = %d / 1000 = %d\n\n",kg,t);
-    printf("2.6\n");
-    int min = 0, sec = 4632, hour = 0, a = 3600;
-    // double a = 0;
-    printf("sec = %d\n", sec);
-    hour = sec / 3600;
-    printf("hour = %d\n",hour);
-    a = sec - a;
-    min = (sec % 3600) / 60;
-    printf("min = %d\n",min);
-    a = sec % 60;
-    printf("sec = %d\n\n",a);
-    printf("2.12\n");
-    int b = 194,b1 = 0, b2 = 0, b3 = 0, help = 0;
-    b1 = b % 10;
-    b2 = b % 100 / 10;
-    b3 = b / 100;
-    printf("edenitsy = %d\n",b1);
-    printf("desyatky = %d\n",b2);
-    printf("sotny = %d\n",b3);
-    help = b1 + b2 + b3;
-    printf("summ = %d + %d + %d = %d\n",b1,b2,b3,help);
-    help = b1 * b2 * b3;
-    printf("proizv = %d * %d * %d = %d\n\n",b1,b2,b3,help);
-    printf("2.13\n");
-    b = 123;
-    b1 = b % 10;
-    b2 = b % 100 / 10;
-    b3 = b / 100;
-    help = b1;
-    b1 = b3;
-    b3 = help;
-    int invert = b1 + b2 * 10 + b3 * 100;
-    printf("%d > %d\n\n",b,invert);
-    printf("2.14\n");
-    b1 = b % 10;
-    b2 = b % 100 / 10;
-    b3 = b / 100;
-    help = b3;
-    b3 = b2;
-    b2 = b1;
-    b1 = help;
-    int roll_l = b1 + b2 * 10 + b3 * 100;
-    printf("%d sdig cifr v levo po cikly %d\n\n",b,roll_l);
-    printf("2.16\n");
-    b1 = b / 100;
-    b2 = b % 100 / 10;
-    b3 = b % 10;
-    help = b1;
-    b1 = b2;
-    b2 = help;
-    int numm = b3 + b2 * 10 + b1 * 100;
-    printf("%d > %d\n\n",b,numm);
-    help = b3;
-    b3 = b2;
-    b2 = help;
-    int numm_2 = b3 + b2 * 10 + b1 * 100;
-    printf("2.17: %d > %d\n\n",numm,numm_2);
-    printf("2.18\n");
-    b = 123;
-    b1 = b % 10;
-    b2 = b % 100 / 10;
-    b3 = b / 100;
-    printf("%d%d%d\n",b3,b2,b1);
-    printf("%d%d%d\n",b1,b2,b3);
-    printf("%d%d%d\n",b1,b3,b2);
-    printf("%d%d%d\n",b3,b1,b2);
-    printf("%d%d%d\n",b2,b3,b1);
-    printf("%d%d%d\n\n",b2,b1,b3);
-    printf("2.23\n");
-    int hund = 0, thous = 0;
-    b = 3649;
-    hund = b / 100 % 10;
-    printf("hundred = %d\n",hund);
-    thous = b / 1000;
-    printf("thousend = %d\n\n",thous);
-    printf("2.24\n");
-    b = 237;
-    //help = b / 100;
-    //b1 = b % 100;
-    int x = 2;
-    x += 37 * 10;
-    printf("%d > %d\n",x,b);
-    int x1 = x - (x % 10);
-    printf("372 - (372 %% 10) = %d\n",x1);
-    int x2 = x1 / 10;
-    printf("370 / 10 = %d\n",x2);
-    int x3 = (x % 10) * 100 + x2;
-    printf("(372 %% 10) * 100 + %d = %d\n\n",x2,x3);
-    printf("2.26\n");
-    b = 564;
-    x = b % 10 * 100;
-    printf("%d = b %% 10 * 100 = %d\n",b,x);
-    x1 = (b / 10) + x;
-    printf("%d = (%d / 10) + %d = %d\n\n",x1,b,x,x1);
-    printf("2.28\n");
-    b = 546;
-    b1 = b % 10;
-    b2 = b % 100 / 10;
-    b3 = b / 100;
-    x = (b2 * 100) + (b3 * 10) + b1;
-    printf("%d = %d\n\n",b,x);
-    printf("2.43\n");
-    int y = 2;
-    x = 5;
-    x1 = x % y;
-    printf("(x / y) or (y / x) = 1 else any\n\n");
-    int y1 = y % x;
-    int r = 0;
-    //r = (x % y == 0) || (y % x == 0);
-    r = (x1 * y1) + 1;
-    printf("(%d / %d) or (%d / %d) = %d\n\n",x,y,y,x,r);
-    printf("2.34\n");
-    int summ_1 = 0, summ_2 = 0, m1 = 8, n1 = 2, n2 = 7;
-    printf("n = %d%d, m = %d\n",m1,n1,n2);
-    summ_1 = n1 + n2;
-    summ_2 = m1 + summ_1 / 10 + summ_1 % 10;
-    printf("summ_numbers = %d\n\n",summ_2);
-    printf("2.37\n");
-    int k = 3;
-    printf("para = %d\n",k / 2);
-    printf("number = %d - 1 + 10 = %d\n",k,k + 9);
 }
 
 double kalk (int c1, int c2)
@@ -6306,9 +6062,50 @@ void chapter_9()
         printf("You entered incorrect string, error at: %d\n\n", result * -1);
 }
 
+void chapter_10()
+{
+    int i = 0, j = 0, k = 0;
+    double result_double;
+    const int variants = 4, terms = 3, exp_size = 12;
+    printf("10.1, calculate X, all variants.\n");
+    int data_1[exp_size * variants], is_sqrt[exp_size * variants];
+    srand(time(NULL));
+    for (i = 0; i < variants; ++i) {
+        for (j = 0; j < exp_size; ++j) {
+            data_1[i * exp_size + j] = 1 + rand() % 100;
+            is_sqrt[i * exp_size + j] = rand() % 2;
+        }
+    }
+    for (k = 0; k < variants; ++k) {
+        printf("Variant %d:\n",k);
+        result_double = calc_exp_10_1(&data_1[k * exp_size], is_sqrt, exp_size, terms);
+    }
+    int x = 2, y = -15, z = 0, s1 = 0, s2 = 0;
+    printf("\n10.5, determine the value of z = sign x(%d) + sign y(%d), using in line code and function \n",x,y);
+    // 1
+    z = sign(x) + sign(y);
+    printf("1) z = %d;\n",z);
+    // 2
+    if (x > 0)
+        s1 =  1;
+    else if (x < 0)
+        s1 = -1;
+    if (y > 0)
+        s2 =  1;
+    else if (y < 0)
+        s2 =  -1;
+    z = s1 + s2;
+    printf("2) z = %d;\n\n",z);
+    double cathetus_1 = 21, cathetus_2 = 12, hyp = 0;
+    printf("10.6, hypotenuse calculation, cathetus_1 = %.2f, cathetus_2 = %.2f;\n",cathetus_1, cathetus_2);
+    hyp = hypotenuse(cathetus_1,cathetus_2);
+    printf("hypotenuse = %.2f\n\n",hyp);
+}
+
+
 int main()
 {
-    chapter_9();
+    chapter_2();
     //getchar(); - не снимать.
     return 0;
 }
