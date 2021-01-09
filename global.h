@@ -1,4 +1,7 @@
-﻿#include <stdlib.h>
+﻿#ifndef GLOBAL_H
+#define GLOBAL_H
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
@@ -8,6 +11,9 @@
 
 // Глобальные константы (define) для всего проэкта.
 #define STRING_MAX 256
+#define OBJECTS_MAX 256
+#define BYTE_NUMS 256   // Пока только в 9 главе. Кол - во чисел в байте.
+#define WORD_BITS 16
 
 // Функции и константы для первой главы задачника.
 
@@ -60,9 +66,19 @@ void chapter_6();
 
 // Функции и константы для седьмой главы задачника.
 
+#define SIZE 10
+
+int string_size_special(char string[]);
+void string_reverse_special(char string[]);
+void to_binary(unsigned char byte, char string[]);
+void ScriptedEngeneer_1();
+
 void chapter_7();
 
 // Функции и константы для восьмой главы задачника.
+
+int prime_number(int number);
+int digital_root(int n);
 
 void chapter_8();
 
@@ -73,3 +89,5 @@ void chapter_9();
 // Функции и константы для десятой главы задачника.
 
 void chapter_10();
+
+#endif      // global.h

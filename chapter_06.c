@@ -1,25 +1,5 @@
 ﻿#include "global.h"
 
-int evklid_first_step(int a, int b)
-{
-    int c,d,i = 0;
-    printf("Algoritm Evklida\n");
-    while (a != 0 && b != 0) {
-        if (a > b) {
-            c = a;
-            a %= b;
-            ++i;
-            printf("%d)a(%d) > b(%d);\nTotal: a = %d;\n\n",i,c,b,a);
-        } else {
-            d = b;
-            b %= a;
-            ++i;
-            printf("%d)b(%d) > a(%d)\nTotal: b = %d;\n\n",i,d,a,b);
-        }
-    }
-    return a + b;
-}
-
 void number_of_degrees (int n)
 {
     int i,k,a = 1;
