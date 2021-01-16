@@ -506,6 +506,11 @@ int string_delete(char src[], int start, int length)
     return 0;
 }
 
+int max_int_pair(int a, int b)
+{
+    return ((a > b) ? a : b);
+}
+
 int string_checking_brackets(char src[])
 {
     int i = 0, counter = 0;
@@ -638,6 +643,65 @@ int chars_counter(char s[],  char c)
         index++;
     }
     return counter;
+}
+
+int days_in_month(int month, int year)
+{
+    const int months_in_year = 12;
+    if (month < 1 || month > months_in_year)
+        return -1;
+    int days_months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+        days_months[1]++; // В феврале может быть на один день больше.
+    return days_months[month - 1];
+}
+
+int date_next_day(int* day, int* month, int* year)
+{
+    const int months_in_year = 12;
+    int months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; // days in month
+    int leap = 0;
+    if ((*year % 4 == 0 && *year % 100 != 0) || *year % 400 == 0)
+        leap = 1;
+    months[1] += leap;  // хитрый трюк)
+    if (*day < 1 || *day > months[*month - 1] || *month > months_in_year || *month < 1)
+        return -1;
+    if (*day + 1 > months[*month - 1]) {
+        if (*month == months_in_year) {
+            *month = 1;
+            if (++(*year) == 0)
+                *year = 1;
+        } else
+            ++(*month);
+        *day = 1;
+    } else
+        *day += 1;
+    return 0;
+}
+
+int date_prev_day(int* day, int* month, int* year)
+{
+    const int months_in_year = 12;
+    int months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; // days in month
+    int leap = 0;
+    if ((*year % 4 == 0 && *year % 100 != 0) || *year % 400 == 0)
+        leap = 1;
+    months[1] += leap;  // хитрый трюк)
+    if (*day < 1 || *day > months[*month - 1] || *month > months_in_year || *month < 1)
+        return -1;
+    if (*day - 1 < 1) {
+        if (*month - 1 < 1) {
+            *month = months_in_year;
+            if (*year - 1 == 0) // B.C.
+                *year = -1;
+            else
+                --(*year);
+        } else
+            --(*month);
+        *day = months[*month - 1];
+    } else
+        --(*day);
+    return 0;
 }
 
 double perimeter_isosceles_trapezoid(double bases_1, double bases_2, double height) // использовать как можно больше вызовов из предыдуших заданий.
@@ -946,14 +1010,36 @@ void chapter_10()
     } else
         printf("error in parameters and of lucky numbers;\n");
     printf("\nTotal: %d;\n\n",counter);
-    int mass_1[] = {123456,654321,516243,243651,415362};
-    int mass_int_size = sizeof (mass_1) / sizeof(int);
-    printf("10.22, find max number\n");
+    int data_int[OBJECTS_MAX] = {123456, 415362, 516243, 243651, 654321};
+    int data_size = 5;
+    printf("10.22, find max number in vector\n");
     printf("numbers: ");
-    for (int i = 0; i < mass_int_size; ++i)
-        printf("%d ",mass_1[i]);
-    result = find_max_ints(mass_1, mass_int_size);
-    printf("\nmax number = %d;\n\n", result);
+    int max = data_int[0];
+    for (i = 0; i < data_size; ++i) {
+        printf("%d ",data_int[i]);
+        max = max_int_pair(data_int[i], max);
+    }
+    printf("\nmax number = %d;\n\n", max);
+    int month = 2, year = 2020, day = 28;
+    printf("10.23, define next day, previous day and days in month;\n");
+    printf("date:\t\tprevious:\tnext:\t\tdays in month:\n");
+    int data_dates[] = {1,1,1, 31,12,-1, 28,2,1900, 1,3,1900, 29,2,2000, 1,3,2000, 28,2,2020, 1,3,2020, 16,1,2021};
+    for (i = 0; i < 9; ++i) {
+        day = data_dates[i * 3];
+        month = data_dates[i * 3 + 1];
+        year = data_dates[i * 3 + 2];
+        printf("%2d/%2d/%4d\t", day, month, year);
+        date_prev_day(&day, &month, &year);
+        printf("%2d/%2d/%4d\t", day, month, year);
+        day = data_dates[i * 3];
+        month = data_dates[i * 3 + 1];
+        year = data_dates[i * 3 + 2];
+        date_next_day(&day, &month, &year);
+        printf("%2d/%2d/%4d\t", day, month, year);
+        month = data_dates[i * 3 + 1];
+        year = data_dates[i * 3 + 2];
+        printf("%d\n",days_in_month(month, year));
+    }
 }
 
 
