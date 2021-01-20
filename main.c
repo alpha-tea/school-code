@@ -167,6 +167,49 @@ void print_binary_word(unsigned short int word)
     print_binary_byte((unsigned char)(word & 0xFF));
 }
 
+int evklid(int a, int b)
+{
+    //int c = 0, d = 0;
+    //int i = 0;
+    //printf("Algoritm Evklida\n");
+    while (a != 0 && b != 0) {
+        if (a > b) {
+            //c = a;
+            a %= b;
+            //++i;
+            //printf("%d)a(%d) > b(%d);\nTotal: a = %d;\n\n",i,c,b,a);
+        } else {
+            //d = b;
+            b %= a;
+            //++i;
+            //printf("%d)b(%d) > a(%d)\nTotal: b = %d;\n\n",i,d,a,b);
+        }
+    }
+    return a + b;
+}
+
+int evklid_many_numbers(int mass[], int size)
+{
+    int i = 0;
+    int previous = mass[i];
+    for (i = 1; i < size; ++i)
+        previous = evklid(previous, mass[i]);
+    return previous;
+}
+
+int reduction_of_fractions(int numerator, int denominator, int debug)
+{
+    if (numerator < 1 || denominator < 1)
+        return -1;
+    int result = evklid(numerator,denominator);
+    if (debug == 1)
+        printf("Sourse:\nnum = %d, denum = %d;\n",numerator,denominator);
+    numerator /= result;
+    denominator /= result;
+    if (debug == 1)
+        printf("Result(/%d):\nnum = %d, denum = %d;\n",result,numerator,denominator);
+    return 0;
+}
 
 int string_find_sub(char s1[], char s2[])
 {
@@ -1040,6 +1083,43 @@ void chapter_10()
         year = data_dates[i * 3 + 2];
         printf("%d\n",days_in_month(month, year));
     }
+    int numerator = 75, denominator = 125;
+    int mass_2[] = {25,25,125,625,725};
+    int mass_int_size = sizeof (mass_2) / sizeof(int);
+    printf("\n10.24 - 10.27, NOD and reduction of fractions;\n");
+    printf("Reduction of fractions:\n");
+    result = reduction_of_fractions(numerator,denominator,1);
+    printf("return = %d\n\n",result);
+    printf("NOD for many numbers, using Evklid:\n");
+    printf("numbers: ");
+    for (i = 0; i < mass_int_size; ++i)
+        printf("%d ",mass_2[i]);
+    result = evklid_many_numbers(mass_2,mass_int_size);
+    printf("\n\nsize of array: %d, NOD = %d\n\n",mass_int_size,result);
+    char symbol = 'a';
+    int total_symb = 0, total_len = 0;
+    const int texts_quant = 3;
+    double percent;
+    char* texts[] = {"Subscribe to channel", "8 bit tea party", "This is simple text"};
+    int first = 0;
+    int idx = 0;
+    printf("10.28 - 10.31, counting the number of characters (%c) in a sentence\n", symbol);
+    for (i = 0; i < texts_quant; ++i) {
+        printf("'%s': ",texts[i]);
+        int quantity = string_char_counter(texts[i],symbol);
+        total_symb += quantity;
+        int length = string_length(texts[i]);
+        total_len += length;
+        percent = (double)(quantity) / (double)(length) * 100;
+        if (i != 0 && string_char_find(texts[i],symbol,0,0) < first)
+            idx = i;
+        first = string_char_find(texts[i],symbol,0,0);
+        printf("ratio: %d/%d, in percentages: %.2f%%, ",quantity,length, percent);
+        printf("first symbol idx: %d\n", first);
+    }
+    percent = (double)total_symb / (double)total_len * 100;
+    printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
+    printf("First symbol in all texts: %d\n", idx);
 }
 
 
