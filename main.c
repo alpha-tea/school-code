@@ -260,6 +260,64 @@ int num_radix(char src[], char dst[], int from, int to)
     return quantity;
 }
 
+int char_to_hex(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    else if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    return -1;
+}
+
+char hex_to_char(int c)
+{
+    if (c >= 0 && c <= 9)
+        return c + '0';
+    else if (c >= 10 && c <= 15)
+        return c - 10 + 'A';
+    return -1;
+}
+
+void output_screen(char* buffer, int size_x, int size_y)
+{
+    if (size_x < 1 || size_y < 1)
+        return;
+    printf(" ");
+    for (int i = 0; i < size_x; ++i) {
+        if (i >= 0 && i <= 9)
+            printf(" %c",'0' + i);
+        else
+            printf(" %c", 'A' + i - 10);
+    }
+    printf("\n");
+    for (int i = 0;i < size_y; ++i) {
+        if (i >= 0 && i <= 9)
+            printf("%c ",i + '0');
+        else
+            printf("%c ", 'A' + i - 10);
+        for (int j = 0; j < size_x; ++j)
+            printf("%c ", buffer[i * size_y + j]);
+        printf("\n");
+    }
+}
+
+void clear_screen(char* buffer, int size_x, int size_y, char fill)
+{
+    for (int i = 0; i < size_y; ++i)
+        for (int j = 0; j < size_x; ++j)
+            buffer[i * size_y + j] = fill;
+}
+
+int is_command_correct(char command[], int idx, int pars, int src_size)
+{
+    if (pars >= OBJECTS_MAX || pars < 0 || src_size < 0 || src_size > OBJECTS_MAX)
+        return 0;
+    for (int i = 1; i <= pars; ++i)
+        if (char_to_hex(command[idx + i]) == -1)
+            return 0;
+    return 1;
+}
+
 int string_palindrom(char c[])
 {
     int i = 0, src_len = string_length(c);
@@ -1120,6 +1178,152 @@ void chapter_10()
     percent = (double)total_symb / (double)total_len * 100;
     printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
     printf("First symbol in all texts: %d\n", idx);
+    char commands[OBJECTS_MAX][STRING_MAX] = {"P00RFFP22R66PD2RA6P2DR6APDDRAA"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD
+    const int commands_size = 1;
+    char screen[OBJECTS_MAX * OBJECTS_MAX];
+    const int screen_size = 16;
+    char paper = '.';
+    char ink = 'O';
+    clear_screen(screen,screen_size,screen_size,paper);
+    printf("\n10.33 - 10.37, drawing figuries with command:\n"); // Чуть больше строк с описанием команды.
+    printf("P## - set position to coordinaties x:y\n");
+    printf("D - set point to current position\n");
+    printf("H# - draw a horizontal line to x\n");
+    printf("V# - draw a vertical line to y\n");
+    printf("R## - draw a rectangle to x:y\n");
+    printf("B## - draw a line to x:y\n");
+    printf("T#### - draw a triangle with vertexes x1:y1 to x2:y2\n");
+    printf("C### - draw a circle with radius R to x:y\n");
+    int x_pos = 0, y_pos = 0, curr_y = 0, curr_x = 0;
+    int delta_x = 0, delta_y = 0, delta_max = 0;
+    int err_y = 0, err_x = 0, del_y = 0, del_x = 0;
+    int radius = 5, err_rad = 0;
+    for (k = 0;k < commands_size; ++k) {
+        for (i = 0; commands[k][i] != '\0'; ++i) {  // подумать потом более над безопасным решением...
+            switch (commands[k][i]) {
+            case 'P':
+                if (is_command_correct(commands[k], i, 2, screen_size) == 1) {
+                    curr_x = char_to_hex(commands[k][i + 1]);
+                    curr_y = char_to_hex(commands[k][i + 2]);
+                    printf("Set active position to (%d:%d)\n", curr_x, curr_y);
+                    i += 2;
+                } else
+                    printf("error at %d, parameters '%c' and '%c'\n",
+                           i, commands[k][i + 1], commands[k][i + 2]);
+                break;
+            case 'D':
+                screen[curr_y * screen_size + curr_x] = ink;
+                printf("draw a point at current position (%d:%d)\n", curr_x, curr_y);
+                break;
+            case 'H':
+                if (is_command_correct(commands[k], i, 1, screen_size)) {
+                    int to_x = char_to_hex(commands[k][i + 1]);
+                    int sign = (to_x < curr_x) ? -1 : 1;
+                    printf("draw horizontal line from %d to %d\n",curr_x,to_x);
+                    i += 1;
+                    screen[curr_y * screen_size + to_x] = ink;
+                    for (; to_x != curr_x; curr_x += sign)
+                        screen[curr_y * screen_size + curr_x] = ink;
+                } else
+                    printf("error at %d, parameter '%c'\n", i, commands[k][i + 1]);
+                break;
+            case 'V':
+                if (is_command_correct(commands[k], i, 1, screen_size)) {
+                    int to_y = char_to_hex(commands[k][i + 1]);
+                    int sign = (to_y  < curr_y) ? -1 : 1;
+                    printf("draw vertical line from %d to %d\n",curr_y,to_y);
+                    i += 1;
+                    screen[curr_y * screen_size + to_y] = ink;
+                    for (; to_y != curr_y; curr_y += sign)
+                        screen[curr_y * screen_size + curr_x] = ink;
+                } else
+                    printf("error at %d, parameter '%c'\n", i, commands[k][i + 1]);
+                break;
+            case 'R':
+                if (is_command_correct(commands[k],i,2,screen_size)) {
+                    char rect_commands[] = "H_V_H_V_";
+                    rect_commands[1] = commands[k][i + 1];
+                    rect_commands[3] = commands[k][i + 2];
+                    rect_commands[5] = hex_to_char(curr_x);
+                    rect_commands[7] = hex_to_char(curr_y);
+                    string_insert(commands[k],rect_commands,i + 3, STRING_MAX);
+                    printf("draw rectangle to (%c:%c), with commands '%s', result = '%s'\n",
+                           rect_commands[1], rect_commands[3], rect_commands, commands[k]);
+                    i += 2;
+                } else
+                    printf("error at %d, parameters '%c' and '%c'\n",
+                           i, commands[k][i + 1], commands[k][i + 2]);
+                break;
+                /*
+            case 'B':
+                start_x_pos = x_pos;
+                start_y_pos = y_pos;
+                string_find_char_variant_2(digits,command[i + 1],&x_pos);
+                string_find_char_variant_2(digits,command[i + 2],&y_pos);
+                delta_x = abs(x_pos - start_x_pos);
+                delta_y = abs(y_pos - start_y_pos);
+                delta_max = delta_x;
+                if (delta_y > delta_x)
+                    delta_max = delta_y;
+                del_y = 1;
+                del_x = 1;
+                if (y_pos - start_y_pos < 0)
+                    del_y = -1;
+                if (x_pos - start_x_pos < 0)
+                    del_x = -1;
+                err_y = delta_x / 2;
+                err_x = delta_y / 2;
+                for (int x = start_x_pos; x != x_pos + 1;) {
+                    field[start_y_pos][x] = 'O';
+                    err_y += delta_y;
+                    err_x += delta_x;
+                    if (err_y >= delta_max) {
+                        start_y_pos += del_y;
+                        err_y -= delta_max;
+                    }
+                    if (err_x >= delta_max) {
+                        x += del_x;
+                        err_x -= delta_max;
+                    }
+                }
+                i += 2;
+                break;
+            case 'C':
+                string_find_char_variant_2(digits,command[i + 1],&start_x_pos);
+                string_find_char_variant_2(digits,command[i + 2],&start_y_pos);
+                string_find_char_variant_2(digits,command[i + 3],&radius);
+                printf("Command: C(rad = %d; x = %d:y = %d)\n",radius,start_x_pos,start_y_pos);
+                err_rad = 1 - radius;
+                y_pos = 0;
+                while (radius >= y_pos) {
+                    field[radius + start_y_pos][y_pos + start_x_pos] = 'O';
+                    field[y_pos + start_y_pos][radius + start_x_pos] = 'O';
+                    field[-radius + start_y_pos][y_pos + start_x_pos] = 'O';
+                    field[-y_pos + start_y_pos][radius + start_x_pos] = 'O';
+                    field[-radius + start_y_pos][-y_pos + start_x_pos] = 'O';
+                    field[-y_pos + start_y_pos][-radius + start_x_pos] = 'O';
+                    field[radius + start_y_pos][-y_pos + start_x_pos] = 'O';
+                    field[y_pos + start_y_pos][-radius + start_x_pos] = 'O';
+                    y_pos++;
+                    if (err_rad < 0)
+                        err_rad += 2 * y_pos + 1;
+                    else {
+                        --radius;
+                        err_rad += 2 * (y_pos - radius + 1);
+                    }
+                }
+                i += 3;
+                break;
+                */
+            default:
+                printf("ERROR: unknown command - '%c'!\n",commands[k][i]);
+            }
+            printf("\n");
+            output_screen(screen, screen_size, screen_size);
+            printf("\n");
+        }
+        printf("result commands string: '%s'",commands[k]);
+    }
 }
 
 
