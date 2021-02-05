@@ -612,6 +612,13 @@ int max_int_pair(int a, int b)
     return ((a > b) ? a : b);
 }
 
+void exchange_of_values(int *a, int *b)
+{
+    *a -= *b;
+    *b += *a;
+    *a = *b - *a;
+}
+
 int string_checking_brackets(char src[])
 {
     int i = 0, counter = 0;
@@ -1178,7 +1185,7 @@ void chapter_10()
     percent = (double)total_symb / (double)total_len * 100;
     printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
     printf("First symbol in all texts: %d\n", idx);
-    char commands[OBJECTS_MAX][STRING_MAX] = {"P00RFFP22R66PD2RA6P2DR6APDDRAA"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD
+    char commands[OBJECTS_MAX][STRING_MAX] = {"P77C6"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
     const int commands_size = 1;
     char screen[OBJECTS_MAX * OBJECTS_MAX];
     const int screen_size = 16;
@@ -1193,11 +1200,10 @@ void chapter_10()
     printf("R## - draw a rectangle to x:y\n");
     printf("B## - draw a line to x:y\n");
     printf("T#### - draw a triangle with vertexes x1:y1 to x2:y2\n");
-    printf("C### - draw a circle with radius R to x:y\n");
-    int x_pos = 0, y_pos = 0, curr_y = 0, curr_x = 0;
-    int delta_x = 0, delta_y = 0, delta_max = 0;
-    int err_y = 0, err_x = 0, del_y = 0, del_x = 0;
-    int radius = 5, err_rad = 0;
+    printf("C# - draw a circle with radius R\n");
+    int curr_y = 0, curr_x = 0;
+    int delta_x = 0, delta_y = 0;
+    int radius = 5;
     for (k = 0;k < commands_size; ++k) {
         for (i = 0; commands[k][i] != '\0'; ++i) {  // подумать потом более над безопасным решением...
             switch (commands[k][i]) {
@@ -1254,67 +1260,86 @@ void chapter_10()
                     printf("error at %d, parameters '%c' and '%c'\n",
                            i, commands[k][i + 1], commands[k][i + 2]);
                 break;
-                /*
             case 'B':
-                start_x_pos = x_pos;
-                start_y_pos = y_pos;
-                string_find_char_variant_2(digits,command[i + 1],&x_pos);
-                string_find_char_variant_2(digits,command[i + 2],&y_pos);
-                delta_x = abs(x_pos - start_x_pos);
-                delta_y = abs(y_pos - start_y_pos);
-                delta_max = delta_x;
-                if (delta_y > delta_x)
-                    delta_max = delta_y;
-                del_y = 1;
-                del_x = 1;
-                if (y_pos - start_y_pos < 0)
-                    del_y = -1;
-                if (x_pos - start_x_pos < 0)
-                    del_x = -1;
-                err_y = delta_x / 2;
-                err_x = delta_y / 2;
-                for (int x = start_x_pos; x != x_pos + 1;) {
-                    field[start_y_pos][x] = 'O';
-                    err_y += delta_y;
-                    err_x += delta_x;
-                    if (err_y >= delta_max) {
-                        start_y_pos += del_y;
-                        err_y -= delta_max;
+                if (is_command_correct(commands[k], i, 2, screen_size)) {
+                    int to_x = char_to_hex(commands[k][i + 1]);
+                    int to_y = char_to_hex(commands[k][i + 2]);
+                    delta_x = abs(to_x - curr_x);
+                    delta_y = abs(to_y - curr_y);
+                    int sign_x = (to_x > curr_x) ? 1 : -1;
+                    int sign_y = (to_y > curr_y) ? 1 : -1;
+                    int offset = delta_x - delta_y;
+                    screen[to_y * screen_size + to_x] = ink;
+                    printf("draw a line from (%d:%d) to (%d:%d)\n",curr_x, curr_y, to_x, to_y);
+                    printf("d_x = %d, d_y = %d, sign_x_y = %d:%d, offset = %d\n",
+                           delta_x, delta_y, sign_x, sign_y, offset);
+                    while (curr_x != to_x || curr_y != to_y) {
+                        screen[curr_y * screen_size + curr_x] = ink;
+                        int carry_flag = offset * 2;
+                        if (carry_flag > (-1 * delta_y)) {
+                            curr_x += sign_x;
+                            offset -= delta_y;
+                        }
+                        if (carry_flag < delta_x) {
+                            curr_y += sign_y;
+                            offset += delta_x;
+                        }
                     }
-                    if (err_x >= delta_max) {
-                        x += del_x;
-                        err_x -= delta_max;
-                    }
+                    i += 2;
+                } else
+                    printf("error at %d, parameters '%c' and '%c'\n",
+                           i, commands[k][i + 1], commands[k][i + 2]);
+                break;
+            case 'T':
+                if (is_command_correct(commands[k],i,4,screen_size)) {
+                    char trian_commands[] = "B__B__B__";
+                    trian_commands[1] = commands[k][i + 1];
+                    trian_commands[2] = commands[k][i + 2];
+                    trian_commands[4] = commands[k][i + 3];
+                    trian_commands[5] = commands[k][i + 4];
+                    trian_commands[7] = hex_to_char(curr_x);
+                    trian_commands[8] = hex_to_char(curr_y);
+                    string_insert(commands[k],trian_commands,i + 5, STRING_MAX);
+                    printf("draw triangle vertexes, with commands '%s', result = '%s'\n",
+                           trian_commands, commands[k]);
+                    i += 4;
+                } else {
+                    printf("error at %d, parameters vertexes: ", i);
+                    for (j = 0; j < 4; ++j)
+                        printf("%c ",commands[k][i + j]);
+                    printf("\n");
                 }
-                i += 2;
                 break;
             case 'C':
-                string_find_char_variant_2(digits,command[i + 1],&start_x_pos);
-                string_find_char_variant_2(digits,command[i + 2],&start_y_pos);
-                string_find_char_variant_2(digits,command[i + 3],&radius);
-                printf("Command: C(rad = %d; x = %d:y = %d)\n",radius,start_x_pos,start_y_pos);
-                err_rad = 1 - radius;
-                y_pos = 0;
-                while (radius >= y_pos) {
-                    field[radius + start_y_pos][y_pos + start_x_pos] = 'O';
-                    field[y_pos + start_y_pos][radius + start_x_pos] = 'O';
-                    field[-radius + start_y_pos][y_pos + start_x_pos] = 'O';
-                    field[-y_pos + start_y_pos][radius + start_x_pos] = 'O';
-                    field[-radius + start_y_pos][-y_pos + start_x_pos] = 'O';
-                    field[-y_pos + start_y_pos][-radius + start_x_pos] = 'O';
-                    field[radius + start_y_pos][-y_pos + start_x_pos] = 'O';
-                    field[y_pos + start_y_pos][-radius + start_x_pos] = 'O';
-                    y_pos++;
-                    if (err_rad < 0)
-                        err_rad += 2 * y_pos + 1;
-                    else {
-                        --radius;
-                        err_rad += 2 * (y_pos - radius + 1);
+                if (is_command_correct(commands[k], i, 1, screen_size)) {
+                    radius = char_to_hex(commands[k][i + 1]);
+                    printf("draw a circle, radius = %d; curr_x = %d, curr_y = %d)\n", radius, curr_x, curr_y);
+                    int delta = 1 - (2 * radius);
+                    int pos_x = 0, pos_y = radius, offset = 0;
+                    while (pos_y >= 0) {
+                        screen[(curr_y + pos_y) * screen_size + curr_x + pos_x] = ink;
+                        screen[(curr_y - pos_y) * screen_size + curr_x + pos_x] = ink;
+                        screen[(curr_y + pos_y) * screen_size + curr_x - pos_x] = ink;
+                        screen[(curr_y - pos_y) * screen_size + curr_x - pos_x] = ink;
+                        offset = 2 * (delta + pos_y) - 1;
+                        if (delta < 0 && offset < 0) {
+                            pos_x++;
+                            delta += 2 * pos_x + 1;
+                        } else {
+                            offset = 2 * (delta - pos_x) - 1;
+                            if (delta > 0 && offset > 0) {
+                                pos_y--;
+                                delta = 1 - 2 * pos_y;
+                            } else {
+                                pos_y--;
+                                pos_x++;
+                                delta += 2 * (pos_x - pos_y);
+                            }
+                        }
                     }
+                    i += 1;
                 }
-                i += 3;
                 break;
-                */
             default:
                 printf("ERROR: unknown command - '%c'!\n",commands[k][i]);
             }
@@ -1324,6 +1349,11 @@ void chapter_10()
         }
         printf("result commands string: '%s'",commands[k]);
     }
+    int a1 = 1, b1 = 2, c1 = 3 , d1 = 4;
+    printf("\n10.38, exchange of values, a = %d, b = %d, c = %d, d = %d;\n", a1, b1, c1, d1);
+    exchange_of_values(&a1,&b1);
+    exchange_of_values(&c1,&d1);
+    printf("result = a = %d, b = %d, c = %d, d = %d;\n", a1, b1, c1, d1);
 }
 
 
