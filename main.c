@@ -607,6 +607,65 @@ int string_delete(char src[], int start, int length)
     return 0;
 }
 
+void print_date(int day, int month, int year, char* format) // Улучшать по мере продвижения заданий.
+{
+    const int date_size = 4, base = 10;
+    const char fill = '0';
+    int fields[date_size], digits[date_size];
+    int dates[date_size];
+    dates[0] = day;
+    dates[1] = month;
+    dates[2] = year;
+    int divs[date_size];
+    for (int i = 0; i < date_size; ++i) {
+        fields[i] = 0;
+        digits[i] = 0;
+        if (i < date_size - 1)
+            divs[i] = 1;
+        else
+            divs[i] = 0;
+    }
+    const char* epoch[] = {"B.C.","A.D"};
+    char format_chars[] = "DMYE";
+    //printf("digits in dates:");
+    for (int i = 0; i < date_size ; ++i) {
+        int number = abs(dates[i]);
+        while (number) {
+            if (number >= base)
+                divs[i] *= base;
+            number /= base;
+            digits[i]++;
+        }
+        //printf(" %d",digits[i]);
+    }
+    //printf("\nfields size(digits): divs of chars: ");
+    for (int i = 0; format_chars[i] != '\0'; ++i) {
+        for (int j = 0; format[j] != '\0'; ++j)
+            if (format[j] == format_chars[i])
+                fields[i]++;
+        //printf("%d(%d):%d ",fields[i],digits[i],divs[i]);
+    }
+    //printf("\nresult: ");
+    for (int i = 0, j = 0; format[i] != '\0'; ++i) {
+        for (j = 0; j < date_size && format[i] != format_chars[j]; ++j)
+            ;
+        if (j != date_size && divs[j] > 0) {
+            if (digits[j] >= fields[j] && j != date_size - 1) { // Последняя буква в таблице - это эпоха.
+                printf("%d",abs(dates[j] / divs[j]) % base);
+                divs[j] /= base;
+                digits[j]--;
+                fields[j]--;
+            } else {
+                printf("%c",fill);
+                fields[j]--;
+            }
+        } else if (j == date_size - 1) {
+            printf("%s",epoch[(year > 0)]);
+        } else
+            printf("%c",format[i]);
+    }
+}
+
 int max_int_pair(int a, int b)
 {
     return ((a > b) ? a : b);
@@ -1354,6 +1413,21 @@ void chapter_10()
     exchange_of_values(&a1,&b1);
     exchange_of_values(&c1,&d1);
     printf("result = a = %d, b = %d, c = %d, d = %d;\n", a1, b1, c1, d1);
+    day = 2;
+    year = -2021;
+    month = 9;
+    int date_quantity = 10;
+    char* date_formats[] = {"DD-MM-YYYY E", "E DDD-M-YYY", "EDMY-DMY-E", "D-M-Y", "Y-Y-Y"
+                            , "DDDMMM", "E", "Y___Y__M_", "__E__DD_", "___YYYYY___"};
+    printf("date: %d:%d:%d;\n",day,month,year);
+    printf("source format:\tresult format:\n");
+    for (i = 0; i < date_quantity; ++i) {
+        printf("'%s'\t", date_formats[i]);
+        if (string_length(date_formats[i]) < 6)
+            printf("\t");
+        print_date(day,month,year,date_formats[i]);
+        printf("\n");
+    }
 }
 
 
