@@ -28,16 +28,6 @@ int pair_min(int a, int b)
     return (a < b) ? a : b;
 }
 
-int length_number(int number)
-{
-    int i = 0;
-    while (number > 0) {
-        number /= 10;
-        ++i;
-    }
-    return i;
-}
-
 int digits_in_num(int num, int start, int len, int* sum)
 {
     *sum = 0;
@@ -1433,7 +1423,18 @@ void chapter_10()
 
 int main()
 {
-    chapter_8();
+    //bulls_and_cows();
+    for (int i = 1; i <= 50; ++i) {
+        if (i % 3 == 0 && i % 5 == 0)
+            printf("Fizz Buzz, ");
+        else if (i % 3 == 0)
+            printf("Fizz, ");
+        else if (i % 5 == 0)
+            printf("Buzz, ");
+        else
+            printf("%d, ",i);
+
+    }
     //getchar(); - не снимать, кусается...
     return 0;
 }

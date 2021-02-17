@@ -53,3 +53,13 @@ int evklid_first_step(int a, int b)
     }
     return a + b;
 }
+
+int length_number(int number)
+{
+    int i = 0;
+    while (number > 0) {
+        number /= 10;
+        ++i;
+    }
+    return i;
+}

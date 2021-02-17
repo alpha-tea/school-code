@@ -90,4 +90,7 @@ void chapter_9();
 
 void chapter_10();
 
+// Функции и константы для допольнительных задач.
+
+void bulls_and_cows();
 #endif      // global.h

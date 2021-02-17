@@ -11,4 +11,5 @@ int ideal_number(int a);
 
 int evklid_first_step(int a, int b);
 
+int length_number(int number);
 #endif
