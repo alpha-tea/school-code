@@ -455,6 +455,93 @@ double line_vertex(double vertex[])
     return hypotenuse(a,b);
 }
 
+int factorial_recur(int number)
+{
+    //printf("factorial = %d\n",number);
+    if (number < 2)
+        return 1;
+    return (factorial_recur(number - 1) * number);
+}
+
+int exp_recur(int power, int base)
+{
+    //printf("power = %d\n", power);
+    if (power < 2)
+        return base;
+    return (exp_recur(power - 1, base) * base);
+}
+
+int expt (int base, int power) {    // От Андрея
+    printf("exp = %d:%d\n", base, power);
+    if (power == 0) {return 1; }
+    int quot = power / 2;
+    int rem = power % 2;
+    if (rem == 0) {
+        int half = expt(base, quot);
+        return half * half  ;
+    } else {
+        int half = expt(base, quot);
+        return half * half * base ;
+    }
+}
+
+int sum_of_digits_recur(int number)
+{
+    printf("sum = %d\n", number);
+    if (number < 1)
+        return 0;
+    return (sum_of_digits_recur(number / 10) + number % 10);
+}
+
+int number_of_digits_recur(int number)
+{
+    printf("quantity = %d\n", number);
+    if (number < 1)
+        return 0;
+    return (number_of_digits_recur(number / 10) + 1);
+}
+
+int digital_root_recur(int number)
+{
+    printf("root = %d\n", number);
+    if (number < 10)
+        return number;
+    return (digital_root_recur(sum_of_digits_recur(number)));
+}
+
+int value_arith_progres(int d, int n, int a1)
+{
+    printf("arif = %d:%d:%d\n",d,n,a1);
+    if (n <= 1)
+        return a1;
+    int r = value_arith_progres(d,n - 1, a1) + d;
+    printf("r = %d\n", r);
+    return r;
+}
+
+int sum_arith_progres(int d, int n, int a1)     // Доделать...
+{
+    printf("arif = %d:%d:%d\n",d,n,a1);
+    if (n <= 1)
+        return a1;
+    int r = 0, next = value_arith_progres(d,n - 1, a1);
+    r += sum_arith_progres(d, n - 1, next);
+    printf("r = %d\n", r);
+    return r;
+}
+
+int arif_recur(int a1, int d, int n, int* sum)
+{
+    printf("element = %d, sum = %d;\n", a1, *sum);
+    *sum += a1;
+    n--;
+    if (n > 0) {
+        a1 += d;
+        a1 = arif_recur(a1, d, n, sum);
+    }
+    return a1;
+}
+
 void string_reverse(char string[])
 {
     int size = string_length(string);
@@ -1418,12 +1505,36 @@ void chapter_10()
         print_date(day,month,year,date_formats[i]);
         printf("\n");
     }
+    a = 9;
+    printf("\n10.41, recursive factorial of %d;\n", a);
+    result = factorial_recur(a);
+    printf("result = %d;\n\n",result);
+    int power = 5;
+    base = 2;
+    printf("10.42, recursive exponentiation, power = %d, base = %d;\n", power, base);
+    result = expt(base,power);
+    printf("result = %d;\n\n", result);
+    int value = 123;
+    printf("10.43, sum of digits and their number, recursively, number = %d\n", value);
+    printf("sum of digits = %d;\n", sum_of_digits_recur(value));
+    printf("quantity of digits = %d;\n\n", number_of_digits_recur(value));
+    value = 15478;
+    printf("10.44, digital root of a number, recursively, number = %d;\n",value);
+    printf("digital root = %d;\n\n",digital_root_recur(value));
+    int d = 3, n = 3, sum = 0;
+    a1 = 1;
+    printf("10.45, arithmetic progression, recursive, a1 = %d, n = %d, d = %d;\n", a1, n, d);
+    printf("n value of arithmetic progression = %d\n",value_arith_progres(d,n,a1));
+    printf("sum of arithmetic progression = %d\n\n", sum_arith_progres(d,n,a1));
+    printf("n of value = %d;\n", arif_recur(a1,d,n,&sum));
+    printf("sum = %d;\n", sum);
 }
 
 
 int main()
 {
-    //bulls_and_cows();
+    bulls_and_cows();
+    /*
     for (int i = 1; i <= 50; ++i) {
         if (i % 3 == 0 && i % 5 == 0)
             printf("Fizz Buzz, ");
@@ -1433,8 +1544,8 @@ int main()
             printf("Buzz, ");
         else
             printf("%d, ",i);
-
     }
+    */
     //getchar(); - не снимать, кусается...
     return 0;
 }
