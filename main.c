@@ -684,6 +684,45 @@ int string_delete(char src[], int start, int length)
     return 0;
 }
 
+int fibonacci_recur(int n)
+{
+    if (n <= 1)
+        return n;
+    return fibonacci_recur(n - 1) + fibonacci_recur(n - 2);
+}
+
+int find_max_recur(int numbers[], int length, int* idx, int max)
+{
+    if (length < 0)                             // Реализовать функцию только с адресной арифметикой.
+        return max;
+    if (numbers[length] > max) {
+        max = numbers[length];
+        *idx = length;
+    }
+    return find_max_recur(numbers,--length,idx,max);
+}
+
+int flip_number(int n)
+{
+    const int base = 10;
+    if (n == 0)
+        return 0;
+    printf("%d", n % base);
+    return flip_number(n / base);
+}
+
+int revers_number(int n, int result)
+{
+    const int base = 10;                    // Улучшить функцию...
+    result = result * base + n % base;
+    if (n > base) {
+        printf("\nrevers, n = %d, result before = %d\n", n, result);
+        result = revers_number(n / base, result);
+        printf("\nrevers, n = %d, result after = %d\n", n, result);
+    }
+    return result;
+}
+
 void print_date(int day, int month, int year, char* format) // Улучшать по мере продвижения заданий.
 {
     const int date_size = 4, base = 10;
@@ -768,6 +807,21 @@ int string_checking_brackets(char src[])
         return i;
     else
         return -1 * (i - 1);
+}
+
+int ackermann(int m, int n)
+{
+    if (m < 0 || n < 0)
+        return -1;
+    int result = 0;
+    if (m == 0)
+        return n + 1;
+    else
+        if (n == 0)
+            result = ackermann(m - 1, 1);
+        else
+            result = ackermann(m - 1, ackermann(m, n - 1));
+    return result;
 }
 
 double triangle_heron (double a, double b, double c)
@@ -1528,6 +1582,34 @@ void chapter_10()
     printf("sum of arithmetic progression = %d\n\n", sum_arith_progres(d,n,a1));
     printf("n of value = %d;\n", arif_recur(a1,d,n,&sum));
     printf("sum = %d;\n", sum);
+    n = 16;
+    printf("10.47, recursive fibonacci, n = %d;\n", n);
+    result = fibonacci_recur(n);
+    printf("result = %d;\n\n",result);
+    int numbers[] = {1,4,-7,12,81,-41,513,-1024};
+    n = (sizeof (numbers) / sizeof (int)) - 1;
+    idx = 0;
+    max = numbers[n];
+    printf("10.48 - 10.49, find the maximum number and its index, length = %d;\n", n);
+    printf("value:\n");
+    for (i = 0; i <= n; ++i)
+        printf("%d ",numbers[i]);
+    printf("\nmax = %d, ", find_max_recur(numbers,n,&idx, max));
+    printf("idx = %d;\n\n",idx);
+    a1 = 0;
+    int a2 = 3, a3 = 0, a4 = 3;
+    printf("10.50, funcion Ackermann, A(m,n), m = %d, n = %d;\n", a2, a4);
+    printf("n / m:\t0:\t1:\t2:\t3:\n");
+    for (;a3 <= a4; ++a3) {
+        printf("%d\t", a3);
+        for(a1 = 0; a1 <= a2; ++a1)
+            printf("%d\t", ackermann(a1,a3));
+        printf("\n");
+    }
+    n = 12345;
+    result = 0;
+    printf("10.52, flip the number, number = %d;\n", n);
+    printf("result = %d;\n\n", revers_number(n,result));
 }
 
 
