@@ -93,4 +93,5 @@ void chapter_10();
 // Функции и константы для допольнительных задач.
 
 void bulls_and_cows();
+void hack_the_terminal(int length, int quantity, int attempts);
 #endif      // global.h

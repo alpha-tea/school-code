@@ -844,6 +844,40 @@ int string_length_brackets(char src[], int start)
     return i - 1;
 }
 
+void print_integer_recur(int number, int base)
+{
+    char digits_for_translation[] = "0123456789ABCDEF";
+    if (number <= 0 || base < 2 || base > 16)
+        return;
+    if (number >= base)
+        print_integer_recur(number / base,base);
+    printf("%c",digits_for_translation[number % base]);
+}
+
+int prime_check_recur(int number, int* num_ptr)
+{                                      // Кто придумает более красививое решение, тот молодец!
+    if (number < 1 || *num_ptr < 1)
+        return -1;
+    if (number == 1)
+        return 1;
+    if (number == *num_ptr)
+        number--;
+    if ((*num_ptr % number) == 0)
+        return 0;
+    return prime_check_recur(--number, num_ptr);
+}
+
+int symmetric_check_recur(char string[], int start, int end, int limit)
+{
+    if (string_length(string) > limit || end >= string_length(string) || start > end)
+        return -1;
+    if (string[start] != string[end])
+        return 0;
+    else if (end - start <= 1)
+        return 1;
+    return symmetric_check_recur(string, ++start, --end, limit);
+}
+
 char boolean_calculator(char src[])
 {
     int i = 0, counter = 0, idx = 0, operand_a = 0, operand_b = 0;
@@ -1610,24 +1644,38 @@ void chapter_10()
     result = 0;
     printf("10.52, flip the number, number = %d;\n", n);
     printf("result = %d;\n\n", revers_number(n,result));
+    const int bases[] = {2,4,8,16,10};
+    const int tab_size = 5;
+    for (i = 0; i < tab_size; ++i)
+        data_int[i] = rand() % 128;
+    printf("10.54 - 10.55, translation;\n");
+    printf("number:\t2:\t4:\t8:\t16:\t10:\n");
+    for (i = 0; i < tab_size; ++i) {
+        printf("%d\t", data_int[i]);
+        for (j = 0;j < tab_size; ++j) {
+            print_integer_recur(data_int[i], bases[j]);
+            printf("\t");
+        }
+        printf("\n");
+    }
+    n = 17;
+    printf("\n10.56, recursively checking if a number is prime, number = %d;\n", n);
+    result = prime_check_recur(n,&n);
+    printf("result = %d;\n\n",result);
+    char src[] = "adeqweewqsde";
+    start = 5;
+    int end = 6;
+    printf("10.57, is the string symmetric, start = %d, end = %d;\n", start, end);
+    printf("source string: '%s'\n",src);
+    result = symmetric_check_recur(src, start, end, STRING_MAX);
+    printf("result = %d;\n\n", result);
 }
 
 
 int main()
 {
-    bulls_and_cows();
-    /*
-    for (int i = 1; i <= 50; ++i) {
-        if (i % 3 == 0 && i % 5 == 0)
-            printf("Fizz Buzz, ");
-        else if (i % 3 == 0)
-            printf("Fizz, ");
-        else if (i % 5 == 0)
-            printf("Buzz, ");
-        else
-            printf("%d, ",i);
-    }
-    */
+    int length = 4, quantity = 8, attempts = 3;
+    hack_the_terminal(length, quantity, attempts);
     //getchar(); - не снимать, кусается...
     return 0;
 }
