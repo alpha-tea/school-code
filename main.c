@@ -7,6 +7,41 @@
 #define SEQUENCE_LENGTH 11
 #define NUMBERS_QUANTITY 6
 
+void demo()
+{
+    unsigned char font[5][8];
+    unsigned char font_1[3][16 * 2];
+    char video_buffer[2][2], scr_buffer[2 * 2 * 8 * 8];
+    for (int i = 0; i < 4; ++i)
+        for (int g = 0; g < 4; ++g) {
+            font[i][g * 2] = 0xAA;
+            font[i][g * 2 + 1] = 0x55;
+        }
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
+            video_buffer[i][j] = 0;
+    video_buffer[0][0] = 1;
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j) {
+            char code = video_buffer[i][j];
+            for (int k = 0; k < CHAR_BIT; ++k)
+                for (int l = CHAR_BIT - 1; l >= 0; --l) {
+                    char draw;
+                    if ((font[code][k] & (0x01 << l)) != 0)
+                        draw = 'O';
+                    else
+                        draw = '.';
+                    scr_buffer[i * 128 + j * 8 + k * 16 + (CHAR_BIT - 1 - l)] = draw;
+                }
+        }
+    for (int i = 0; i < 16; ++i) {
+        printf("%d: ",i);
+        for (int j = 0; j < 16; ++j)
+            printf("%c ", scr_buffer[i * 16 + j]);
+        printf("\n");
+    }
+}
+
 int find_max_ints(int mass[], int size)
 {
     if (size < 1)
@@ -85,7 +120,6 @@ int degree_check(int value, int base)
     }
     return 0;
 }
-
 
 double calc_exp_10_1(int numbers[], int is_sqrt[], int exp_size, int terms)
 {
@@ -640,6 +674,16 @@ int number_system_check(int system,int char_in_int[],int len)
     return 0;
 }
 
+int bits_counter(int value)
+{
+    int counter = 0;
+    value--;
+    while (value > 0) {
+        value /= 2;
+        counter++;
+    }
+    return counter;
+}
 
 void intro()
 {
@@ -1409,7 +1453,7 @@ void chapter_10()
     percent = (double)total_symb / (double)total_len * 100;
     printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
     printf("First symbol in all texts: %d\n", idx);
-    char commands[OBJECTS_MAX][STRING_MAX] = {"P77C6"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
+    char commands[OBJECTS_MAX][STRING_MAX] = {"P00RFFP22R66PD2RA6P2DR6APDDRAA"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
     const int commands_size = 1;
     char screen[OBJECTS_MAX * OBJECTS_MAX];
     const int screen_size = 16;
@@ -1546,14 +1590,13 @@ void chapter_10()
                         screen[(curr_y + pos_y) * screen_size + curr_x - pos_x] = ink;
                         screen[(curr_y - pos_y) * screen_size + curr_x - pos_x] = ink;
                         offset = 2 * (delta + pos_y) - 1;
-                        if (delta < 0 && offset < 0) {
+                        if (delta < 0 && offset <= 0) {
                             pos_x++;
                             delta += 2 * pos_x + 1;
                         } else {
-                            offset = 2 * (delta - pos_x) - 1;
                             if (delta > 0 && offset > 0) {
                                 pos_y--;
-                                delta = 1 - 2 * pos_y;
+                                delta -= 2 * pos_y + 1;
                             } else {
                                 pos_y--;
                                 pos_x++;
@@ -1674,8 +1717,200 @@ void chapter_10()
 
 int main()
 {
-    int length = 4, quantity = 8, attempts = 3;
-    hack_the_terminal(length, quantity, attempts);
+    /*
+    char* v_mode_name[2] = {"txt", "gfx"};
+    printf("Video modes is history\n");
+    printf("1 - mode type;\n2 - screen resolution;\n3 - aspect ratio;\n"
+    "4 - the dimension of the character in points;\n5 - number of unique colors per point;\n"
+    "6 - effective or real screen resolution;\n7 - conventionally displayed screen resolution;\n"
+    "8 - bit per color;\n9 - dots per byte;\n10 - byte per point;\n"
+    "11 - video buffer size/font/palette size;");
+    enum mode_type {text, gfx};
+    int scr_y = 0, scr_x = 0, aspect_x = 0, aspect_y = 0, font_x = 0, font_y = 0;
+    int colors = 0, effective_x = 0, effective_y = 0, displ_x = 0, displ_y = 0;
+    int bit_per_color = 0, point_per_byte = 0, byte_per_point = 0;
+    int buffer_size = 0, font_size = 0, palette_size = 0;
+    unsigned short alphabet_size = 0;
+    printf("\n");
+    for (int i = 0; i < 11; ++i)
+        printf("%d:\t", i + 1);
+    printf("\n");
+    // 0
+    scr_x = 40; scr_y = 25;
+    font_x = 8; font_y = 8;
+    aspect_x = 1; aspect_y = 1;
+    colors = 1;
+    effective_x = scr_x * font_x; effective_y = scr_y * font_y;
+    font_size = 256 * (font_x * font_y) / CHAR_BIT;
+    buffer_size = (scr_x * scr_y) * 2;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[text], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           effective_x, effective_y, 1, 0, 0, buffer_size, font_size, 0);
+    // 1
+    scr_x = 160; scr_y = 100;
+    font_x = 0; font_y = 0;
+    aspect_x = 4; aspect_y = 3;
+    colors = 16;
+    effective_x = scr_x; effective_y = scr_y;
+    font_size = 0;
+    bit_per_color = bits_counter(colors);
+    point_per_byte = CHAR_BIT / bit_per_color; byte_per_point = bit_per_color / CHAR_BIT;
+    if (byte_per_point > 0)
+        buffer_size = (scr_x * scr_y) * byte_per_point;
+    else
+        buffer_size = (scr_x * scr_y) / point_per_byte;
+    displ_x = scr_x; displ_y = scr_x / aspect_x * aspect_y;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           displ_x, displ_y, bit_per_color, point_per_byte,
+           byte_per_point, buffer_size, font_size, colors);
+    // 2
+    scr_x = 80; scr_y = 25;
+    font_x = 9; font_y = 8;
+    aspect_x = 1; aspect_y = 2;
+    colors = 16;
+    effective_x = scr_x * font_x; effective_y = scr_y * font_y * aspect_y;
+    font_size = (font_x * font_y) / CHAR_BIT;
+    buffer_size = (scr_x * scr_y) * (bits_counter(colors) + 1);
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[text], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           effective_x, effective_y, 1, 0, 0, buffer_size, font_size, 0);
+    // 11
+    scr_x = 32; scr_y = 24;
+    font_x = 64; font_y = 64;
+    aspect_x = 1; aspect_y = 1;
+    colors = 1;
+    effective_x = scr_x * font_x; effective_y = scr_y * font_y;
+    font_size = 16 * (font_x * font_y) / CHAR_BIT;
+    buffer_size = (scr_x * scr_y) / 2;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[text], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           effective_x, effective_y, 1, 0, 0, buffer_size, font_size, 0);
+    //
+    scr_x = 160; scr_y = 100;
+    font_x = 0; font_y = 0;
+    aspect_x = 4; aspect_y = 3;
+    colors = 2;
+    font_size = 0;
+    bit_per_color = bits_counter(colors);
+    point_per_byte = CHAR_BIT / bit_per_color; byte_per_point = bit_per_color / CHAR_BIT;
+    buffer_size = 8 * 1024;
+    int points = buffer_size * point_per_byte;
+    scr_x = sqrt(points); scr_y = scr_x;
+    effective_x = scr_x; effective_y = scr_y;
+    displ_x = effective_x; displ_y = effective_y;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           displ_x, displ_y, bit_per_color, point_per_byte,
+           byte_per_point, buffer_size, font_size, colors);
+    // 13
+    aspect_x = 1; aspect_y = 1;
+    colors = 4;
+    font_size = 1024;
+    buffer_size = 256;
+    scr_x = sqrt(buffer_size); scr_y = scr_x;
+    font_x = sqrt(font_size / 32 * CHAR_BIT); font_y = font_x;
+    effective_x = scr_x * font_x; effective_y = scr_y * font_y;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[text], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           effective_x, effective_y, 1, 0, 0, buffer_size, font_size, 0);
+    // CA - 1101 1010
+    // C0F1 - 1101 0000 1111 0001
+    // E85F - 1110 1000 0101 1111
+    // 1EBA73 - 0001 1110 1011 1010 0111 0011
+    // 713(8) - 3 * 8 ^ 0 + 1 * 8 ^ 1 + 7 * 8 ^ 2 = 3 + 8 + 448 = 459;
+    // 713(8) - 111 001 011;
+    // 1011 1110 0100 0010 = BE42
+    // 314(7) -> 4 * 7 ^ 0 + 1 * 7 ^ 1 + 3 * 7 ^ 2 = 4 + 7 + 147 = 158;
+    // 158 -> 14 + 9 * 16 -> 9E
+    // 215(6) -> 0,1,2,3 -> 010 001 101
+    //
+    aspect_x = 2; aspect_y = 1;
+    colors = 2;
+    font_size = 0;
+    bit_per_color = bits_counter(colors);
+    point_per_byte = CHAR_BIT / bit_per_color; byte_per_point = bit_per_color / CHAR_BIT;
+    buffer_size = 16 * 1024;
+    scr_x = 256; scr_y = scr_x / aspect_x * aspect_y;
+    effective_x = scr_x; effective_y = scr_y;
+    displ_x = effective_x; displ_y = effective_y;
+    points = scr_x * scr_y;
+    bit_per_color = (buffer_size * CHAR_BIT) / points;
+    colors = 1 << bit_per_color;
+    font_x = 0; font_y = 0;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           displ_x, displ_y, bit_per_color, point_per_byte,
+           byte_per_point, buffer_size, font_size, colors);
+    // 7
+    scr_x = 256; scr_y = 192;
+    font_x = 32; font_y = 24;
+    aspect_x = 4; aspect_y = 3;
+    colors = 2;
+    font_size = 0;
+    bit_per_color = bits_counter(colors);
+    point_per_byte = CHAR_BIT / bit_per_color; byte_per_point = bit_per_color / CHAR_BIT;
+    buffer_size = (scr_x * scr_y) / point_per_byte + font_x * font_y * 1;
+    effective_x = scr_x; effective_y = scr_y;
+    displ_x = effective_x; displ_y = effective_y;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           displ_x, displ_y, bit_per_color, point_per_byte,
+           byte_per_point, buffer_size, font_size, colors);
+    // 15
+    alphabet_size = 1024;
+    aspect_x = 1; aspect_y = 1;
+    colors = 16;
+    bit_per_color = bits_counter(colors) + 1 + 1; // + 1 - бит на мерцание и бит на подчёркивания.
+    font_size = 1024 * 8;
+    font_x = sqrt(font_size / alphabet_size * CHAR_BIT); font_y = font_x;
+    scr_x = 64; scr_y = 64;
+    effective_x = scr_x * font_x; effective_y = scr_y * font_y;
+    buffer_size = (scr_x * scr_y) * 2 * 2;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[text], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           effective_x, effective_y, 1, 0, 0, buffer_size, font_size, 0);
+    // 8
+    scr_x = 640; scr_y = 480;
+    font_x = 0; font_y = 0;
+    aspect_x = 4; aspect_y = 3;
+    colors = 16;
+    effective_x = scr_x; effective_y = scr_y;
+    font_size = 0;
+    bit_per_color = bits_counter(colors);
+    point_per_byte = CHAR_BIT / bit_per_color; byte_per_point = bit_per_color / CHAR_BIT;
+    palette_size = colors * 6 * 3;
+    if (byte_per_point > 0)
+        buffer_size = (scr_x * scr_y) * byte_per_point * 2;
+    else
+        buffer_size = (scr_x * scr_y) / point_per_byte * 2;
+    displ_x = scr_x; displ_y = scr_x / aspect_x * aspect_y;
+    printf("%s\t%d:%d\t%d:%d\t%d:%d\t%d\t%d:%d\t%d:%d\t%d\t%d\t%d\t%d:%d:%d\n",
+           v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
+           displ_x, displ_y, bit_per_color, point_per_byte,
+           byte_per_point, buffer_size, font_size, palette_size);
+    */
+    //int length = 10, quantity = 7, attempts = 5;
+    //hack_the_terminal(length, quantity, attempts);
     //getchar(); - не снимать, кусается...
+    /* red    - 0   00  110
+     * blue   - 1   01  101
+     * green  - 2   10  100
+     * yellow - 3   11  0
+     * bgry -
+     * ygyy - 8 - 6
+     * Реализовать простейшее сжатие.
+     */
+    chapter_10();
     return 0;
 }
+
+
+
+
+
+
+
+
+
+

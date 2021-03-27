@@ -1,28 +1,16 @@
 ﻿#include "global.h"
 #include "library.h"
 
-int string_rand_change(char string[], int level_change) {
-    int length = string_length(string), idx = 0;
-    char tmp = 0;
-    if (length == 0 || level_change < 1)
-        return -1;
-    for (int i = 0; i < level_change; ++i) {
-        tmp = 'A' + rand() % 26;
-        idx = rand() % length;
-        while (tmp == string[idx])
-            tmp = 'A' + rand() % 26;
-        string[rand() % length] = tmp;
-    }
-    return 0;
-}
-
-int uniq_gen_fast(int number[], int length)
+int uniq_gen_fast(int number[], int length, int limit)
 {
-    const int num_max = 10;
+    const int num_max = limit;
     if (length < 1 || length > num_max)
         return -1;
-    int digits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, tmp = 0, idx_1 = 0 , idx_2 = 0;
-    for (int i = 0; i < length * length && digits[0] == 0; ++i) {
+    int digits[limit];
+    for (int i = 0; i < limit; ++i)
+        digits[i] = i;
+    int tmp = 0, idx_1 = 0 , idx_2 = 0;
+    for (int i = 0; i < length * length * length && digits[0] == 0; ++i) {
         idx_1 = rand() % num_max;
         idx_2 = rand() % num_max;
         tmp = digits[idx_1];
@@ -45,7 +33,7 @@ int uniq_gen_fast_symbols(char string[], int length)
         symbols[j] = 'A' + j;
     char tmp;
     int idx_1 = 0 , idx_2 = 0, i = 0;
-    for (i = 0; i < length * length; ++i) {
+    for (i = 0; i < length * length * length; ++i) {
         idx_1 = rand() % symbol_max;
         idx_2 = rand() % symbol_max;
         tmp = symbols[idx_1];
@@ -58,13 +46,26 @@ int uniq_gen_fast_symbols(char string[], int length)
     return 0;
 }
 
+int string_rand_change(char string[], int level_change) {
+    int length = string_length(string);
+    if (length == 0 || level_change < 1)
+        return -1;
+    int mass_idx[level_change];
+    char mass_symbol[level_change];
+    uniq_gen_fast(mass_idx, level_change, length);
+    uniq_gen_fast_symbols(mass_symbol, level_change);
+    for (int i = 0; i < level_change; ++i)
+        string[mass_idx[i]] = mass_symbol[i];
+    return 0;
+}
+
 void bulls_and_cows()
 {
     int i = 0, j = 0, k = 0, counter = 0, quantity = 0, positions = 0;
     const int number_length = 4;
     int number[number_length], entered_number[number_length], is_equal = 0;
     srand(time(NULL));
-    uniq_gen_fast(number,number_length);
+    uniq_gen_fast(number,number_length,9);
     printf("Hack the terminal, guess the number size %d, with using digits.\n",number_length);
     printf("Number with all unique digits and not statring with zero!\n");
     //printf("Debug number: ");
@@ -106,17 +107,61 @@ void hack_the_terminal(int length, int quantity, int attempts)
         return;
     }
     srand(time(NULL));
+    int likeness_idx[OBJECTS_MAX];
+    int likeness = 0, div = 0, rem = 0;
+    printf("length = %d, quantity = %d;\n", length, quantity);
+    if (quantity > length) {
+        rem = (quantity - 1) % length;
+        div = (quantity - 1) / length;
+    } else {
+        rem = (quantity - 1) % length;
+        div = length % (quantity - 1); // Поменять на другую переменную.
+    }
+    printf("div = %d;\nrem = %d;\n", div, rem);
+    likeness_idx[quantity - 1] = length;
+    for (int i = 0; i < quantity - 1;) {
+        if (quantity > length)
+            for (int j = 0; j < div; ++j)
+                likeness_idx[i++] = likeness;
+        if (rem > 0) {                              // Заполняем массив, если пароль длиннее чем кол-во вариантов...
+            likeness_idx[i++] = likeness;
+            rem--;
+        }
+        if (quantity > length)
+            likeness++;
+        else {
+            likeness += length / (quantity - 1);
+            if (div > 0) {
+                likeness++;
+                div--;
+            }
+        }
+
+    }
+    printf("Variants likeness: \n");
+    for (int i = 0; i < quantity; ++i)
+        printf("%d ", likeness_idx[i]);
+    return;
+    /*
     int correct_variant = rand() % quantity, i = 0, j = 0, is_equal = 0, idx = 0, result = 0;
     char passwords[quantity][length + 1];
     uniq_gen_fast_symbols(passwords[correct_variant],length);
-    //printf("%s\n", passwords[correct_variant]);
+    for (i = 0; i < 4; ++i)
+        printf("counter[%d] = %d;\n", i, counter[i]);
+    for (i = 0; i < 4; ++i)
+        printf("difference[%d] = %d;\n", i, difference[i]);
+    printf("%s\n", passwords[correct_variant]);
     printf("Game: Hack The Terminal\n");
     printf("Rules:  You must enter the index of the assumed password\n\tand guess it in a limited number of attempts.\n\n");
-    printf("idx:    password:   addr:\n");
-    for (i = 0; i < quantity; ++i) {    // Подумать над равномерным распределением похожести букв.
+    printf("addr: password: idx:\n");
+    for (i = 0; i < quantity; ++i) {
         if (i != correct_variant) {
             string_copy_substr(passwords[correct_variant],passwords[i],0,length);
-            string_rand_change(passwords[i], length * (1 + rand() % 2)); // контроль длинны отностительно распределения.
+            idx = rand() % 4;
+            while (counter[idx] == 0)
+                idx = rand() % 4;
+            counter[idx]--;
+            string_rand_change(passwords[i],difference[idx]);
             passwords[i][length] = '\0';
         }
         printf("%2d\t |%s|%11p\n", i, passwords[i],passwords[i]);
@@ -140,4 +185,5 @@ void hack_the_terminal(int length, int quantity, int attempts)
     }
     if (attempts == 0)
         printf("Terminal Is Locked!\n\n");
+        */
 }
