@@ -1,0 +1,133 @@
+;Welcome to 8-Bit Tea Party!
+;
+;Assembler, Intel 8086/8088, IBM PC.
+;
+;Grabbag (Duke Nukem Theme).
+;Composed by Lee Jackson.
+
+;Процессор Intel 8086\8088, 5 Мгц.
+;Разрядность АЛУ: 16 бит.
+;Шина данных: 16 бит.
+;Шина адреса: 20 бит, 1 Мбайт.
+;Рельный режим адресации, DOS 5.0.
+;Основная память: 640 Кбайт.
+;Системная память: 384 Кбайт.
+
+;Основные регистры процессора 8086.
+;AX[ah,al] основной аккумулятор;
+;BX[bh,bl] база, смещение данных;
+;CX[ch,cl] счётчик для комманд;
+;DX[dh,dl] данные, порты ввода-вывода,"часть аккумулятора".
+;SI        индекс источника, 16 бит.
+;DI        индекс приёмника, 16 бит.
+;BP        база, смещение стека.
+;SP        указатель вершины стека.
+;CS:IP     адрес сегмента кода.
+;DS:[offs] сегмент данных.
+;ES:[offs] сегмент данных, дополнительно.
+;SS:SP     сегмент стека, с вершиной.
+;IP        указатель на текущую комманду.
+;Регистр флагов, 16 бит, флаги:
+;CF        флаг переноса;
+;ZF        флаг нуля.
+;Регистр   сегмент   замена
+;  IP        CS        -
+;  SP        SS        -
+;BP+SI[DI]   SS     CS,DS,ES
+;  BX        DS     CS,SS,ES
+;SI,DI[base] DS     CS,SS,ES
+;SI -> DI   DS,ES      -
+
+
+
+
+CPU 8086
+;Глобальные константы.
+
+SCR_BUFFER      equ 0xB800
+
+        ;Начало программы.
+        org 0x100
+        push ax
+        push bx
+        push cx
+        push dx
+
+;Вещание №2.
+;Архитектура 8086, типы адрессации и инструкции перемещения данных.
+;Методы и типы аресации данных.
+
+        mov dx,0x0101;Непосредственная адресация.
+        mov ax,dx    ;Регистровая адресация, 2 такта.
+        mov bx,ds:[bytes_table]     ;Прамая адресация из памяти, 8 тактов.
+        mov ax,ds:0x0100
+        mov bx,bytes_table
+        mov dh,[bx]       ;ds сегмент по умолчанию.
+        mov dl,ds:[bx+2]  ;база + смещение
+        mov di,0x003
+lab_1:  mov cl,es:[di]
+        mov bp,words_table
+        mov ax,cs:[bp+di] ;Изменение сегмента + 2 такта, база + индекс.
+        ;База + индекс + смещение, ооочень долго по тактам.
+        mov ax,ds:[bp+di+1] ;Для базы только регистры: BX, BP, SI, DI.
+;Переходим к общим инструкция перемещения данных
+        jmp return
+
+bytes_table     db 0x01, 0x02, 0x03, 0x04
+words_table     dw 0x1A1B, 0x2C2D, 0x3E4F
+
+
+;Вещание №1. Архитектура 8086 и программа "Привет Мир!", с БИОСом и буфером.
+        ;Установим курсор в позицию.
+        mov ah,02h
+        mov bh,0x00
+        mov dx,0x0A08
+        int 10h
+
+        ;Печатаем отдельный символ.
+        mov cx,0x05
+        mov ah,0x0A
+        mov al,0x43
+        xor bh,bh
+        int 10h
+
+        ;Печатаем строку с БИОСом
+        mov ax,0x1300
+        xor bh,bh
+        mov bl,00011111b
+        mov cx,0x000C
+        mov bp,string
+        int 10h
+
+        ;Вывод строки в буффер экрана.
+        mov ax,SCR_BUFFER
+        mov es,ax
+        mov di,0x0100
+        mov si,string
+        mov bh,00101111b
+Prt_1:  mov bl,ds:[si]
+        or bl,bl
+        jz Prt_2
+        mov es:[di],bx
+        inc si
+        add di,0x02
+        jmp Prt_1
+Prt_2:  mov ah,0x09
+        mov dx,string
+        push cs
+        pop ds
+        int 21h
+return:
+
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
+
+
+string  db 'Hello World!&', 0
+word_a  dw 0x1111
+dword_b dd 0x11111111
+reserv  db 32 dup (0)
+
