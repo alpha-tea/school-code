@@ -37,7 +37,13 @@
 ;  BX        DS     CS,SS,ES
 ;SI,DI[base] DS     CS,SS,ES
 ;SI -> DI   DS,ES      -
-
+;Модели памяти:
+;tiny
+;small
+;compact
+;medium
+;large
+;flat
 
 
 
@@ -52,6 +58,52 @@ SCR_BUFFER      equ 0xB800
         push bx
         push cx
         push dx
+
+
+;Вещание №3.
+;Архитектура 8086, типы адресации и инструкции перемещения данных.
+;Команды общего назначения.
+        mov al,0x01  ;immed, 4 clk
+        mov ah,al    ;reg:reg, 2 clk
+        mov ax,[word_c] ;10 clk
+        mov dl,[byte_a] ;8 clk+EA
+        mov [word_c],word 0xABCD ;10 clk+EA
+        mov bx,[addr_segm]
+        mov es,bx
+        mov es,[addr_segm]  ;8 clk+EA
+        push cs             ;11 clk
+        push word [addr_segm];17 clk
+        pushf
+        lahf    ;load flag to ah
+        sahf    ;store ah to flag
+        popf
+        pop bx
+        pop ax
+        xchg ax,bx   ;acc-reg, 3 clk
+        xchg dx,[word_b]; reg-mem, 17 clk+EA
+        xchg bx,dx      ;reg-reg, 4 clk
+        mov al,0x03
+        lea bx,bytes_t
+        xlat
+;Вычисление эффективного адреса объекта.
+        lea si,[bytes_t]    ;2 clk+EA
+        mov al,[si+3]
+        les di,ds:[words_t]
+        mov [addr_offs],si
+        mov ax,ds
+        mov [addr_segm],ax
+        lds bx,ds:[addr_offs]
+        mov al,[bx]
+;
+        jmp return
+byte_a      db 0x01
+byte_b      db 0x02
+word_b      dw 0x1A2B
+word_c      dw 0x3C4D
+addr_offs   dw 0x0505
+addr_segm   dw 0x6060
+bytes_t     db 0x01, 0x02, 0x03, 0x04
+words_t     dw 0x1A1B, 0x2C2D, 0x3E4F
 
 ;Вещание №2.
 ;Архитектура 8086, типы адрессации и инструкции перемещения данных.

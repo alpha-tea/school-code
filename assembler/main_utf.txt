@@ -60,6 +60,120 @@ SCR_BUFFER      equ 0xB800
         mov dx,0x0101;Непосредственная адресация.
         mov ax,dx    ;Регистровая адресация, 2 такта.
         mov bx,ds:[bytes_table]     ;Прамая адресация из памяти, 8 тактов.
+;Welcome to 8-Bit Tea Party!
+;
+;Assembler, Intel 8086/8088, IBM PC.
+;
+;Grabbag (Duke Nukem Theme).
+;Composed by Lee Jackson.
+
+;Процессор Intel 8086\8088, 5 Мгц.
+;Разрядность АЛУ: 16 бит.
+;Шина данных: 16 бит.
+;Шина адреса: 20 бит, 1 Мбайт.
+;Рельный режим адресации, DOS 5.0.
+;Основная память: 640 Кбайт.
+;Системная память: 384 Кбайт.
+
+;Основные регистры процессора 8086.
+;AX[ah,al] основной аккумулятор;
+;BX[bh,bl] база, смещение данных;
+;CX[ch,cl] счётчик для комманд;
+;DX[dh,dl] данные, порты ввода-вывода,"часть аккумулятора".
+;SI        индекс источника, 16 бит.
+;DI        индекс приёмника, 16 бит.
+;BP        база, смещение стека.
+;SP        указатель вершины стека.
+;CS:IP     адрес сегмента кода.
+;DS:[offs] сегмент данных.
+;ES:[offs] сегмент данных, дополнительно.
+;SS:SP     сегмент стека, с вершиной.
+;IP        указатель на текущую комманду.
+;Регистр флагов, 16 бит, флаги:
+;CF        флаг переноса;
+;ZF        флаг нуля.
+;Регистр   сегмент   замена
+;  IP        CS        -
+;  SP        SS        -
+;BP+SI[DI]   SS     CS,DS,ES
+;  BX        DS     CS,SS,ES
+;SI,DI[base] DS     CS,SS,ES
+;SI -> DI   DS,ES      -
+;Модели памяти:
+;tiny
+;small
+;compact
+;medium
+;large
+;flat
+
+
+
+CPU 8086
+;Глобальные константы.
+
+SCR_BUFFER      equ 0xB800
+
+        ;Начало программы.
+        org 0x100
+        push ax
+        push bx
+        push cx
+        push dx
+
+
+;Вещание №3.
+;Архитектура 8086, типы адресации и инструкции перемещения данных.
+;Команды общего назначения.
+        mov al,0x01  ;immed, 4 clk
+        mov ah,al    ;reg:reg, 2 clk
+        mov ax,[word_c] ;10 clk
+        mov dl,[byte_a] ;8 clk+EA
+        mov [word_c],word 0xABCD ;10 clk+EA
+        mov bx,[addr_segm]
+        mov es,bx
+        mov es,[addr_segm]  ;8 clk+EA
+        push cs             ;11 clk
+        push word [addr_segm];17 clk
+        pushf
+        lahf    ;load flag to ah
+        sahf    ;store ah to flag
+        popf
+        pop bx
+        pop ax
+        xchg ax,bx   ;acc-reg, 3 clk
+        xchg dx,[word_b]; reg-mem, 17 clk+EA
+        xchg bx,dx      ;reg-reg, 4 clk
+        mov al,0x03
+        lea bx,bytes_t
+        xlat
+;Вычисление эффективного адреса объекта.
+        lea si,[bytes_t]    ;2 clk+EA
+        mov al,[si+3]
+        les di,ds:[words_t]
+        mov [addr_offs],si
+        mov ax,ds
+        mov [addr_segm],ax
+        lds bx,ds:[addr_offs]
+        mov al,[bx]
+;
+        jmp return
+byte_a      db 0x01
+byte_b      db 0x02
+word_b      dw 0x1A2B
+word_c      dw 0x3C4D
+addr_offs   dw 0x0505
+addr_segm   dw 0x6060
+bytes_t     db 0x01, 0x02, 0x03, 0x04
+words_t     dw 0x1A1B, 0x2C2D, 0x3E4F
+
+;Вещание №2.
+;Архитектура 8086, типы адрессации и инструкции перемещения данных.
+;Методы и типы аресации данных.
+
+        mov dx,0x0101;Непосредственная адресация.
+        mov ax,dx    ;Регистровая адресация, 2 такта.
+        mov bx,ds:[bytes_table]     ;Прамая адресация из памяти, 8 тактов.
         mov ax,ds:0x0100
         mov bx,bytes_table
         mov dh,[bx]       ;ds сегмент по умолчанию.
