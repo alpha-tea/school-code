@@ -27,9 +27,13 @@
 ;ES:[offs] сегмент данных, дополнительно.
 ;SS:SP     сегмент стека, с вершиной.
 ;IP        указатель на текущую комманду.
+
 ;Регистр флагов, 16 бит, флаги:
 ;CF        флаг переноса;
 ;ZF        флаг нуля.
+;OF        флаг переполнения.
+;SF        флаг знака.
+
 ;Регистр   сегмент   замена
 ;  IP        CS        -
 ;  SP        SS        -
@@ -47,7 +51,8 @@
 
 
 
-CPU 8086
+CPU 8086        ;только команды процессора 8086.
+
 ;Глобальные константы.
 
 SCR_BUFFER      equ 0xB800
@@ -59,10 +64,46 @@ SCR_BUFFER      equ 0xB800
         push cx
         push dx
 
+;Вещание №4. Инструкции арифметики и флаги.
+        mov dl,0x34
+        mov dh,0x12
+        add dl,dh  ;reg:reg, 3 clk;
+        add dl,byte [byte_a] ;reg:mem, 9 clk+EA;
+        add dl,0x03     ;reg:imm, 4 clk;
+        mov al,[byte_a]
+        add [byte_a],dl ;mem:reg, 9 clk+EA;
+        mov al,byte [byte_a]
+        mov ah,0x00    ;add 16 bit, using 8 bit operands;
+        mov al,0x81
+        mov bl,0xA9
+        mov bh,0x0A
+        add al,bl      ;флаг переноса включен
+        adc ah,bh      ;используем флаг переноса
+        pushf
+        mov ah,0x00
+        sahf       ;обнулим флаги.
+        mov al,-0x50
+        mov ah,-0x40
+        add ah,al  ;флаг переполнения влючен и установлен флаг знака
+        popf
+        mov al,[byte_a]
+        inc al         ;увеличение на 1, 3 такта.
+        inc dx         ;2 такта
+        inc byte [byte_a]   ;15+ЕА тактов
+        add ax,word [byte_a]
+        mov al,[byte_a]
+;BCD - двоично-десятичный код, в каждом полубайте хранится цифра от 0 до 9.
+;пример: 74 = 0111 0100 - двоичный вид(битовое представление)
+        mov al,0x30
+        aaa        ;из упакованного в десятичное число
+        add al,0x05
+        daa        ;из двоичного в упакованное.
+
+        jmp return
 
 ;Вещание №3.
 ;Архитектура 8086, типы адресации и инструкции перемещения данных.
-;Команды общего назначения.
+;Комманды общего назначения.
         mov al,0x01  ;immed, 4 clk
         mov ah,al    ;reg:reg, 2 clk
         mov ax,[word_c] ;10 clk
