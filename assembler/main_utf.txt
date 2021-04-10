@@ -33,6 +33,9 @@
 ;ZF        флаг нуля.
 ;OF        флаг переполнения.
 ;SF        флаг знака.
+;AF        вспомогательное переполнение.
+;PF        признак чётности.
+;Младшая часть регистра флага AF.
 
 ;Регистр   сегмент   замена
 ;  IP        CS        -
@@ -64,7 +67,170 @@ SCR_BUFFER      equ 0xB800
         push cx
         push dx
 
+;Вещание №5. Инструкции арифметики и флаги.
+      ;Вычитание:
+        mov ax,0x0000
+        mov bx,0x0000
+        mov al,0x28
+        mov ah,0x31
+;sub dst,src - вычитание.
+        sub ah,al       ;reg:reg, 3 clk;
+        sub ah,[byte_b] ;reg:mem, 16 clk+EA;
+        sub al,0x22     ;acc(reg):imm, 4 clk;
+        sub [byte_b],al
+        mov al,[byte_b]
+        sub byte [byte_b],0x01 ;mem:imm, 17 clk+EA;
+        mov al,[byte_b]
+;sbb dst,src - вычитание с заёмом флага CF.
+        mov ax,0x1001
+        mov bx,0x0503
+        sub al,bl
+        sbb ah,bh       ;Ожидаем результат 0AFE(-2);
+;dec dst - декремент приёмника на 1.
+        dec al       ;reg8  3 clk, 2 bytes;
+        dec ax       ;reg16 2 clk, 1 bytes;
+        mov al,[byte_a]
+        dec byte [byte_a]       ;15 clk+EA
+        mov al,[byte_a]
+;neg dst - формирует отрицательное число.
+        mov al,0x01
+        neg al     ;2 clk
+        mov ah,[byte_b]
+        neg byte [byte_b]       ;16 clk+EA
+        mov ah,[byte_b]
+        mov al,0x00
+        neg al     ;CF=0;
+;cmp dst,src - сравнение.
+        mov ax,0x0102
+        cmp al,ah               ;reg:reg, 3 clk;
+        cmp ax,0x0001           ;reg:imm, 4 clk;
+        cmp byte [byte_a],0x01       ;mem:imm, 10 clk+EA;
+        cmp al,[byte_a]         ;reg:mem. 9 clk+EA;
+;aas,das - выравнивание для вычитания и обратно.
+      ;Умножение:
+;mul src - умножение без знака.
+;imul src - умножение со знаком.
+        mov al,0x02
+        mov bl,0x03
+        mul bl     ;70-77 clk, 2 bytes;
+        mov bx,0x1000
+        mul bx     ;118-133 clk
+        mov al,0x01
+        mul byte [byte_b]       ;76-83+EA
+        mov ax,0x1000
+        mul word [word_a];124-139+EA
+        mov al,-0x05
+        mov bl,0x02
+        imul bl
+      ;Деление:
+;div src - целочисленное деление без знака.
+;idiv src - целочисленное деление со знаком.
+        mov ax,0x0100
+        mov bl,0x10
+        div bl     ;al - результат, ah - остаток. 80-90 clk.
+        div byte [byte_b]
+        mov dx,0x0001
+        mov bx,0xAAAA
+        div bx       ;144-162 clk
+        mov dx,0x0001
+        div word [word_d]
+        ;idiv аналогичен imul.
+        ;mov bl,0x01    ;коварный ход от Данилы в комментариях)))
+        mov bx,0x0001   ;следим за размерностью операндов.
+        mov ax,0x0200
+        mov dx,0x0000
+        ;div bl         ;операнд назначения должен вмещать частное от деления.
+        div bx
+;cbw al, cwd ax - конвертирует байт в слово или слово в двойное слово.
+        mov al,-0x05
+        cbw         ; 2 clk; оптимизация
+        cwd         ; 5 clk;
+;Логические операции:
+;not dst - отрицание, логическое НЕ.
+        mov al,0x0F
+        not al          ;3 clk
+        mov ah,[byte_a]
+        not byte [byte_a] ;16 clk+EA
+        mov ah,[byte_a]
+;and dst,src - логическое И.
+        mov al,0xAA
+        mov ah,0x0F
+        and al,ah       ;reg:reg, 3 clk
+        and al,0x03     ;acc:imm, 4 clk
+        and [byte_a],ah ;mem:reg, 16 clk+EA
+        mov bh,[byte_a]
+        and byte [byte_a],0xFF ;mem:imm, 17 clk+EA
+        mov bh,[byte_a]
+;or dst,src - логическое ИЛИ.
+        mov dl,0xAA
+        mov dh,0x0F
+        or  dl,dh       ;reg:reg, 3 clk
+        or  al,0x03     ;acc:imm, 4 clk
+        or  [byte_a],dh ;mem:reg, 16 clk+EA
+        mov bh,[byte_a]
+        or  byte [byte_a],0xFF ;mem:imm, 17 clk+EA
+        mov bh,[byte_a]
+;xor dst,src - логическое ИСК.ИЛИ.
+        mov dl,0xAA
+        mov dh,0x0F
+        xor dl,dh       ;reg:reg, 3 clk
+        xor al,0x03     ;acc:imm, 4 clk
+        xor [byte_a],dh ;mem:reg, 16 clk+EA
+        mov bh,[byte_a]
+        xor byte [byte_a],0xFF ;mem:imm, 17 clk+EA
+        mov bh,[byte_a]
+;test dst,src - логическое И без сохранения результата.
+        mov dl,0xAA
+        mov dh,0x0F
+        test dl,dh       ;reg:reg, 3 clk
+        test al,0x03     ;acc:imm, 4 clk
+        test [byte_a],dh ;mem:reg, 9 clk+EA
+        mov bh,[byte_a]
+        test byte [byte_a],0xFF ;mem:imm, 11 clk+EA
+        mov bh,[byte_a]
+;Битовые сдвиги.
+;sal, shl: dst,counter - сдвиг влево
+        mov cl,0x04    ;кол-во сдвигов.
+        mov ax,0x0101
+        sal ah,1       ;2 clk
+        shl al,1
+        sal al,cl    ;8 clk + 4 на бит
+        shl byte [byte_a],cl ;20 clk+EA+4 на бит
+        mov al,[byte_a]
+        sal byte [byte_b],1    ;15 clk+EA
+        mov al,[byte_b]
+;sar, shr: dst,counter - сдвиг вправо
+        mov cl,0x04    ;кол-во сдвигов.
+        mov ah,-0x05
+        mov al,0x80
+        shr al,cl    ;8 clk + 4 на бит
+        sar ah,cl
+        sar byte [byte_a],cl ;20 clk+EA+4 на бит
+        mov al,[byte_a]
+;Ротация битов.
+;rol\ror dst,counter - ротация влево,вправо.
+;rcl\rcr dst,counter - ротация бит вдево,вправо с флагом переноса.
+        mov cl,0x04    ;кол-во сдвигов.
+        mov ah,0x01
+        mov al,0x80
+        rol al,cl    ;8 clk + 4 на бит
+        rol ah,1
+        ror ah,1
+        ror al,cl
+        ror byte [byte_a],cl ;20 clk+EA+4 на бит
+        mov al,[byte_a]
+        mov ah,0x07
+        mov al,0xE0
+        mov cl,0x02
+        rcr ah,cl
+        rcl al,cl
+        rcr al,cl
+        rcl ah,cl
+        rcl byte [byte_a],cl
+        mov al,[byte_a]
 ;Вещание №4. Инструкции арифметики и флаги.
+
+      ;Сложение:
         mov dl,0x34
         mov dh,0x12
         add dl,dh  ;reg:reg, 3 clk;
@@ -98,7 +264,6 @@ SCR_BUFFER      equ 0xB800
         aaa        ;из упакованного в десятичное число
         add al,0x05
         daa        ;из двоичного в упакованное.
-
         jmp return
 
 ;Вещание №3.
@@ -139,6 +304,7 @@ SCR_BUFFER      equ 0xB800
         jmp return
 byte_a      db 0x01
 byte_b      db 0x02
+word_d      dw 0x0104
 word_b      dw 0x1A2B
 word_c      dw 0x3C4D
 addr_offs   dw 0x0505
