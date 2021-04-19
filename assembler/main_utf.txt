@@ -58,7 +58,11 @@ CPU 8086        ;только команды процессора 8086.
 
 ;Глобальные константы.
 
-SCR_BUFFER      equ 0xB800
+SCR_BUFF_ADDR      equ 0xB800
+SCR_SIZE_WIDTH     equ 0x0028
+SCR_SIZE_HEIGHT    equ 0x0019
+SCR_BUFF_SIZE_B    equ 0x07D0
+SCR_BUFF_SIZE_W    equ 0x03E8
 
         ;Начало программы.
         org 0x100
@@ -66,6 +70,257 @@ SCR_BUFFER      equ 0xB800
         push bx
         push cx
         push dx
+        ;jmp return
+;Вещание №6. Строковые инструкции и команды передачи управления.
+        jmp near Main0
+;rep,repe,repz,repne,repnz - префикс повторения.
+        lea si,[string_src] ;ES=DS,default
+        lea di,[string_dst]
+        ;mov ax,seg string_src
+        ;mov ds,ax если требуется доп.сегменты.
+        push cs
+        pop es
+        mov ax,ds:[si]
+        mov ax,[si]    ; nasm не оптимизирует при -о0
+        mov bx,es:[di]
+
+;movs(mov string dst:src).
+;Перемещение байт или слов.
+        ;rep movs string_src,string_dst - nasm не определяет автоматически
+        mov cx,0x0002
+        rep movsb    ; 9(rep)+17/rep+2 trans,clk
+        mov ax,[si-0x02]
+        mov bx,[di-0x02]
+        mov cx,0x0001
+        rep movsw    ; 9(rep)+17/rep+2 trans,clk
+        mov ax,[si-0x02]
+        mov bx,[di-0x02]
+;cmps src,dst - сравнение строк.
+        lea si,string_src
+        lea di,string_dst
+        mov ax,ds:[si]
+        mov bx,es:[di]
+        mov cx,0x0002
+        repe cmpsb    ;9(rep)+22/rep+2 trans,clk
+        mov ah,ds:[si]
+        mov al,es:[di]
+        lea si,string_src
+        lea di,string_dst
+        mov cx,0x0005
+        mov ax,0x0708
+        mov es:[di],ax
+        repnz cmpsw
+        mov ax,[si-0x02]
+        mov bx,es:[di-0x02]
+;scas dst - сканирование строки на аккумулятор.
+        mov ax,0x0403
+        xor bx,bx
+        lea di,string_dst
+        mov cx,0x0007
+        repnz scasb    ;al=0x03
+        mov bl,es:[di-0x01]
+        mov cx,0x0003
+        lea di,string_dst
+        repnz scasw      ;9(rep)+15/rep+1 trans,clk
+        mov bx,es:[di-0x02]
+
+;stos dst - сохранение строки.(из аккумулятора)
+        lea di,string_dst
+        mov al,0x12
+        mov cx,0x0002    ;al - byte
+        rep stosb        ;9(rep)+11/rep+1 trans,clk
+        mov bl,[di-0x01]
+        mov ah,0x34
+        lea di,string_dst
+        stosw            ;11 clk
+        mov bx,es:[di-0x02]
+;lods src - загрузка в аккумулятор из строки.
+        lea si,string_src
+        mov cx,0x0002
+        rep lodsb    ;9(rep)+13/rep+1 trans,clk
+        lodsw        ;al,ax - result.;scas dst - сканирование строки на аккумулятор.
+;Инструкции передачи управления
+;jmp - простой безусловный переход. 15 clk.
+
+        xor dl,dl
+        ;jmp far Main1 только если несколько сегментов кода.
+        jmp short Main1
+        jmp near Main1   ;nasm не оптимизирует переходи при -о0
+        jmp Main1
+        nop             ;3 clk
+Main1:  inc dl
+        mov [addr_offs],word Main2
+        ;jmp near [addr_offs]  ;18+EA+1 trans,clk
+        mov [addr_segm],cs
+        jmp far [addr_offs]   ;24+EA+2 trans,clk
+        nop
+Main2:  inc dl
+        lea bx,Main3
+        jmp bx        ;11 clk.
+        nop
+Main3:  inc dl
+;Инструкции условного перехода.
+        mov ax,0x0201  ;carry flag
+        cmp al,ah
+        jc short Main4
+        nop
+Main4:  inc dl         ;zero flag
+        mov bx,0x0102
+        cmp ax,bx
+        jnz short Main5
+        nop
+Main5:  inc dl         ;sign flag
+        mov al,-0x03
+        dec al
+        js short Main6
+        nop
+Main6:  inc dl         ;flag overflow
+        mov al,-0x60
+        sub al,0x40
+        jo short Main7
+        nop
+Main7:  inc dl         ;carry or zero flag
+        mov ax,0x0102
+        cmp al,ah
+        jnbe short Main8
+        nop
+Main8:  inc dl
+        jmp return
+;loop short-label - цикл, переход относительный от -128 до +127.
+;loope\loopz - пока равно\пока ноль, если флаг нуля установлен.
+;jcxz short label. Выполняет переход если cx = 0.
+        xor ax,ax
+        mov cx,0x0003
+Main9:  inc ax
+        loop Main9      ; 17(jmp) clk or 5 clk if no.
+        mov cx,0x0005
+MainA:  dec ax
+        loopnz MainA    ; 18(jmp) or 7 clk.
+        xor cx,cx
+        jcxz MainB
+        nop
+MainB:  mov cx,0x0003
+        mov ax,0x0005
+        cmp cx,0x0003
+MainC:  cmp ax,0x0005
+        loopz MainC
+;int interrupt\into\iret
+;call procedure-name - вызов процедуры.
+        mov ax,0x0012
+        ;call far TimerDelay
+        call near TimerDelay
+        mov [addr_offs],word TimerDelay
+        call near [addr_offs]
+        mov bx,TimerDelay
+        call bx
+;Инструкции управления процессором и флагами.
+        stc ;set carry flag
+        clc ;clear carry flag
+        cmc ;complement carry flag
+        std ;set direction flag
+        cld ;clear direction flag
+        sti ;set interrupt-enable flag
+        cli ;clear interrupt-enable flag
+;Инструкции внешней синхронизации.
+        hlt ;Ожидаем прерывание или сброс.
+;wait - ожидает сигнала test
+;lock - префикс, блокировки шины даных.(работет при нескольких процессорах 8086)
+;esc  - предоставляет внешнему процессору команды и операнд.
+;nop  - ничего, 3 такта.
+
+;Наша программа вещаний №6.
+Main0:
+        mov cx,SCR_BUFF_SIZE_B
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+        xor ax,ax        ;first ASCII char
+        mov di,ax        ; + 6 clk.
+MainD:  stosb
+        inc al
+        inc di
+        loop MainD
+        mov al,0x21
+        mov ah,01000001b
+        mov bl,00000001b
+        xor ah,ah
+        mov cx,0x0080
+MainE:  call near ClearTextScreen
+        inc ah
+        mov dx,ax
+        mov ax,0x0002
+        call near TimerDelay
+        mov ax,dx
+        loop MainE
+        jmp return
+
+;Формат нащей 16-и битной строки.
+string_lng   dw 0x000C ;Длинна строки
+text_offs    dw 0x0008 ;Смещение по которому начинается непосредтственный текст.
+reserver       db 0x04 dup (0)
+;Пример резервирования для доработки или вариации функции печати.
+string_text  db 'Hello World!'
+
+;Непосредственно сам текст и массив, контроль за памятью на стороне вызова.
+;Процедура очистки текстового буфера экрана.
+;ah   атрибут символа по формату текстового экрана.
+;al   символ для заполнения.
+;bl   битовые поля.
+;0    использовать ли атрибут при очистки ДА/НЕТ.
+;1    использовать ли символы для заполнения.
+;2-7  резерв.
+
+ClearTextScreen:
+        pushf
+        push cx
+        push di
+        push es
+        and bl,00000001b
+        jz ClTxtS0
+        ;if (!(bl & 0x01)) go to ClTxtS0
+        mov cx,SCR_BUFF_SIZE_B
+        mov di,SCR_BUFF_ADDR
+        mov es,di
+        mov di,ax
+        xor di,di     ;code size optimization
+        inc di
+        xchg al,ah
+ClTxtS1:stosb
+        inc di
+        loop ClTxtS1
+        xchg al,ah
+ClTxtS0:              ;Доделать вывод
+        pop es
+        pop di
+        pop cx
+        popf
+        ret
+
+;TimerDelay - функция задержки по системному таймеру.
+;ах - задержка в тиках(18.2 в секунду).
+
+TimerDelay:
+        pushf           ;Доп.оптимизация, если убрать.
+        push bx
+        push dx
+        push di
+        push es
+        mov bx,0x0040
+        mov es,bx
+        mov di,0x006C
+        mov bx,es:[di] ;тики при старте.
+TimDel0:mov dx,es:[di] ;текущие тики.
+        sub dx,bx      ;вычисляем дельту по тикам.
+        cmp dx,ax      ;не достигнут ли параметр задержки.
+        jc short TimDel0
+        pop es
+        pop di
+        pop dx
+        pop bx
+        popf
+        ret
+
+string_src   db 0x01, 0x02, 0x03, 0x04
+string_dst   db 0x05, 0x06, 0x07, 0x08
 
 ;Вещание №5. Инструкции арифметики и флаги.
       ;Вычитание:
@@ -74,7 +329,7 @@ SCR_BUFFER      equ 0xB800
         mov al,0x28
         mov ah,0x31
 ;sub dst,src - вычитание.
-        sub ah,al       ;reg:reg, 3 clk;
+        sub  ah,al       ;reg:reg, 3 clk;
         sub ah,[byte_b] ;reg:mem, 16 clk+EA;
         sub al,0x22     ;acc(reg):imm, 4 clk;
         sub [byte_b],al
@@ -359,7 +614,7 @@ words_table     dw 0x1A1B, 0x2C2D, 0x3E4F
         int 10h
 
         ;Вывод строки в буффер экрана.
-        mov ax,SCR_BUFFER
+        mov ax,SCR_BUFF_ADDR
         mov es,ax
         mov di,0x0100
         mov si,string
@@ -389,4 +644,5 @@ string  db 'Hello World!&', 0
 word_a  dw 0x1111
 dword_b dd 0x11111111
 reserv  db 32 dup (0)
+
 
