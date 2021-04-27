@@ -229,7 +229,6 @@ MainC:  cmp ax,0x0005
 ;nop  - ничего, 3 такта.
 
 ;Наша программа вещаний №6.
-Main0:
         mov cx,SCR_BUFF_SIZE_B
         mov ax,SCR_BUFF_ADDR
         mov es,ax
@@ -241,9 +240,9 @@ MainD:  stosb
         loop MainD
         mov al,0x21
         mov ah,01000001b
-        mov bl,00000001b
+        mov bl,00000010b
         xor ah,ah
-        mov cx,0x0080
+        mov cx,0x0003
 MainE:  call near ClearTextScreen
         inc ah
         mov dx,ax
@@ -251,22 +250,291 @@ MainE:  call near ClearTextScreen
         call near TimerDelay
         mov ax,dx
         loop MainE
+Main0:  mov al,0x20
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
+        mov ax,0x0A05
+        lea bx,string_test
+        call near PrintTextString
+        mov ax,0x0300
+        lea bx,str_tab_bases
+        call near PrintTextString
+
+        lea bx,str_conv
+        lea si,bases_tab
+        mov dx,0x0004
+        mov di,0x0500   ;print at
+
+MainF:  mov al,[num_conv_8]
+        ;mov ax,[num_conv_16]
+        mov cl,ds:[si]
+        shl cl,0x01
+        shl cl,0x01
+        ;or cl,00000001b ; for 16-bit
+        inc si
+        call near BinToString
+        mov ax,di
+        call near PrintTextString
+        add di,0x000A
+        dec dx
+        jnz short MainF
+
+        lea si,char_test
+        mov di,0x0201
+        mov dx,0x0050
+        call near DrawCharBuffer
         jmp return
 
+;Процедура рисования символа по атрибутам.
+;Вход:
+;si   адрес шрифта
+;di   адрес буфера
+;dx   длина строки буфера
+
+DrawCharBuffer:
+        pushf
+        push di
+        push si
+        push es
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+        mov ch,0x08
+        cld
+        mov ah,00001111b
+DrChr3: mov al,[si]
+        push di
+        mov cl,0x08
+DrChr2: shl al,0x01
+        jnc short DrChr1
+        mov es:[di],ah
+DrChr1: inc di
+        inc di
+        dec cl
+        jnz short DrChr2
+        pop di
+        add di,dx
+        inc si
+        ;mov cl,0x04   берём следующий цвет.
+        ;shr ah,cl
+        ;inc ah
+        ;shl ah,cl
+        add ah,00010000b
+        dec ch
+        jnz short DrChr3
+        pop es
+        pop di
+        pop di
+        popf
+        ret
+
+
+char_test db 00000000b
+          db 01111110b
+          db 10000001b
+          db 10100101b
+          db 10000001b
+          db 10100101b
+          db 10011001b
+          db 01111110b
+
+
+;Числа и таблица системы счислений для перевода из числа в строку.
+bases_tab        db 0x10, 0x0A, 0x08, 0x02
+num_conv_8       db 0xAA, -0x55
+num_conv_16      dw 0xAA55, -0x55AA
+num_conv_32      dd 0x0155AAFF
+str_conv         dw 0x0008, 0x0004
+str_conv_text    db '........'
+str_tab_bases    dw 0x0050, 0x0004
+str_tab_text     db 'Convert 8,16-bit numbers to strings.    '
+                 db 'Hex:      Dec:      Oct:      Bin:      '
+
+;Процедура преобразования числа в строку.
+;Вход:
+;al   8-bit number type.
+;ax   16-bit number type.
+;dx:ax 32-bit number type.
+;bx   string structure address.
+;cl:bit      parameters.
+;0..1        data type, 32 and 64 bits, later...
+;2..6        number base format.
+;7           signed or unsigned number, later...
+;ch:reserve
+;Выход:
+;bx    строка вывода заполнена текстом.
+;Проверка на длину строки и допустимость разрядности.
+;Строка приёмник находится в сегменте данных.
+
+;Учесть обработку знака и отрицательного числа.
+;Реализовать поддержку 32 битного числа для конвертиции.
+
+MIN_NUMBER_BASE equ 0x02
+MAX_NUMBER_BASE equ 0x10
+
+num_base_table db '0123456789ABCDEF'
+
+BinToString:
+        pushf
+        push ax
+        push bx
+        push cx
+        push dx
+        push si
+        push di
+;Проверка на допустимость, длина строки > 0
+        xor di,di
+        cmp di,ds:[bx]
+        jz short BinToS0
+        mov si,bx ;ds:si - dest. string.
+;Проверка на допустимость системы счисления.
+        mov bx,ax
+        mov al,cl
+        mov ah,cl
+        and ah,00000011b
+        cmp ah,0x02     ;add types later
+        jnc short BinToS0
+        mov cl,0x02
+        and al,01111100b
+        shr al,cl       ;optimize...
+        cmp al,MIN_NUMBER_BASE
+        jc short BinToS0
+        cmp al,MAX_NUMBER_BASE
+        jnbe short BinToS0
+        xchg bx,ax  ;bl:base, bh:type
+        mov cx,bx   ;save for sign
+        mov di,si
+        add di,[si]     ;end of string.
+        add di,[si+0x02]
+        dec di
+        lea bx,num_base_table
+        std          ;right to left.
+        add si,[si+0x02]    ;text start.
+        or ch,ch
+        jnz short BinToS2
+BinToS1:xor ah,ah       ;8-bit divider
+        div cl          ;ax/cl
+        xchg ah,al      ;al-remainder
+        xlat            ;al to digit
+        stosb
+        cmp di,si
+        jc short BinToS0
+        xchg ah,al
+        or al,al
+        jnz short BinToS1
+        jmp short BinToS0
+BinToS2:xor ch,ch    ;16-bit number
+BinToS3:xor dx,dx
+        div cx
+        xchg ax,dx
+        xlat
+        stosb
+        cmp di,si
+        jz short BinToS0
+        xchg ax,dx
+        or ax,ax
+        jnz short BinToS3
+BinToS0:pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        popf
+        ret
 ;Формат нащей 16-и битной строки.
-string_lng   dw 0x000C ;Длинна строки
+string_test   dw 0x000C ;Длинна строки.
 text_offs    dw 0x0008 ;Смещение по которому начинается непосредтственный текст.
 reserver       db 0x04 dup (0)
 ;Пример резервирования для доработки или вариации функции печати.
 string_text  db 'Hello World!'
+
+;Процедура печати строки в текстовый буфер.
+;Формат строки минимальный см.выше.
+;Используем глобальные константы экрана.
+;Вход.
+;al позиция по горизонтали без ограничений.
+;ah позиция по вертикали, предел только буфер.
+;ds:bx      адрес структуры строки.
+;Проверка на допустимость только в пределах буфера.
+
+PrintTextString:
+        pushf
+        push ax
+        push cx
+        push dx
+        push si
+        push di
+        push es
+
+        ;mov dx,ax   ;Вычисляем смещение по координатам.
+        ;mov al,dh
+        ;mov cl,SCR_SIZE_WIDTH
+        ;mul cl
+        ;xor dh,dh
+        ;add ax,dx
+        ;shl ax,1       ; 90-100 clk.
+
+
+;Расчёт адреса смещения по координатам, методами сдвигов.
+        mov dx,ax
+        xchg al,ah
+        xor ah,ah
+        mov cl,0x03     ;char+atr*2 = 2 bytes
+        shl ax,cl       ; 8+4*4 clk.
+        mov di,ax
+        mov cl,0x02
+        shl ax,cl
+        add di,ax       ; y вычислен
+        xor dh,dh
+        ;shl dx,0x01
+        add di,dx
+        mov ax,di ; 80 clk.
+
+        mov dx,SCR_BUFF_SIZE_W
+        cmp ax,dx;проверяем на переполнение буфера.
+        ja short PrTxtS0  ;мануал стр.2-46
+
+;Проверка на длинну строки. Если возможно, допечатываем хвост.
+
+        mov cx,ds:[bx]
+        jcxz PrTxtS0 ; Возможно медленней
+        mov di,ax
+        shl di,0x01
+        sub dx,ax    ; compare word
+        cmp dx,cx
+        jnc PrTxtS1
+        mov cx,dx    ;Новая длина строки, склько поместится.
+
+;Непосредственно выводим строчку.
+PrTxtS1:mov si,bx
+        add si,ds:[bx+0x02]  ;si текст строки.
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+PrTxtS2:movsb
+        inc di
+        loop PrTxtS2
+PrTxtS0:pop es
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop ax
+        popf
+        ret
+
+
+
+
+
 
 ;Непосредственно сам текст и массив, контроль за памятью на стороне вызова.
 ;Процедура очистки текстового буфера экрана.
 ;ah   атрибут символа по формату текстового экрана.
 ;al   символ для заполнения.
 ;bl   битовые поля.
-;0    использовать ли атрибут при очистки ДА/НЕТ.
-;1    использовать ли символы для заполнения.
+;0    использовать ли символы для заполнения.
+;1    использовать ли атрибут при очистки ДА/НЕТ.
 ;2-7  резерв.
 
 ClearTextScreen:
@@ -274,22 +542,27 @@ ClearTextScreen:
         push cx
         push di
         push es
-        and bl,00000001b
-        jz ClTxtS0
-        ;if (!(bl & 0x01)) go to ClTxtS0
-        mov cx,SCR_BUFF_SIZE_B
+        mov cx,SCR_BUFF_SIZE_W
         mov di,SCR_BUFF_ADDR
         mov es,di
-        mov di,ax
-        xor di,di     ;code size optimization
-        inc di
-        xchg al,ah
+        xor di,di
+        cld
+        test bl,00000001b       ;5 clk
+        jz ClTxtS2
+        ;if (!(bl & 0x01)) go to ClTxtS0
 ClTxtS1:stosb
         inc di
         loop ClTxtS1
+        mov cx,SCR_BUFF_SIZE_W
+        xor di,di
+ClTxtS2:test bl,00000010b
+        jz ClTxtS0
         xchg al,ah
-ClTxtS0:              ;Доделать вывод
-        pop es
+        inc di
+ClTxtS3:stosb
+        inc di
+        loop ClTxtS3
+ClTxtS0:pop es
         pop di
         pop cx
         popf
@@ -644,4 +917,3 @@ string  db 'Hello World!&', 0
 word_a  dw 0x1111
 dword_b dd 0x11111111
 reserv  db 32 dup (0)
-
