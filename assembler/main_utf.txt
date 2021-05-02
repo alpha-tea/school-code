@@ -64,6 +64,15 @@ SCR_SIZE_HEIGHT    equ 0x0019
 SCR_BUFF_SIZE_B    equ 0x07D0
 SCR_BUFF_SIZE_W    equ 0x03E8
 
+;Константы для работы с загружаемым глобальным шрифтом.
+
+FONT_CHAR_SIZE    equ 0x60         ;Размер шрифта в символах.
+FONT_CHAR_BYTE    equ 0x08         ;Размер одного символа в байтах.
+FONT_WIDTH_PIX    equ 0x08         ;Размер шрифта в точках по горизонтали.
+FONT_HEIGHT_PIX   equ 0x08         ;Размер шрифта в точках по вертикали.
+FONT_WIDTH_BYTE   equ 0x01         ;Ширина шрифта в байтах на линию.
+FONT_FIRST_CHAR   equ 0x20         ;Первый символ шрифта, обычно пробел.
+
         ;Начало программы.
         org 0x100
         push ax
@@ -250,7 +259,7 @@ MainE:  call near ClearTextScreen
         call near TimerDelay
         mov ax,dx
         loop MainE
-Main0:  mov al,0x20
+        mov al,0x20
         mov ah,00001111b
         mov bl,00000011b
         call near ClearTextScreen
@@ -280,63 +289,260 @@ MainF:  mov al,[num_conv_8]
         dec dx
         jnz short MainF
 
+        mov al,0x20
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
         lea si,char_test
-        mov di,0x0201
-        mov dx,0x0050
+        mov di,0x00A1
+        mov dx,0x00A0
+        mov bx,0x02
         call near DrawCharBuffer
+        ;call near ShiftBuffUp;Left
+;Вещание №9.
+Main0:  mov al,0x20
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
+
+        lea si,str_8btp
+        mov cx,[si]
+        ;main cycle
+        add si,ds:[si+0x02]
+        lea bx,font_8btp
+MainI:  mov al,[si]
+        lea di,line_buffer
+        ;or al,10000000b
+        mov ah,00000000b
+        call near DrawCharBuffer
+        mov dh,FONT_WIDTH_PIX
+        push cx
+        push si
+
+;cycle shift char
+MainH:  push es
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+        mov di,SCR_SIZE_WIDTH * 5 * 2 - 0x02
+        lea si,line_buffer
+        mov cl,FONT_HEIGHT_PIX * 2
+MainG:  mov ax,ds:[si]
+        mov es:[di],ax
+        add si,FONT_WIDTH_PIX * 2
+        add di,SCR_SIZE_WIDTH * 2
+        dec cl
+        jnz short MainG
+        pop es
+
+        mov al,00000000b
+        lea di,line_buffer
+        mov cx,FONT_CHAR_BYTE * 2 * 16
+        call near ShiftTextBuffer
+
+        mov al,00010000b
+        lea di,SCR_SIZE_WIDTH * 2 * 4
+        mov cx,SCR_SIZE_WIDTH * 2 * 16
+        call near ShiftTextBuffer
+
+        mov ax,0x0002
+        call near TimerDelay
+        dec dh
+
+        jnz short MainH
+        pop si
+        pop cx
+        inc si
+        dec cx
+        jnz short MainI
+
         jmp return
 
-;Процедура рисования символа по атрибутам.
+;Данные для вещания 8, бегущая строка и вертикального скролла.
+
+LINE_OFFSET     equ SCR_SIZE_WIDTH * 2 * 4      ;Смещение бегущей строки.
+LINE_SIZE       equ SCR_SIZE_WIDTH * 2 * 16     ;Размер строки.
+
+str_8btp        dw 0x0055, 0x0004               ;Line to running.
+                db 'Welcome to 8-Bit Tea Party! ';Text line to show/debug.
+                db 'Hello to all our friends and followers!                    '
+                
+line_buffer     dw FONT_CHAR_BYTE * 16 dup (0)  ;Words, chars + attributes.
+;scr_buffer      dw SCR_SIZE_WIDTH * 16 dup (0)  ;Дополнительный буфер 16*80*2.
+font_8btp      incbin "8btp.fnt"               ;Наш шрифт на 96 символов.
+
+;Рисование символа атрибутами текстового режима и символами в заданый буфер
+;или экран. Для отображения точки используется слово полностью, 16 бит.
+;Для отладки и демонстрации увеличиваем цвета чернил от 0 до 15.
+;Двойное сканирование применяется по умолчанию т.е на каждую линию шрифта,
+;выводится 2 линии атрибутов.
 ;Вход:
-;si   адрес шрифта
-;di   адрес буфера
-;dx   длина строки буфера
+;al:bit         экономим для вещания, позже доработать.
+;0..6           код символа АСКИ для рисования.
+;7              бит управлением буфером: 0=ds:[di], 1=0xB800:[di] - экран
+;               либо в буфер с даными ds:[di], либо на экран в es:[di]
+;ah             цвет атрибута для рисования, стандартный.
+;bx             адрес шрифта, простая бинарная таблица по размеру шрифта.
+;di             адрес буфера экрана или области памяти (смещение).
+;dx             дополнительно, смещение на следующую строку буфера памяти.
+;Выход:         в буфер экрана или памяти.
 
 DrawCharBuffer:
         pushf
-        push di
+        push ax
+        push bx
+        push cx
+        push dx
         push si
-        push es
-        mov ax,SCR_BUFF_ADDR
-        mov es,ax
-        mov ch,0x08
-        cld
-        mov ah,00001111b
-DrChr3: mov al,[si]
         push di
-        mov cl,0x08
-DrChr2: shl al,0x01
-        jnc short DrChr1
-        mov es:[di],ah
-DrChr1: inc di
-        inc di
+        push es  ;Настраеваем сегментный регистр.
+        mov cx,ds
+        test al,10000000b
+        jz short DrChr1
+        mov cx,SCR_BUFF_ADDR
+DrChr1: mov es,cx
+;Расчитывает адрес шрифта и букв в шрифте.
+        mov dx,ax
+        xor ah,ah
+        and al,01111111b   ;bit mask
+        sub al,FONT_FIRST_CHAR
+        mov ch,FONT_CHAR_BYTE
+        mul ch
+        add bx,ax       ;better using offset index.
+        ;lea bx,char_test
+;Рисуем символ в атрибутах и символах.
+        cld
+        mov ax,dx
+        and al,01111111b
+        ;moval,0xDB     ;Сплошной ASCII
+        mov ch,FONT_HEIGHT_PIX * 2
+        mov si,di         ;save start line
+DrChr6: mov dh,[bx]
+        mov di,si
+        mov cl,FONT_WIDTH_PIX
+DrChr3: mov es:[di],word 0x0000
+        shl dh,0x01
+        jnc short DrChr2
+        mov es:[di],ax
+DrChr2: inc di    ;add di,0x02
+        inc di    ;use stosw
         dec cl
-        jnz short DrChr2
-        pop di
-        add di,dx
-        inc si
-        ;mov cl,0x04   берём следующий цвет.
-        ;shr ah,cl
-        ;inc ah
-        ;shl ah,cl
-        add ah,00010000b
-        dec ch
         jnz short DrChr3
-        pop es
+        test dl,10000000b
+        jz short DrChr4
+        add si,SCR_SIZE_WIDTH * 2
+        jmp short DrChr5
+DrChr4: add si,FONT_WIDTH_PIX * 2
+DrChr5: inc ah    ;next color
+        dec ch
+        jz short DrChr0
+        test ch,00000001b
+        jnz short DrChr6
+        inc bx    ;double lines
+        jmp short DrChr6
+DrChr0: pop es
         pop di
-        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
         popf
         ret
 
+;Смещение текстового буфера экрана или памяти по направлениям на 1.
+;Вход:
+;al:bit
+;0..3           тип смещения от 0 до 3 (влево, вправо, вверх, вниз).
+;4              бит управлением буфером: 0=ds:[di], 1=0xB800:[di] - экран
+;               либо в буфер с даными ds:[di], либо на экран в es:[di]
+;di             смещение в буфере, чётное.
+;cx             размер окна полного буфера (в словах).
+;dx             смещение буфера, реализовать дополнительно.
+ShiftTextBuffer:
+        pushf
+        push ax
+        push cx
+        push si
+        push di
+        push ds
+        push es
+        test al,00010000b
+        jz short ShTBuf1
+        mov si,SCR_BUFF_ADDR
+        mov ds,si
+ShTBuf1:mov si,ds      ;or use jump
+        mov es,si
+        mov si,di
+        and al,00001111b
+        cmp al,0x00
+        jz short ShTBuf2
+        cmp al,0x01
+        jz short ShTBuf3
+        jmp short ShTBuf0
+ShTBuf2:inc si
+        inc si
+        dec cx
+        cld
+        rep movsw
+        jmp short ShTBuf0
+ShTBuf3:;Doing later, shift right...
+        jmp short ShTBuf0
+ShTBuf0:pop es
+        pop ds
+        pop di
+        pop si
+        pop cx
+        pop ax
+        popf
+        ret
 
-char_test db 00000000b
-          db 01111110b
+;DrawCharBuffer:
+;        pushf
+;        push di
+;        push si
+;        push es
+;        mov ax,SCR_BUFF_ADDR
+;        mov es,ax
+;        mov ch,0x08
+;        cld
+;        mov ah,00001111b
+;DrChr3: mov al,[si]
+;        push di
+;        mov cl,0x08
+;DrChr2: shl al,0x01
+;        jnc short DrChr1
+;        mov es:[di],ah
+;DrChr1: inc di
+;        inc di
+;        dec cl
+;        jnz short DrChr2
+;        pop di
+;        add di,dx
+;        inc si
+;        ;mov cl,0x04   берём следующий цвет.
+;        ;shr ah,cl
+;        ;inc ah
+;        ;shl ah,cl
+;        add ah,00010000b
+;        dec ch
+;        jnz short DrChr3
+;        pop es
+;        pop di
+;        pop di
+;        popf
+;        ret
+
+char_test db 11111111b
           db 10000001b
-          db 10100101b
           db 10000001b
-          db 10100101b
-          db 10011001b
-          db 01111110b
+          db 10000001b
+          db 10000001b
+          db 10000001b
+          db 10000001b
+          db 11111111b
+          db 10101010b
+          db 10101010b
+
 
 
 ;Числа и таблица системы счислений для перевода из числа в строку.
