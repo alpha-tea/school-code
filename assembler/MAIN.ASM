@@ -59,10 +59,10 @@ CPU 8086        ;только команды процессора 8086.
 ;Глобальные константы.
 
 SCR_BUFF_ADDR      equ 0xB800
-SCR_SIZE_WIDTH     equ 0x0028
-SCR_SIZE_HEIGHT    equ 0x0019
-SCR_BUFF_SIZE_B    equ 0x07D0
-SCR_BUFF_SIZE_W    equ 0x03E8
+SCR_SIZE_WIDTH     equ 0x0050;0x0028
+SCR_SIZE_HEIGHT    equ 0x0032
+SCR_BUFF_SIZE_B    equ 0x0FA0
+SCR_BUFF_SIZE_W    equ 0x07D0;0x03E8 * 2 - SCR_SIZE_WIDTH
 
 ;Константы для работы с загружаемым глобальным шрифтом.
 
@@ -300,7 +300,7 @@ MainF:  mov al,[num_conv_8]
         call near DrawCharBuffer
         ;call near ShiftBuffUp;Left
 ;Вещание №9.
-Main0:  mov al,0x20
+        mov al,0x20
         mov ah,00001111b
         mov bl,00000011b
         call near ClearTextScreen
@@ -355,19 +355,148 @@ MainG:  mov ax,ds:[si]
         dec cx
         jnz short MainI
 
+;Вещание №10, смещение буфера и ANSI арт.
+        mov al,'.'               ;previous Main0
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
+        lea si,str_8btp
+        add si,[si+0x02]
+        mov al,[si]
+        or al,10000000b
+        lea bx,font_8btp
+        xor ah,ah
+        mov di,0x01A8
+        call near DrawCharBuffer      ;Main cycle
+        mov dl,0x04
+        mov dh,00000001b              ;Shift type
+MainK:  mov cl,0x05                   ;Shift one direction
+MainJ:  push cx
+        mov ax,0x0007
+        call near TimerDelay
+        xor bx,bx
+        mov al,dh
+        or al,00010000b
+        xor di,di
+        mov cx,SCR_SIZE_WIDTH * 25
+        call near ShiftTextBuffer
+        pop cx
+        dec cl
+        jnz short MainJ
+        shl dh,1
+        dec dl
+        jnz short MainK
         jmp return
+
+
+;Вертикальный скролл.
+        mov al,' '
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
+;Инициализация начальный переменных.
+        lea si,str_8btp
+        add si,[si+0x02]
+        mov cx,0x0011
+MainN:  push cx
+;Печатаем пять символов в буфер строки.
+        mov ah,00000001b
+        lea di,scr_buffer
+        ;xor di,di           ;debug
+        lea bx,font_8btp
+        mov cx,0x0005
+MainL:  mov al,ds:[si]
+        ;or al,10000000b
+        call near DrawCharBuffer
+        inc si
+        add di,FONT_WIDTH_PIX * 2
+        loop MainL
+        push si
+;Проверим вывод в буфер, скопировав его на экран.
+        ;lea si,scr_buffer
+        ;lea di,0x0140
+        ;mov cx,SCR_SIZE_WIDTH * 16
+        ;mov ax,SCR_BUFF_ADDR
+        ;mov es,ax
+        ;cld
+        ;rep movsw
+
+;Сдвиг экрана вверх полностью.
+        mov dl,0x10
+MainM:  mov al,00000100b
+        or al,00010000b     ;screen
+        mov cx,SCR_BUFF_SIZE_W
+        xor di,di
+        call near ShiftTextBuffer
+;Копируем верхнюю строку их буфера в нижнюю строку экрана.
+        push si
+        push di
+        push es
+        lea si,scr_buffer
+        mov di,SCR_BUFF_SIZE_B
+        sub di,SCR_SIZE_WIDTH * 2
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+        mov cx,SCR_SIZE_WIDTH
+        cld
+        rep movsw
+        pop es
+        pop di
+        pop si
+
+;Смещаем вверх содержимое буфера.
+        mov al,00000100b
+        lea di,scr_buffer
+        mov cx,LINE_SIZE_W
+        call near ShiftTextBuffer
+
+        mov ax,0x0001
+        call near TimerDelay
+        dec dl
+        jnz short MainM
+        pop si
+        pop cx
+        loop MainN
+        jmp return
+Main0:
+;Выводим графику АНСИ.
+        mov cx,0x0078
+        mov ax,SCR_BUFF_ADDR
+        mov es,ax
+        lea si,ansi_art
+        mov al,' '
+        mov ah,00001111b
+        mov bl,00000011b
+        call near ClearTextScreen
+MainO:  push cx
+        mov di,SCR_SIZE_WIDTH * 2 * 49
+        mov cx,SCR_SIZE_WIDTH
+        cld
+        rep movsw
+        xor di,di       ;Смещение арта вверх.
+        mov al,00010100b
+        mov cx,0x0FA0
+        call near ShiftTextBuffer
+        mov ax,0x0005
+        call near TimerDelay
+        pop cx
+        loop MainO
+        jmp return
+
+ansi_art    incbin "ansi_art.bin"
 
 ;Данные для вещания 8, бегущая строка и вертикального скролла.
 
-LINE_OFFSET     equ SCR_SIZE_WIDTH * 2 * 4      ;Смещение бегущей строки.
-LINE_SIZE       equ SCR_SIZE_WIDTH * 2 * 16     ;Размер строки.
+LINE_SIZE_W     equ SCR_SIZE_WIDTH * 16     ;Размер строки.
+LINE_SIZE_B     equ SCR_SIZE_WIDTH * 2 * 16 ; in bytes.
 
-str_8btp        dw 0x0055, 0x0004               ;Line to running.
+str_8btp        dw 0x0055, 0x0005               ;Line to running.
+                db 00011111b                    ;color
                 db 'Welcome to 8-Bit Tea Party! ';Text line to show/debug.
                 db 'Hello to all our friends and followers!                    '
-                
+
 line_buffer     dw FONT_CHAR_BYTE * 16 dup (0)  ;Words, chars + attributes.
-;scr_buffer      dw SCR_SIZE_WIDTH * 16 dup (0)  ;Дополнительный буфер 16*80*2.
+scr_buffer      dw SCR_SIZE_WIDTH * 16 dup (0)  ;Дополнительный буфер 16*80*2.
 font_8btp      incbin "8btp.fnt"               ;Наш шрифт на 96 символов.
 
 ;Рисование символа атрибутами текстового режима и символами в заданый буфер
@@ -431,7 +560,7 @@ DrChr2: inc di    ;add di,0x02
         jz short DrChr4
         add si,SCR_SIZE_WIDTH * 2
         jmp short DrChr5
-DrChr4: add si,FONT_WIDTH_PIX * 2
+DrChr4: add si,SCR_SIZE_WIDTH * 2;FONT_WIDTH_PIX * 2
 DrChr5: inc ah    ;next color
         dec ch
         jz short DrChr0
@@ -451,19 +580,25 @@ DrChr0: pop es
 
 ;Смещение текстового буфера экрана или памяти по направлениям на 1.
 ;Вход:
-;al:bit
-;0..3           тип смещения от 0 до 3 (влево, вправо, вверх, вниз).
+;al:bit         комбинация битов может быть любой и будет исполнена.
+;0              смещение влево;
+;1              смещение вправо;
+;2              смещение вверх;
+;3              смещение вниз;
 ;4              бит управлением буфером: 0=ds:[di], 1=0xB800:[di] - экран
 ;               либо в буфер с даными ds:[di], либо на экран в es:[di]
 ;di             смещение в буфере, чётное.
 ;cx             размер окна полного буфера (в словах).
 ;dx             смещение буфера, реализовать дополнительно.
+;Проверить входные данные на допустимостью
 ShiftTextBuffer:
         pushf
         push ax
+        push bx
         push cx
         push si
         push di
+        push bp
         push ds
         push es
         test al,00010000b
@@ -472,26 +607,64 @@ ShiftTextBuffer:
         mov ds,si
 ShTBuf1:mov si,ds      ;or use jump
         mov es,si
-        mov si,di
         and al,00001111b
-        cmp al,0x00
-        jz short ShTBuf2
-        cmp al,0x01
-        jz short ShTBuf3
-        jmp short ShTBuf0
-ShTBuf2:inc si
+
+        mov bx,di                ;bx - buffer offset.
+        mov bp,cx                ;bp - counter.
+        shr al,0x01                     ;test al,00000001b
+        jc short ShTBuf2         ;left
+ShTBuf6:mov di,bx                ;restore parameters.
+        mov cx,bp
+        shr al,0x01
+        jc short ShTBuf3         ;right
+ShTBuf7:mov di,bx                ;restore parameters.
+        mov cx,bp
+        shr al,0x01
+        jc short ShTBuf4         ;up
+ShTBuf8:mov di,bx                ;restore parameters.
+        mov cx,bp
+        shr al,0x01
+        jc short ShTBuf5         ;down
+        jmp short ShTBuf0        ;return
+
+
+ShTBuf2:mov si,di
+        inc si             ;Shift left.
         inc si
         dec cx
         cld
         rep movsw
-        jmp short ShTBuf0
-ShTBuf3:;Doing later, shift right...
-        jmp short ShTBuf0
+        jmp short ShTBuf6
+ShTBuf3:dec cx
+        add di,cx                   ;Shift right.
+        add di,cx
+        mov si,di
+        dec si
+        dec si
+        std
+        rep movsw
+        jmp short ShTBuf7
+ShTBuf4:mov si,di
+        add si,SCR_SIZE_WIDTH * 2          ;Shift up.
+        sub cx,SCR_SIZE_WIDTH
+        cld
+        rep movsw
+        jmp short ShTBuf8
+ShTBuf5:dec cx
+        add di,cx                          ;Shift down.
+        add di,cx
+        sub cx,SCR_SIZE_WIDTH
+        mov si,di
+        sub si,SCR_SIZE_WIDTH * 2
+        std
+        rep movsw
 ShTBuf0:pop es
         pop ds
+        pop bp
         pop di
         pop si
         pop cx
+        pop bx
         pop ax
         popf
         ret
