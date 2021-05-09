@@ -298,7 +298,6 @@ void chapter_5()
     printf("sum:\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n\n",sum,sum1,sum2,sum3,sum4);
     printf("5.39:summa posledovatelnosty\n");
     srand(time(NULL));
-    i = 1;
     summ = 0;
     summ += numerical_generation_int();
     printf("Sum = %d\n\n",summ);
@@ -384,7 +383,6 @@ void chapter_5()
     printf("b)Sum = %d\n\n",summ);
     //c
     summ = 0;
-    b = 0;
     n = 1 + rand() % 8;
     i = 1;
     printf("c)\n");
@@ -440,7 +438,6 @@ void chapter_5()
     printf("\nTotal:\n%4d\t\t%4d\n\n",january / 31,march / 31);
     printf("5.63\n");
     srand(time(NULL));
-    n = 10;
     summ = 0;
     for (i = 1; i <= 10;++i) {
         a = 1 + rand() % 7;
@@ -453,9 +450,9 @@ void chapter_5()
     printf("5.66.posledovatelnost: ");
     n = 5;
     double a2 = 0, a3 = 0, k = 0;
-    for (k = 1;k <= n;++k) {
+    for (int k = 1;k <= n;++k) {
         a3 = k * (a2) + 1 / k;
-        printf("a%.f = %.2f; ",k,a3);
+        printf("a%d = %.2f; ",k,a3);
         a2 = a3;
     }
     printf("\n5.67\n");
@@ -464,7 +461,6 @@ void chapter_5()
     n = 10;
     a = 1;
     a1 = 1;
-    b = 1;
     summ = 2;
     printf("Fibonnachi: %d %d ", a, a1);
     for (i = 3; i <= n; ++i) {
@@ -548,7 +544,6 @@ void chapter_5()
     printf("5.73\n");
     v1 = 100.0; v2 = 20; v3 = 0.05; v4 = 0.02;
     sum = 0;
-    n = 8;
     printf("God:\tPloshad:\tUrozhaynost:\tUrozhay:\tSumma:\n");
     for (i = 1; i < 8; ++i) {
         double v5 = v1 * v2;

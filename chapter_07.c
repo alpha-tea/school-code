@@ -341,7 +341,6 @@ void chapter_7()
     help1 = 0;
     help = 0;
     double x = 100;
-    y = 0;
     for (i = 0;i < n; ++i) {
         y = (double)(rand() % 100) / (double)(1 + rand() % 100);
         if (y >= t) {
@@ -444,7 +443,6 @@ void chapter_7()
     }
     printf("\nMinimum temperature = %d, quantity = %d;\n\n",b,help);
     printf("7.79\n");
-    n = 10;
     b = rand() % 256;
     printf("%d;\n",b);
     int binary[CHAR_BIT] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -484,7 +482,6 @@ void chapter_7()
     int time = 0;
     a = 0;
     int people_1[n];
-    b = 0; // номер покупателя
     for (i = 0; i < n; ++i) {
         time = 1 + rand() % 10;
         if (i == 0)
@@ -539,9 +536,6 @@ void chapter_7()
     sum = 0;
     sum1 = 0;
     a = 0;
-    b = 0;
-    c = 0;
-    b1 = 0;
     int b2 = 0, c1 = 0, c2 = 0;
     int football[n], max_scores[amount], min_scores[amount];
     for (i = 0; i < amount; ++i) {
@@ -586,7 +580,6 @@ void chapter_7()
     }
     printf("\nSum of winners: max = %d, min = %d;\n\n", sum, sum1);
     printf("7.86 - 7.89;\n");
-    n = 10;
     b = 50;
     c = 2;
     sum = 0;
@@ -691,7 +684,6 @@ void chapter_7()
     else
         printf("the sum of positive numbers is not a multiple of 3;\n\n");
     printf("7.102, street:\n");
-    n = 10;
     sum = 0;
     sum1 = 0;
     printf("Number of residents: ");

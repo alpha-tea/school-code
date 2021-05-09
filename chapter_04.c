@@ -49,7 +49,6 @@ lab_1:
         printf("y = 1 - 2 * sin x ^ 2 = 1 - 2 * sin %d ^ 2 = %d;\n\n",x,y);
     }
     printf("4.5\n");
-    y = 0;
     x = 1;
     if (x <= 2) {
         y = x;
@@ -58,7 +57,6 @@ lab_1:
         y = 2;
         printf("1)y = %d\t\t(x = %d)\n",y,x);
     }
-    y = 0;
     x = 3;
     if (x <= 3) {
         y = -x;
@@ -625,9 +623,6 @@ lab_1:
     else
         printf("sotny = %d, desyatki = %d, edenytsy = %d\n\n",a3,a2,a1);
     printf("4.119\n");
-    a1 = 3; //x1(vertical)
-    b1 = 2; //y1(gorizont)
-    c1 = 6; //x2
     int d1 = 3; //y2
     // ладья
     a1 = 2;

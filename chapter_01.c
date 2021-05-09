@@ -33,12 +33,11 @@ void chapter_1()
     printf("(%1.0f * %2.0f ^ 2) / 2) + (%1.0f * %2.0f * %2.0f) = %4.0f\n",m1,v,m1,g,h,r);
     int s1 = 14,k1 = -3,d1 = 0;
     printf("d:= s + 1 = %d + 1 = %d\n",s1,s1 + 1);
-    d = s1 + 1;
     printf("s:= d = %d\n",d1);
     s1 = d1;
     k1 = 2 * s1;
     printf("k:= 2 * s = 2 * %d = %d\n",s1,k1);
-    s1 = 0,d1 = 0,k1 = 30;
+    k1 = 30;
     d1 = k1 - 5;
     printf("d:= k - 5 = %d - 5 = %d\n",k1,d1);
     k1 = 2 * d1;
@@ -85,8 +84,6 @@ void chapter_1()
     P = kat_1 + kat_2 + gip;
     printf("P = kat_1 + kat_2 + gip = %d + %d + %d = %d\n",kat_1,kat_2,gip,P);
     double b1 = 5, a1 = 5;
-    x = 0;
-    y = 0;
     x = ((2 / (pow(a1,2) + 25)) + b1) / (sqrt(b1) + (a1 + b1) / 2);
     printf("1.40:x = ((2 / (pow(a,2) + 25)) + b) / (sqrt(b) + (a + b) / 2) = \n");
     printf("((2 / (pow(%.2f,2) + 25)) + %.2f) / (sqrt(%.2f) + (%.2f + %.2f) / 2) = ",a1,b1,b1,a1,b1);
@@ -122,10 +119,8 @@ void chapter_1()
     t = u - t;
     printf("t = %d; u = %d\n",t,u);
     int b2 = 5, c1 = 10, a2 = 1;
-    t = 0;
     printf("1.60a: b = %d; a = %d; c = %d > b = c = %d;",b2,a2,c1,c1);
     t = b2;
-    b2 = c1;
     c1 = a2;
     a2 = t;
     printf(" a = b = %d;",a2);
@@ -147,8 +142,6 @@ void chapter_1()
     k = k * j;
     printf("1.61v:j = %d ;j ^ 7 = %d\n",j,k);
     j = 2;
-    k = 0;
-    l = 0;
     k = j * j; // j^2
     l = k * j; // j^3
     m5 = k * l; // j^5

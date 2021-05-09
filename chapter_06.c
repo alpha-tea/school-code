@@ -189,8 +189,7 @@ void chapter_6()
     int x_max = 0;
     int x_min = 9;
     int max_pos = 0, min_pos = 0;
-    x3 = 0;
-    x4 = 0;
+
     while (n > 0) {
         value = n % 10;
         n /= 10;
@@ -235,7 +234,6 @@ void chapter_6()
     }
     n = 1237174;
     x1 = n;
-    x2 = 0;
     printf("\n6.38, n = %d\n",n);
     while (n > 0) {
         value = n % 10;
@@ -277,7 +275,6 @@ void chapter_6()
     n = 10;
     int is_seq = 0;
     int seq_am = 0;
-    x3 = 0;
     k = 0;
     int mass[n], digits[n];
     printf("Sequence: %d\n",n);
@@ -319,7 +316,6 @@ void chapter_6()
     quantity = 0;
     int b = 1234;
     int x = 1;
-    x1 = 0;
     int y1 = 6, y2 = 0;
     a1 = 13;
     int prod_numbers = 1;
@@ -410,10 +406,8 @@ void chapter_6()
         printf("\nThis is not palindrom\n\n");
     printf("6.54\n");
     n = 103;
-    x = 0;
     k = 0;
     x2 = 0;
-    x1 = 0;
     printf("Value, digits: %d\n",n);
     while (n > 0) {
         x = n % 10;
@@ -440,7 +434,6 @@ void chapter_6()
     }
     printf("\n");
     y = 3.61; //n
-    a = 0;
     x = 0;
     double d1 = 0;
     d1 = fabs(mass2[0] - y);
@@ -484,7 +477,6 @@ void chapter_6()
     srand(time(NULL));
     n = 0;
     k = 1;
-    x = 0;
     x1 = 0;
     x2 = 0;
     printf("Values: ");

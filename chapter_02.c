@@ -18,7 +18,6 @@ void chapter_2()
     printf("sec = %d\n", sec);
     hour = sec / 3600;
     printf("hour = %d\n",hour);
-    a = sec - a;
     min = (sec % 3600) / 60;
     printf("min = %d\n",min);
     a = sec % 60;

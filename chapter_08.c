@@ -38,8 +38,7 @@ void chapter_8()
     printf("\nb)\n");
     //b
     int k = 1;
-    j = 5;
-    for (i = 5; i <= 9; ++i){
+     for (i = 5; i <= 9; ++i){
         for (j = 1;j <= 10 - i; ++j)
             printf("%d ",i);
         printf("\n");
@@ -54,7 +53,7 @@ void chapter_8()
     }
     printf("\nd)\n");
     //d
-    k = 1, j = 5;
+    j = 5;
     for (i = 5; i <= 25; i += 5, --j){
         for (k = 1;k <= j; ++k)
             printf("%-3d",i);
@@ -62,7 +61,6 @@ void chapter_8()
     }
     printf("\n");
     printf("8.7, Multiplication table:\n");
-    j = 1;
     for (i = 1; i <= 9; ++i) {
         for (j = 1; j <= 9; ++j)
             printf("%d x %d = %2d; ", i, j, i * j);
@@ -479,7 +477,6 @@ void chapter_8()
             if ((j * j * j + i * i * i) <= n)
                 printf("%d:%d ",i,j);
         }
-    n = 1; // числитель
     a = 1; // знаменатель
     c = 10; // ограничитель
     printf("\n\n8.59, irreducible fractions, c = %d;\n",c);

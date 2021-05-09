@@ -1,6 +1,425 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int string_length_brackets(char src[], int start)
+{
+    int i = 0, counter = 1;
+    if (src[start] != '(')
+        return -1;
+    for (i = start + 1; src[i] != '\0' && counter > 0; ++i) {
+        if (src[i] == '(')
+            counter++;
+        if (src[i] == ')')
+            counter--;
+    }
+    return i - 1;
+}
+
+int string_checking_brackets(char src[])
+{
+    int i = 0, counter = 0;
+    for (i = 0; src[i] != '\0' && counter >= 0; ++i) {
+        if (src[i] == '(')
+            counter++;
+        if (src[i] == ')')
+            counter--;
+    }
+    if (counter == 0)
+        return i;
+    else
+        return -1 * (i - 1);
+}
+
+char boolean_calculator(char src[])
+{
+    int i = 0, counter = 0, idx = 0, operand_a = 0, operand_b = 0;
+    char result_string[STRING_MAX];
+    char sub_string[STRING_MAX];
+    char signs[] = "!&^|";      // Идут в порядке уменьшения приоритета си.
+    printf("Starting calculator:\n");
+    for (i = 0; src[i] != '\0'; ++i) {
+        if (src[i] != ' ') {
+            if (src[i] == '(') {
+                idx = string_length_brackets(src,i);
+                string_copy_substr(src,sub_string, i + 1, idx - i - 1);
+                printf("index of brackets: [%d:%d], sub_string = '%s'\n", i, idx, sub_string);
+                result_string[counter++] = boolean_calculator(sub_string); // Рекурсия
+                i = idx;
+            } else
+                result_string[counter++] = src[i];
+        }
+    }
+    result_string[counter] = '\0';
+    printf("Calculate string: '%s'\n", result_string);
+    printf("Source string: '%s'\n", src);
+    for (i = 0; signs[i] != '\0' && result_string[1] != '\0'; ++i) {
+        while ((idx = string_char_find(result_string,signs[i],0,0)) != -1) {
+            switch (signs[i]) {
+            case '!':
+                if (result_string[idx + 1] == '1' || result_string[idx + 1] == '0') {
+                    operand_a = result_string[idx + 1] - '0';
+                    result_string[idx] = !(operand_a) + '0';
+                    string_delete(result_string,idx + 1,1);
+                } else
+                    printf("error: not expect 0 or 1, idx = %d;\n", idx);
+                break;
+            case '&':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a & operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: and expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            case '^':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a ^ operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: xor expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            case '|':
+                if ((result_string[idx + 1] == '1' || result_string[idx + 1] == '0')
+                        && (result_string[idx - 1] == '1' || result_string[idx - 1] == '0')) {
+                    operand_a = result_string[idx - 1] - '0';
+                    operand_b = result_string[idx + 1] - '0';
+                    result_string[idx - 1] = (operand_a | operand_b) + '0';
+                    string_delete(result_string,idx,2);
+                } else
+                    printf("error: or expect 0 or 1, to left and right, idx = %d;\n", idx);
+                break;
+            default:
+                printf("error:");
+            }
+        }
+        printf("\t:'%c': '%s'\n",signs[i], result_string);
+    }
+    return result_string[0];
+}
+
+int string_is_symmetrical(char string[])
+{
+    int help = 0, len_1 = string_length(string) - 1;
+    if (len_1 < 1) {
+        printf("error, string is empty;\n");
+        return -1;
+    }
+    while (help < len_1 && string[help] == string[len_1]) {
+        ++help;
+        --len_1;
+    }
+    return (help >= len_1);
+}
+
+void string_reverse(char string[])
+{
+    int size = string_length(string);
+    for (int j = 0; j < size / 2; ++j) {
+        char c = string[j];
+        string[j] = string[size - 1 - j];
+        string[size - 1 - j] = c;
+    }
+}
+
+int int_to_string(char dst[], int num, int base)
+{
+    const int base_min = 2, base_max = 16;
+    char digits[] = "0123456789ABCDEF";
+    int i = 0;
+    if (base < base_min || base > base_max)
+        return -1;
+    if (num < 0) {
+        dst[i++] = '-';
+        num *= -1;
+    }
+    for (;num > 0; ++i) {
+        dst[i] = digits[num % base];
+        num /= base;
+    }
+    dst[i] = '\0';
+    if (dst[0] == '-')
+        string_reverse(&dst[1]);
+    else
+        string_reverse(dst);
+    return 0;
+}
+
+void string_rrc(char src[], int counter)
+{
+    int help = string_length(src), j;
+    char help_2;
+    for (int i = 0; i < counter; ++i) {
+        help_2 = src[help - 1];
+        for (j = help - 1; j > 0; --j)
+            src[j] = src[j - 1];
+        src[j] = help_2;
+    }
+}
+
+void string_rlc(char src[], int counter)
+{
+    int help = string_length(src),j;
+    char help_2;
+    for (int i = 0; i < counter; ++i) {
+        help_2 = src[0];
+        for (j = 0; j < help - 1; ++j)
+            src[j] = src[j + 1];
+        src[help - 1] = help_2;
+    }
+}
+
+int string_insert( char dst[], char ins[], int start, int limit)
+{
+    int ins_len = string_length(ins), dst_len = string_length(dst), i;
+    if (ins_len == 0 || ins_len + start >= limit)
+        return -1;
+    for (i = ins_len + dst_len; i >= start + ins_len; --i)
+        dst[i] = dst[i - ins_len];
+    for (int j = start, i = 0; j < ins_len + start; ++j, ++i)
+        dst[j] = ins[i];
+    return 0;
+}
+
+int string_delete(char src[], int start, int length)
+{
+    int help = string_length(src), i;
+    if (start < 0 || start + length > help || length <= 0)
+        return -1;
+    for (i = start; i + length < help; ++i)
+        src[i] = src[i + length];
+    src[i] = '\0';
+    return 0;
+}
+
+int string_xchg_chars(char src[], int table[], int count)
+{
+    char help1 = string_length(src), help;
+    if (count == 0 || help1 == 0)
+        return -2;
+    for (int i = 0; i < count * 2; i += 2) {
+        if (table[i] < help1 && table[i] >= 0 && table[i + 1] < help1 && table[i + 1] >= 0) {
+            help = src[table[i]];
+            src[table[i]] = src[table[i + 1]];
+            src[table[i + 1]] = help;
+        } else
+            return -1;
+    }
+    return 0;
+}
+
+unsigned char not_gate(unsigned char bit_1)
+{
+    if (bit_1 == 0x01)
+        return 0x00;
+    else
+        return 0x01;
+}
+
+unsigned char and_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 0x01)
+        if (bit_2 == 0x01)
+            return 0x01;
+    return 0x00;
+}
+
+unsigned char or_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 0x01)
+        return 0x01;
+    else if (bit_2 == 0x01)
+        return 0x01;
+    return 0x00;
+}
+
+unsigned char xor_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == bit_2)
+        return 0x00;
+    return 0x01;
+}
+
+unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2)
+{
+    if (bit_1 == 1)
+        if (bit_2 == 1)
+            return 0x00;
+    return 0x01;
+}
+
+unsigned char add_byte(unsigned char dst[], unsigned char src[])
+{
+    int i, help = 0, help2 = 0;
+    for (i = 0; i < CHAR_BIT; ++i) {
+        help2 = dst[i];
+        dst[i] = xor_gate(xor_gate(dst[i],src[i]),help);
+        if (and_gate(help2,src[i]) == 1)
+            help = 1;
+        else if (xor_gate(help2,src[i]) != 1)
+            help = 0;
+    }
+    return help;
+}
+
+unsigned char shift_logical_right(unsigned char dst[], unsigned char counter)
+{
+    unsigned char carry_flag = 0x00;
+    for (unsigned char ix = 0; ix != counter; ++ix) {
+        carry_flag = dst[0];
+        for (unsigned char iy = 0; iy != CHAR_BIT - 1; ++iy)
+            dst[iy] = dst[iy + 1];
+        dst[CHAR_BIT - 1] = 0x00;
+    }
+    return carry_flag;
+}
+
+void print_binary_byte(unsigned char byte)
+{
+    for (int i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d", (byte >> i) & 0x01);
+}
+
+void print_binary_word(unsigned short int word)
+{
+    print_binary_byte((unsigned char)(word >> CHAR_BIT));
+    print_binary_byte((unsigned char)(word & 0xFF));
+}
+
+int num_radix(char src[], char dst[], int from, int to)
+{
+    int src_len = string_length(src), quantity = 0, sum = 0, number = 0, help1 = 0;
+    int help = 1;
+    char numbers[] = "0123456789ABCDEF";
+    if (to == from || from < 1 || from > 16 || to < 1 || to > 16) {
+        printf("Error in parameters.\n");
+        return -1;
+    }
+    for (int i = src_len - 1; i >= 0; --i) {
+        for (int k = 0; numbers[k] != '\0' && k <= from; ++k)
+            if (numbers[k] == src[i]) {
+                if (k >= from)
+                    return -1;
+                number = k;
+            }
+        sum += number * help;
+        help *= from;
+    }
+    help = sum;
+    while (help > 0) {
+        help /= to;
+        ++help1;
+    }
+    for (int l = help1 - 1; l >= 0; --l) {
+        number = sum % to;
+        sum /= to;
+        dst[l] = numbers[number];
+        ++quantity;
+    }
+    return quantity;
+}
+
+int string_find_seq(char s[], char c, int start, int length)
+{
+    int src_len = string_length(s), index = 0;
+    if (src_len < start + length) {
+        printf("Sequence length more than string length.\n");
+        return -1;
+    }
+    for (index = start; index < start + length && s[index] == c; ++index)
+        ;
+    return (index == start + length);
+}
+
+int string_palindrom(char c[])
+{
+    int i = 0, src_len = string_length(c);
+    if (src_len == 0)
+        return -1;
+    for (i = 0; i < src_len && c[i] == c[src_len - i - 1]; ++i)
+        ;
+    if (i == src_len)
+        return 0;
+    return -1;
+}
+
+int string_char_find(char s[], char c, int direct, int debug)
+{
+    int index = string_length(s);
+    if (index == 0) {
+        if (debug == 1)
+            printf("No chars in string;\n");
+        return -1;
+    }
+    if (debug == 1)
+        printf("Char before find: ");
+    if (direct == 0) {
+        index = 0;
+        while (s[index] != c && s[index] != '\0') {
+            if (debug == 1)
+                printf("%c",s[index]);
+            index++;
+        }
+    } else {
+        index--;
+        while (s[index] != c && index >= 0) {
+            if (debug == 1)
+                printf("%c",s[index]);
+            index--;
+        }
+    }
+    if (debug == 1)
+        printf("\n");
+    if (s[index] == c)
+        return index;
+    else
+        return -1;
+}
+
+int string_concat(char src[], char dst[])
+{
+    int src_len = string_length(src), dst_length = string_length(dst);
+    int i = 0;
+    for (i = 0; i < src_len; ++i)
+        dst[i + dst_length] = src[i];
+    dst[i + dst_length] = '\0';
+    return i;
+}
+
+void string_clear(char s[], int len)
+{
+    for (int i = 0; i < len; ++i)
+        s[i] = '\0';
+}
+
+void string_exchange(char** s1, char** s2)
+{
+    char *addr;
+    addr = *s1;
+    *s1 = *s2;
+    *s2 = addr;
+}
+
+int string_find_sub(char s1[], char s2[])
+{
+    int j = 0, src_1 = string_length(s1), src_2 = string_length(s2);
+    if (src_1 == 0 || src_2 == 0 || src_1 < src_2)
+        return -2;
+    for (int i = 0; i < src_1; ++i) {
+        if (s1[i] == s2[j])
+            ++j;
+        else
+            j = 0;
+        if (j == src_2)
+            return i - j + 1;
+    }
+    return -1;
+}
+
 int string_rep_sub(char src[], char find[],char rep[],int all)
 {
     int j = 0, src_len = string_length(src), find_len = string_length(find), quantity = 0;
@@ -58,46 +477,6 @@ int string_swap_parts(char src[], int parts, int mode)
 }
 
 static unsigned char bits_nums[BYTE_NUMS][CHAR_BIT];
-
-unsigned char not_gate(unsigned char bit_1)
-{
-    if (bit_1 == 0x01)
-        return 0x00;
-    else
-        return 0x01;
-}
-
-unsigned char and_gate(unsigned char bit_1, unsigned char bit_2)
-{
-    if (bit_1 == 0x01)
-        if (bit_2 == 0x01)
-            return 0x01;
-    return 0x00;
-}
-
-unsigned char or_gate(unsigned char bit_1, unsigned char bit_2)
-{
-    if (bit_1 == 0x01)
-        return 0x01;
-    else if (bit_2 == 0x01)
-        return 0x01;
-    return 0x00;
-}
-
-unsigned char xor_gate(unsigned char bit_1, unsigned char bit_2)
-{
-    if (bit_1 == bit_2)
-        return 0x00;
-    return 0x01;
-}
-
-unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2)
-{
-    if (bit_1 == 1)
-        if (bit_2 == 1)
-            return 0x00;
-    return 0x01;
-}
 
 unsigned char set_register(unsigned char* num, unsigned char byte[])
 {
@@ -669,7 +1048,7 @@ void chapter_9()
     int len_array = string_length(array);
     int len_letters = string_length(search_letters);
     int counters[len_letters], sum = 0, quantity = 0;
-    n = 7; help = 0; a = 2; b = 0;
+    n = 7; a = 2;
     for (i = 0; i < len_letters; ++i)
         counters[i] = 0;
     printf("string = %s;\n\n\t",array);
@@ -709,7 +1088,6 @@ void chapter_9()
     printf("Source string = '%s';\n",line);
     printf("0123456789A:\n");
     quantity = 0;
-    help = string_length(line);
     for (i = 0; line[i] != '\0'; ++i, ++counter) {
         if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
             if (is_word == 0) {
@@ -926,7 +1304,6 @@ void chapter_9()
         char* vocabulary[] = {"black","brown","olive","green","red","blue"};
         int voc_size = sizeof (vocabulary) / sizeof (char*);
         double correct = 0.5;
-        quantity = 0;
         is_word = 0;
         len_array = string_length(src_6);
         printf("source string: '%s', correct = %.2f;\nvocabulary:",src_6,correct);
@@ -1233,7 +1610,7 @@ void chapter_9()
         printf("'%s' ",wrd_text[i]);
     printf("\n");
     printf("Index:\tRule:\tWords:\n");
-    int length = string_length(rules);
+    int length;
     for (i = 0; rules[i] != '\0'; i += k) {
         printf("%d\t%c:%c", i, rules[i], rules[i + 1]);
         if (rules[i] == 'M' || rules[i] == 'Q' || rules[i] == 'L')
@@ -1331,7 +1708,6 @@ void chapter_9()
     char src_15[STRING_MAX] = "\na b \n cab   de s\n\n  \nf\n";
     char words_line[STRING_MAX];
     printf("Source string:\n'");
-    help = string_length(src_15);
     for (i = 0; src_15[i] != '\0'; ++i) {
         if (src_15[i] == '\n')
             printf("(n)");
@@ -1340,7 +1716,6 @@ void chapter_9()
     }
     printf("'\n");
     printf("0123456789ABCDEF:\n");
-    quantity = 0;
     int mode = 4; //(left edge - 1; centered - 2; right edge - 3; in width - 4)
     for (i = 0; src_15[i] != '\0'; i = k) {
         int words_length = 0;

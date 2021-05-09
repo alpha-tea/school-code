@@ -99,7 +99,7 @@ void chapter_3()
     printf("d:((x * y) != 0) || (y > x) = %d\n\n",help);
 
     //3.13
-    a = 0; b = 0;
+    a = 0;
     printf("3.13:\n");
     while (a <= 1) {
         b = 0;
