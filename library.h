@@ -9,11 +9,20 @@ int string_char_counter(char s[], char c);
 
 int ideal_number(int a);
 
-int evklid_first_step(int a, int b);
+int evklid(int a, int b);
 
 int length_number(int number);
 
 int string_copy_substr(char src[], char dst[], int start, int length);
 
 int string_is_equal(char string_1[], char string_2[]);
+
+int string_insert( char dst[], char ins[], int start, int limit);
+
+int factorial(int n);
+
+int prime_number(int number);
+
+int string_char_find(char s[], char c, int direct, int debug);
+
 #endif

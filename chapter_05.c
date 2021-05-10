@@ -106,15 +106,6 @@ double exponentiation(double a, unsigned int n)
     return r;
 }
 
-int factorial(int n)
-{
-    int result = 1;
-    for (; n > 0; --n) {
-        result = result * n;
-    }
-    return result;
-}
-
 int multiply(int x, int y)
 {
     //1 вариант, сделать битовый сдвиг.

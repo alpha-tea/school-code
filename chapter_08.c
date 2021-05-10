@@ -1,14 +1,6 @@
 ﻿#include "global.h"
 #include "library.h"
 
-int prime_number(int number)
-{
-    int i = 2;
-    for (i = 2; i < number && number % i != 0; ++i)
-        ;
-    return (i == number);
-}
-
 int digital_root(int n)
 {
     int a = 0, sum = 0;
@@ -463,7 +455,7 @@ void chapter_8()
     while (n > 1) {
         while (n % i == 0) {
             printf("%d", i);
-            if (evklid_first_step(i,a) == 1)
+            if (evklid(i,a) == 1)
                 printf("!");
             n /= i;
             printf(":%d ",n);
@@ -482,7 +474,7 @@ void chapter_8()
     printf("\n\n8.59, irreducible fractions, c = %d;\n",c);
     for (; a <= c; ++a) {
         for (n = 1; n < a; ++n)
-            if (evklid_first_step(n,a) == 1)
+            if (evklid(n,a) == 1)
                 printf("%d/%d ",n,a);
         printf("\n");
     }

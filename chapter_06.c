@@ -1,4 +1,5 @@
 ﻿#include "global.h"
+#include "library.h"
 
 void number_of_degrees (int n)
 {
@@ -66,7 +67,7 @@ int natural_number(int n)
         if (k == 1)
             first_number = x;
     }
-    sred_arif = sum / k;
+    //sred_arif = sum / k;
     sum_first_and_last = first_number + x;
     printf("a)the number of digits in it: %d\n",k);
     printf("b)the sum of his digits: %d\n",sum);
@@ -81,7 +82,7 @@ int natural_number(int n)
 
 int lcm (int a, int b)
 {
-    return (abs(a * b) / evklid_first_step(a,b));
+    return (abs(a * b) / evklid(a,b));
 }
 
 void chapter_6()
@@ -302,9 +303,9 @@ void chapter_6()
     x3 = 33;//c
     if (x1 > 0 && x2 > 0 && x3 > 0) {
         int help_nod_first_step = 0, help_nod_second_step = 0;
-        help_nod_first_step = evklid_first_step(x1,x2);
+        help_nod_first_step = evklid(x1,x2);
         printf("NOD(a,b) = NOD(%d,%d) = %d\n",x1,x2,help_nod_first_step);
-        help_nod_second_step = evklid_first_step(help_nod_first_step,x3);
+        help_nod_second_step = evklid(help_nod_first_step,x3);
         printf("NOD(a,b,c) = NOD(%d,%d,%d) = %d\n\n",x1,x2,x3,help_nod_second_step);
     } else {
         printf("You entered incorrect numbers!!\n\n\a");
@@ -738,7 +739,7 @@ void chapter_6()
     printf("6.103\n");
     n = 75; // числитель
     x = 125; // знаменатель
-    result = evklid_first_step(n,x);
+    result = evklid(n,x);
     printf("NOD = %d;\n",result);
     printf("Was: %d/%d;\n",n,x);
     x /= result;

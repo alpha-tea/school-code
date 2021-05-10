@@ -142,48 +142,4 @@ void hack_the_terminal(int length, int quantity, int attempts)
     for (int i = 0; i < quantity; ++i)
         printf("%d ", likeness_idx[i]);
     return;
-    /*
-    int correct_variant = rand() % quantity, i = 0, j = 0, is_equal = 0, idx = 0, result = 0;
-    char passwords[quantity][length + 1];
-    uniq_gen_fast_symbols(passwords[correct_variant],length);
-    for (i = 0; i < 4; ++i)
-        printf("counter[%d] = %d;\n", i, counter[i]);
-    for (i = 0; i < 4; ++i)
-        printf("difference[%d] = %d;\n", i, difference[i]);
-    printf("%s\n", passwords[correct_variant]);
-    printf("Game: Hack The Terminal\n");
-    printf("Rules:  You must enter the index of the assumed password\n\tand guess it in a limited number of attempts.\n\n");
-    printf("addr: password: idx:\n");
-    for (i = 0; i < quantity; ++i) {
-        if (i != correct_variant) {
-            string_copy_substr(passwords[correct_variant],passwords[i],0,length);
-            idx = rand() % 4;
-            while (counter[idx] == 0)
-                idx = rand() % 4;
-            counter[idx]--;
-            string_rand_change(passwords[i],difference[idx]);
-            passwords[i][length] = '\0';
-        }
-        printf("%2d\t |%s|%11p\n", i, passwords[i],passwords[i]);
-    }
-    while (is_equal != 1 && attempts > 0) {
-        printf("Attempts Remaining: ");
-        for (j = attempts; j > 0; --j)
-            printf("%c ",' ' + 222);
-        printf("\nPlease entered idx: ");
-        scanf("%d",&idx);
-        if (idx >= 0  && idx < quantity) {
-            result = string_is_equal(passwords[correct_variant], passwords[idx]);
-            if (result == 0) {
-                is_equal = 1;
-                printf("Terminal Hacked!\nWelcome!\n");
-            } else
-                printf("Likeness: %d;\n\n",result);
-        } else
-            printf("Index Is incorrect!\n\n");
-        attempts--;
-    }
-    if (attempts == 0)
-        printf("Terminal Is Locked!\n\n");
-        */
 }

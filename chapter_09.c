@@ -173,18 +173,6 @@ void string_rlc(char src[], int counter)
     }
 }
 
-int string_insert( char dst[], char ins[], int start, int limit)
-{
-    int ins_len = string_length(ins), dst_len = string_length(dst), i;
-    if (ins_len == 0 || ins_len + start >= limit)
-        return -1;
-    for (i = ins_len + dst_len; i >= start + ins_len; --i)
-        dst[i] = dst[i - ins_len];
-    for (int j = start, i = 0; j < ins_len + start; ++j, ++i)
-        dst[j] = ins[i];
-    return 0;
-}
-
 int string_delete(char src[], int start, int length)
 {
     int help = string_length(src), i;
@@ -345,39 +333,6 @@ int string_palindrom(char c[])
     if (i == src_len)
         return 0;
     return -1;
-}
-
-int string_char_find(char s[], char c, int direct, int debug)
-{
-    int index = string_length(s);
-    if (index == 0) {
-        if (debug == 1)
-            printf("No chars in string;\n");
-        return -1;
-    }
-    if (debug == 1)
-        printf("Char before find: ");
-    if (direct == 0) {
-        index = 0;
-        while (s[index] != c && s[index] != '\0') {
-            if (debug == 1)
-                printf("%c",s[index]);
-            index++;
-        }
-    } else {
-        index--;
-        while (s[index] != c && index >= 0) {
-            if (debug == 1)
-                printf("%c",s[index]);
-            index--;
-        }
-    }
-    if (debug == 1)
-        printf("\n");
-    if (s[index] == c)
-        return index;
-    else
-        return -1;
 }
 
 int string_concat(char src[], char dst[])
