@@ -4,6 +4,12 @@
 ;
 ;Grabbag (Duke Nukem Theme).
 ;Composed by Lee Jackson.
+;
+;Шрифт 8btp.fnt , см.репозиторий.
+
+;github.com/dreamy-cat/8-Bit-Tea-Party/tree/master/Pentagon-128/fonts
+;ANSI графика, авторы: ASID prod/lorez
+;Для конвертации из ANSI в BIN, использовался Pablo Draw
 
 ;Процессор Intel 8086\8088, 5 Мгц.
 ;Разрядность АЛУ: 16 бит.
