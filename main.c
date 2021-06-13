@@ -7,6 +7,7 @@
 #define SEQUENCE_LENGTH 11
 #define NUMBERS_QUANTITY 6
 
+void theory_10(void);
 /*
    # 4.120
 print("Task 4.118")
@@ -123,9 +124,11 @@ void chess( )    //Все позиции по умолчанию верны от
         printf("move king is incorrect;\n");
 }
 */
+
 int main()
 {
-    chapter_11();
+    //chapter_11();
+    theory_10();
     return 0;
 }
 
