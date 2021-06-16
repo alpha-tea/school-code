@@ -122,6 +122,7 @@ void theory_10(void)
     printf("addr 1 = %p(%c), addr 2 = %p(%c);\n", a_c1_1, *a_c1_1, a_c1_2, *a_c1_2);
     printf("array with 3d[2,2,2] of char\n");
     print_array_addr((void*)kub, 8, sizeof (char));
+    theory_10_1((int[3]){1,2,3},3);
 }
 
 
