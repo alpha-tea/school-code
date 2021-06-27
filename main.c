@@ -127,8 +127,7 @@ void chess( )    //Все позиции по умолчанию верны от
 
 int main()
 {
-    //chapter_11();
-    theory_10();
+    chapter_11();
     return 0;
 }
 
