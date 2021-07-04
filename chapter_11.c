@@ -3,19 +3,23 @@
 
 enum array_inf_val {inf_info, inf_addr, inf_mem_size, inf_elements, inf_positiv, inf_negativ,
                     inf_zeros, inf_evens, inf_odds, inf_avarage_a, inf_avarage_g, inf_prim,
-                    inf_sum, inf_mult, inf_var_sum, inf_sqr_sum};
+                    inf_sum, inf_mult, inf_var_sum, inf_sqr_sum, inf_end};
 
-enum array_check_type {chk_info, chk_more, chk_less, chk_equal, chk_div, chk_sqrt, chk_sign, chk_parity};
+enum array_check_type {chk_info, chk_more, chk_less, chk_equal, chk_div, chk_sqrt,
+                       chk_sign, chk_parity, chk_end};
 
-enum array_action_type {act_info, act_mov, act_add_sub, act_mult, act_div};
+enum array_action_type {act_info, act_mov, act_add, act_sub, act_mult, act_div, act_abs, act_sqrt, act_end};
 
-static const char* array_action_name[] = {"info", "mov", "add:sub", "mult", "div"};
+static const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
 
 static const char* array_check_name[] = {"info", "is more than", "is less than", "is equal", "is devided by",
                                          "is sqrt of", "sign", "parity"};
 static const char* array_info_names[] = { "Array information, 32-bit compile with integers other may be incorrect.", "Address of array", "Size in memory, bytes",
                                           "Elements in array", "Positive numbers", "Negative numbers", "Zeros numbers", "Even numbers", "Odd numbers", "Avarage ariphmetic",
                                           "Avarage geometric", "Primary numbers", "Sum of all elements", "Multiply of all elements", "Variable sum, all elements", "Reverse sum" };
+
+static char comm_chk_name[] = "IMLEDRSP";
+static char comm_act_name[] = "IMASUDBR";
 
 int array_modify_element(int data[], int offset, enum array_action_type type, int parameter, int limit)
 {
@@ -31,8 +35,11 @@ int array_modify_element(int data[], int offset, enum array_action_type type, in
     case act_mov:
         data[offset] = parameter;
         break;
-    case act_add_sub:
+    case act_add:
         data[offset] += parameter;
+        break;
+    case act_sub:
+        data[offset] -= parameter;
         break;
     case act_mult:
         data[offset] *= parameter;
@@ -42,6 +49,12 @@ int array_modify_element(int data[], int offset, enum array_action_type type, in
             data[offset] /= parameter;
         else
             printf("error: divided by 0!");
+        break;
+    case act_abs:
+        data[offset] = abs(data[offset]);
+        break;
+    case act_sqrt:
+        data[offset] = (int)(sqrt((double)data[offset])); //Лучше так не делать!
         break;
     default:
         printf("error, info: data = %p, offset = %d, parameter = %d, type = '%s', limit = %d;\n",
@@ -174,14 +187,30 @@ void array_print(int data[], int limit, int mode)   //Вывод масива в
     }
 }
 
-int array_scan_element(int data[], int parameter, enum array_check_type type, int limit)
+int array_scan_element(int data[], int offset, int size, int parameter, enum array_check_type type)
 {       //Линейный поиск элемента в масиве с учётом типа проверки и параметров.
-//вернуть элемент или позицию
+    if (size <= 0 || type < chk_info || type >= chk_end) {
+        printf("error, size or type incorrect;\n");
+        return -1;
+    }
+    int i = 0;
+    for (i = offset; i < size; ++i)
+        if (array_check_element(data,i,parameter,type,size))
+            return i;
+    return -1;
 }
 
-int array_modify_action(int data[], int parameter, enum array_action_type type, int limit)
-{       //модификация масива с заданный действием
-// вернуть кол-во изменённых элементов.
+int array_modify_action(int data[], int size, int parameter, enum array_action_type type)
+{       //модификация маcсива с заданный действием
+    // вернуть кол-во изменённых элементов.
+    if (size <= 0 || type < act_info || type >= act_end) {
+        printf("error, size or type incorrect;\n");
+        return -1;
+    }
+    int i = 0, result;
+    for (i = 0; i < size; ++i)
+        result = array_modify_element(data,i,type,parameter,size);
+    return result;
 }
 
 int array_create_input(int data[], int init[], int isInput, int limit)
@@ -284,6 +313,58 @@ int array_create_sequence(int data[], int first, int last, int par, int flags, i
         break;
     };
     return 0;
+}
+
+int is_digit(char c)
+{
+    return (c >= '0' && c <= '9');
+}
+//Максимальный вывод в случае ошибки.
+// Функция изменения элементов массива парами команд условие-действие и каждое состоит из двух символов, можно между командами добавить пробел.
+// Для ограничений использовать максимум одну букву для команды и одну цифру для параметра.
+// Пример: char commands[] = "L0A0 V4D2" - первая пара: все отрицательные элементы взять по модулю;
+// вторая пара: все элементы которые делятся на 4, разделить на 2.
+
+int array_update_commands(int data[], char commands[], int limit) {
+    const int min_command_size = 4;
+    if (limit <= 0 && string_length(commands) < min_command_size) {
+        printf("error, size array or commands incorrect;\n");
+        return -1;
+    }
+    int i = 0, j = 0, result_chk = 0, result_act = 0, number_chk = 0, number_act = 0,
+            counter = 0, length = string_length(commands);
+    printf("data size %d, commands %s;\n", limit, commands);
+    for (i = 0; i < length; ++i) { // Главный цикл.
+        printf("Check: %c ", commands[i]);
+        if ((result_chk = string_char_find(comm_chk_name, commands[i], 0, 0)) != -1 &&
+                (is_digit(commands[i + 1]) || commands[i + 1] == '_')) {
+            printf("'%s' ", array_check_name[result_chk]);
+            if ((result_act = string_char_find(comm_act_name, commands[i + 2], 0, 0)) != -1 &&
+                    (is_digit(commands[i + 3]) || commands[i + 3] == '_')) {
+                printf("command: %c '%s' ", commands[i + 2] ,array_action_name[result_act]);
+                number_chk = char_to_hex(commands[i + 1]);
+                number_act = char_to_hex(commands[i + 3]);
+                printf("digits: chk = %d, act = %d ", number_chk, number_act);
+                j = 0;
+                while ((j = array_scan_element(data, j, limit, number_chk, result_chk)) != -1) {
+                    printf("modify: element[position] = %d[%d] ", data[j], j);
+                    array_modify_action(&data[j], 1, number_act, result_act);
+                    counter++;
+                    ++j;
+                }
+                i += min_command_size;
+                //array_modify_element(data, j, result_act, number_act, limit);
+            } else
+                printf("error: unknown command to change elements or wrong digit;\n"
+                "idx = %d, element = %c;\n\n", i, commands[i + 2]);
+        } else
+            printf("error: unknown command to check elements or wrong digit;\n"
+            "idx = %d, element = %c;\n\n", i, commands[i]);
+        //while (commands[i] == ' ')
+          //  ++i;  add later
+        printf("\n");
+    }
+    return counter;
 }
 
 void chapter_11()
@@ -505,6 +586,41 @@ void chapter_11()
         else
             printf("\t\t\t%d[%d]", data[i],i);
         printf("\n");
+    }
+    printf("11.46 - 11.51, using string of commands;\n");
+    quantity = 10; random_max = 10;
+    printf("all posible checks, command letter:\n");
+    for (enum array_check_type i = chk_info; i != chk_end; ++i)
+        printf("%c:\t %s\n", comm_chk_name[i], array_check_name[i]);
+    printf("all posible actions, command letter:\n");
+    for (enum array_action_type i = act_info; i != act_end; ++i)
+        printf("%c:\t %s\n", comm_act_name[i], array_action_name[i]);
+    char* commands[] = {"L0B_", "M3R_", "M0S4 L1S3", "L0A6 M0A5 E0A8", "M0S2 L0S7", "L0A9 E0S1"};
+    char* tasks[] = {"11.46, all negative numbers became absolute",
+                     "11.47, all elements more than 3 to square root",
+                     "11.48, all positive minus k1, other minus k2",
+                     "11.49, all negative add m1, other add m2",
+                     "11.50, all positive sub k1, all negative sub n",
+                     "11.51, all negative add a1, all zeroes sub b"};
+    printf("!\n");
+    for (i = 0; i < 6; ++i) {
+        /*
+        for (j = 0; j < string_length(commands[i]); ++j) { // найти функцию.
+            printf("%c\n", commands[i][j]);
+            if (commands[i][j] == '_')
+                commands[i][j] = (char)('0' + (rand() % random_max)); //Разобраться.
+            printf("%c\n", commands[i][j]);
+        }
+        */
+        printf("\n\n%s, command = %s;\nsource array: ", tasks[i], commands[i]);
+        for (j = 0; j < quantity; ++j) {
+            data[j] = rand() % random_max - 5;
+            printf("%d ",data[j]);
+        }
+        printf("\n");
+        array_update_commands(data,commands[i],quantity);
+        printf("result array: ");
+        array_print(data, quantity, prt_element);
     }
 }
 
