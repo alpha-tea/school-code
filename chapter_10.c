@@ -564,12 +564,12 @@ void chapter_10()
     double result_double;
     const int variants = 4, exp_size = 12;
     printf("10.1, calculate X, all variants.\n");
-    int data_1[exp_size * variants], is_sqrt[exp_size * variants];
+    //int data_1[exp_size * variants], is_sqrt[exp_size * variants];
     srand(time(NULL));
     for (i = 0; i < variants; ++i) {
-        for (j = 0; j < exp_size; ++j) {
-            data_1[i * exp_size + j] = 1 + rand() % 100;
-            is_sqrt[i * exp_size + j] = rand() % 2;
+        for (j = 0; j < exp_size; ++j) {;
+            //data_1[i * exp_size + j] = 1 + rand() % 100;
+            //is_sqrt[i * exp_size + j] = rand() % 2;
         }
     }
     for (k = 0; k < variants; ++k)

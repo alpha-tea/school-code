@@ -59,7 +59,7 @@ void demo()
             for (int k = 0; k < CHAR_BIT; ++k)
                 for (int l = CHAR_BIT - 1; l >= 0; --l) {
                     char draw;
-                    if ((font[code][k] & (0x01 << l)) != 0)
+                    if ((font[(int)code][k] & (0x01 << l)) != 0)
                         draw = 'O';
                     else
                         draw = '.';

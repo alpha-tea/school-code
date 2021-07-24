@@ -120,9 +120,8 @@ int length_number(int number)
 int factorial(int n)
 {
     int result = 1;
-    for (; n > 0; --n) {
-        result = result * n;
-    }
+    for (; n > 0; --n)
+        result *= n;
     return result;
 }
 

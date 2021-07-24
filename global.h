@@ -165,6 +165,10 @@ int evklid_many_numbers(int mass[], int size);
 
 void chapter_10();
 
+// Функции и константы для одиннадцатой главы задачника.
+
+void chapter_11();
+
 // Функции и константы для допольнительных задач.
 
 int bits_counter(int value);

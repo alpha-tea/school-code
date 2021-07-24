@@ -1733,7 +1733,7 @@ void chapter_9()
         }
         printf("%s\n",words_line);
     }
-    char src_13[] = "!(!1 ^ 0) & (0 | 1 & !1 ^ (1 | (0 | 1 & !0)) ^ (1 & (!1 ^ 1 & (1 | 0))) & !0)";
+    char src_13[] = "!(1 | 0) & (!(0 ^ 1))";
     //char src_13[] = "!(!1 ^ 0) & (0 ^ 1 | 1) & 0";
     result = string_checking_brackets(src_13);
     if (result > 0) {

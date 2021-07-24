@@ -1,4 +1,5 @@
 ﻿#include "global.h"
+#include "library.h"
 
 int value(int a, int n, int base)
 {

@@ -6,14 +6,14 @@ enum array_inf_val {inf_info, inf_addr, inf_mem_size, inf_elements, inf_positiv,
                     inf_sum, inf_mult, inf_var_sum, inf_sqr_sum, inf_end};
 
 enum array_check_type {chk_info, chk_more, chk_less, chk_equal, chk_div, chk_sqrt,
-                       chk_sign, chk_parity, chk_end};
+                       chk_sign, chk_parity, chk_idx_odd, chk_idx_even, chk_end};
 
 enum array_action_type {act_info, act_mov, act_add, act_sub, act_mult, act_div, act_abs, act_sqrt, act_end};
 
 static const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
 
 static const char* array_check_name[] = {"info", "is more than", "is less than", "is equal", "is devided by",
-                                         "is sqrt of", "sign", "parity"};
+                                         "is sqrt of", "sign", "parity", "index odd", "index even"};
 static const char* array_info_names[] = { "Array information, 32-bit compile with integers other may be incorrect.", "Address of array", "Size in memory, bytes",
                                           "Elements in array", "Positive numbers", "Negative numbers", "Zeros numbers", "Even numbers", "Odd numbers", "Avarage ariphmetic",
                                           "Avarage geometric", "Primary numbers", "Sum of all elements", "Multiply of all elements", "Variable sum, all elements", "Reverse sum" };
@@ -101,6 +101,14 @@ int array_check_element(int data[], int offset, int parameter, enum array_check_
         return data[offset] / abs(data[offset]);
     case chk_parity:
         if (data[offset] % 2 == 0)
+            return 1;
+        break;
+    case chk_idx_odd:           // move later
+        if (offset % 2 != 0)
+            return 1;
+        break;
+    case chk_idx_even:
+        if (offset % 2 == 0)
             return 1;
         break;
     default:
@@ -256,8 +264,11 @@ int array_create_sequence(int data[], int first, int last, int par, int flags, i
     switch (flags) {
     case 0b00000001://Random values.
         if (par > 0)
-            for (int i = first; i <= last; ++i)
+            for (int i = 0; i < limit; ++i) {
                 data[i] = rand() % par;
+                if ((first < 0 || last < 0) && rand() % 2)
+                    data[i] *= -1;
+            }
         else
             printf("error generate random;\n");
         break;
@@ -361,9 +372,38 @@ int array_update_commands(int data[], char commands[], int limit) {
             printf("error: unknown command to check elements or wrong digit;\n"
             "idx = %d, element = %c;\n\n", i, commands[i]);
         //while (commands[i] == ' ')
-          //  ++i;  add later
+        //  ++i;  add later
         printf("\n");
     }
+    return counter;
+}
+
+int array_sum_elements(int data[], int size, int parameter, enum array_check_type type)
+{          //Функция расчёта суммы элементов массива с выводом или без, с возвратом результата(суммы).
+    if (size <= 0) {
+        printf("error, size incorrect;\n");
+        return -1;
+    }
+    int i = 0, sum = 0;
+    for (i = 0; i < size; ++i)
+        if (array_check_element(data,i,parameter,type,size))
+            sum += data[i];
+    return sum;
+}
+
+int array_chk_counter(int data[], int size, int parameter, enum array_check_type type)
+{   //Функция подсчёта количества элементов, удовлетворяющих условию.
+    if (size <= 0 || type < chk_info || type >= chk_end) {
+        printf("error, size or type incorrect;\n");
+        return -1;
+    }
+    int i = 0, counter = 0;
+    for (i = 0; i < size && type != chk_info; ++i)
+        if (array_check_element(data,i,parameter,type,size))
+            ++counter;
+    if (type == chk_info)
+        printf("info: data = %p, parameter = %d, type = '%s', limit = %d;\n",
+               data, parameter, array_check_name[type], size);
     return counter;
 }
 
@@ -595,7 +635,7 @@ void chapter_11()
     printf("all posible actions, command letter:\n");
     for (enum array_action_type i = act_info; i != act_end; ++i)
         printf("%c:\t %s\n", comm_act_name[i], array_action_name[i]);
-    char* commands[] = {"L0B_", "M3R_", "M0S4 L1S3", "L0A6 M0A5 E0A8", "M0S2 L0S7", "L0A9 E0S1"};
+    char* commands[] = {"L9U2","L9U2","L9U2","L9U2","L9U2","L9U2"};
     char* tasks[] = {"11.46, all negative numbers became absolute",
                      "11.47, all elements more than 3 to square root",
                      "11.48, all positive minus k1, other minus k2",
@@ -622,6 +662,79 @@ void chapter_11()
         printf("result array: ");
         array_print(data, quantity, prt_element);
     }
+    printf("\n\n11.55, calculation of the sum of elements matching the condition;\n");
+    quantity = 10;
+    int a = 3, b = 5;
+    array_create_sequence(data,0,quantity - 1,10,0b00000001,OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    result = array_sum_elements(data,quantity,0,chk_idx_odd);
+    printf("\nsum of odd elements: %d;\n", result);
+    result = array_sum_elements(data,quantity,a,chk_div);
+    printf("sum of elements that are multiples of a given number(%d): %d;\n", a, result);
+    result += array_sum_elements(data,quantity,b,chk_div);
+    printf("sum of array elements that are multiples of a(%d) or b(%d): %d;\n", a, b, result);
+    printf("\n11.57, find the total amount of precipitation on even days in February\n");
+    quantity = 10;
+    array_create_sequence(data, 0, quantity - 1, 10, 0b00000001, OBJECTS_MAX);
+    result = array_sum_elements(data, quantity, 0, chk_idx_even);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("sum of precipitation: %d;\n\n", result);
+    printf("11.59, quotient of dividing the sum of positive elements by the modulus of the sum of negative elements;\n");
+    quantity = 10; random_max = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = array_sum_elements(data,quantity,0,chk_more);
+    b = array_sum_elements(data,quantity,0,chk_less);
+    if (b != 0)
+        printf("\n(%d) / (%d) = %.2f;\n\n", a, abs(b), (double)a / (double)abs(b));
+    else
+        printf("\n(%d) / (%d) = error;\n\n", a,abs(b));
+    printf("\n11.61, Is it true that more precipitation fell on even numbers than on odd numbers?\n");
+    quantity = 10;
+    srand(time(NULL));
+    array_create_sequence(data, 0, quantity - 1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = array_sum_elements(data,quantity,0,chk_idx_even);
+    b = array_sum_elements(data,quantity,0,chk_idx_odd);
+    if (a < b)
+        printf("precipitation on even days is more than on odd days: %d:%d;\n\n", a, b);
+    else if (a > b)
+        printf("precipitation on odd days is more than on even days: %d:%d;\n\n", a, b);
+    else
+        printf("precipitation on even days is the same as on odd days: %d:%d;\n\n", a, b);
+    printf("11.63 - 11.75;\nsource array: ");
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    result = array_chk_counter(data,quantity,-1,chk_more);
+    printf("\n11.63) counter of non-negative elements = %d;", result);
+    result = array_chk_counter(data,quantity,0,chk_less);
+    printf("\n11.66) counter of negative students scores = %d;", result);
+    int data_extra[OBJECTS_MAX];
+    a = 2; b = 7; result = 0;
+    for (i = 0; i < quantity; ++i)
+        if (data[i] >= a && data[i] <= b)
+            ++result;
+    printf("\n11.69) counter of elements in [%d:%d] = %d;\n", a, b, result);
+    result = array_chk_counter(data,quantity,0,chk_less);
+    printf("11.72) counter of negative = %d, counter of positive = %d;\n", result, quantity - result);
+    result = array_chk_counter(data,quantity,5,chk_more);
+    printf("11.75) counter of elements in [5:9] = %d;\n", result);
+    for (i = 1, result = 0; i < quantity - 1; ++i)
+        if (data[i] > data[i - 1] && data[i] > data[i + 1])
+            ++result;
+    printf("11.78, counter of elements more than near = %d;\n", result);
+    printf("\n11.80 - 11.97;\nsource array: ");
+    random_max = 10; quantity = 16;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    result = array_chk_counter(data,quantity,0,chk_equal);
+    printf("\n11.81) is no rain in 5 days(%d) - ", result);
+    if (result == 5)
+        printf("true;\n");
+    else
+        printf("false;\n");
+    result = array_sum_elements(data,quantity,0,chk_more);
+    printf("11.83) average of rains in month = %.2f;\n", (double)result / (double)quantity);
 }
 
 
