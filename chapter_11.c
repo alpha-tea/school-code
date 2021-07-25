@@ -407,6 +407,42 @@ int array_chk_counter(int data[], int size, int parameter, enum array_check_type
     return counter;
 }
 
+int array_unique_elements(int data[], int size, int unique_data[])
+{           // функция поиска уникальных элементов, возврат из количества.
+    if (size <= 0) {
+        printf("error: size incorrect;\n");
+        return -1;
+    }
+    int i = 0, j = 0, counter = 0;
+    for (i = 0; i < size; ++i) {
+        for (j = 0; j < size && (i == j || data[i] != data[j]); ++j)
+            ;
+        if (j == size)
+            unique_data[counter++] = data[i];
+    }
+    return counter;
+}
+
+int array_copy_elements(int data[], int size, int copies_data[])
+{           //Функция поиска элементов массива, имеющих копии.
+    if (size <= 0) {
+        printf("error: size incorrect;\n");
+        return -1;
+    }
+    int i = 0, j = 0, k = 0, counter = 0;
+    for (i = 0; i < size; ++i) {
+        for (j = 0; j < size && (i == j || data[i] != data[j]); ++j)
+            ;
+        if (j != size) {
+            for (k = 0; k < counter && data[j] != copies_data[k]; ++k)
+                ;
+            if (k == counter)
+                copies_data[counter++] = data[i];
+        }
+    }
+    return counter;
+}
+
 void chapter_11()
 {
     printf("11.1 - 11.2, moving data across arrays;\n");
@@ -734,7 +770,103 @@ void chapter_11()
     else
         printf("false;\n");
     result = array_sum_elements(data,quantity,0,chk_more);
-    printf("11.83) average of rains in month = %.2f;\n", (double)result / (double)quantity);
+    printf("11.84) average of rains in month = %.2f;\n", (double)result / (double)quantity);
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    for (i = 0; i < quantity; ++i)
+        if (data[i] < 0)
+            data[i] -= 150;
+        else
+            data[i] += 150;
+    printf("11.87) Height of students: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = array_sum_elements(data,quantity,0,chk_less);
+    b = array_sum_elements(data,quantity,0,chk_more);
+    int counter = array_chk_counter(data,quantity,0,chk_less);
+    printf("\naverage height of boys = %.2f, average height of girls = %.2f;\n",
+           fabs((double)a / (double)counter), (double)b / (double)(quantity - counter));
+    printf("11.90) search elements more than sum\n");
+    result = a + b; //from previous task;
+    array_print(data, quantity, prt_element | prt_indexes);
+    counter = array_chk_counter(data,quantity,result,chk_more);
+    printf("quantity = %d, sum = %d;\n", counter, result);
+    printf("11.93 - 11.96, prices for goods: ");
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    result = array_sum_elements(data,quantity,-1,chk_more);
+    result /= quantity;
+    counter = array_chk_counter(data,quantity,result,chk_more);
+    printf("\naverage of cost = %d,  quantity elements more than average = %d;\n", result, counter);
+    printf("diff prices: ");
+    for (i = 0; i < quantity; ++i)
+        printf("%d ", result - data[i]);
+    counter = 5;
+    int idx = 0;
+    printf("\n\n11.99, source array, size = %d, range = %d: ", quantity, counter);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n");
+    for (i = 0, max = 0; i < quantity - counter; ++i) {
+        summ = array_sum_elements(&data[i],counter,0,chk_more);
+        if (summ > max) {
+            max = summ;
+            idx = i;
+        }
+        printf("sum = %d[%d:%d]\n", summ ,i, i + 5);
+    }
+    printf("max in summs = %d[%d:%d];\n\n", max, idx, idx + 5);
+    printf("11.100-11.102, search unique elements and copies;\n");
+    random_max = 5; quantity = 3;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\ncopies: ");
+    a = array_copy_elements(data,quantity,data_extra);
+    array_print(data_extra, a, prt_element | prt_indexes);
+    if (a == 1)
+        printf("\n11.101 - 11.102 - yes, one copy = %d;\n", data_extra[0]);
+    else
+        printf("\n11.101 - 11.102 - no, not one copy;\n");
+    printf("unique: ");
+    b = array_unique_elements(data,quantity,data_extra);
+    array_print(data_extra, b, prt_element | prt_indexes);
+    if (b > 0)
+        printf("\n11.100 - yes, some uniq elements;\n");
+    else
+        printf("\n11.100 - no, no uniq elements;\n");
+    printf("\n11.103*, Changes of signin array: ");
+    random_max = 10; quantity = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 1, counter = 0; i < quantity; ++i) {
+        if ((data[i] < 0 && data[i - 1] > 0) || (data[i] > 0 && data[i - 1] < 0))
+            ++counter;
+    }
+    printf("\nChanges of sign = %d;\n\n", counter);
+    printf("11.104*-11.106*, ascending sequence;\nsource vales: ");
+    for (i = 0, a = 0; i < quantity; ++i) {
+        data[i] = a;
+        a += rand() % 1;
+        printf("%d ", data[i]);
+    }
+    for (i = 0, counter = 0, result = 1, a = 0, length = 0, max = 0; i < quantity - 1; ++i) {
+        if (data[i] == data[i + 1] && a == 0) {
+            ++counter;
+            length = 2;
+            a = 1;
+        } else if ((data[i] != data[i + 1]) || (a == 1 && i == quantity - 2)) {
+            if (max < length) {
+                max = length + (i == quantity - 2);
+                b = data[i];
+            }
+            if (data[i] != data[i + 1])
+                ++result;
+            a = 0;
+        } else if (data[i] == data[i + 1] && a == 1) {
+            ++length;
+        }
+    }
+    printf("\ncounter of sequences = %d, uniq elements = %d, longest element = %d(elem = %d);\n\n",
+           counter, result, max, b);
 }
 
 
