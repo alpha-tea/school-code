@@ -443,6 +443,39 @@ int array_copy_elements(int data[], int size, int copies_data[])
     return counter;
 }
 
+int array_min_max(int data[], int size, int type, int step, int* idx)
+{           //Функция поиска максимального и минимального элемента в массива.
+    //data - первый элемент массива.
+    //size - размер(кол-во элементов) массива.
+    //step - шаг.
+    //*idx - возврат индекс максимального или минимального элемента
+    //type - NULL - min, not NULL - max
+    if (size <= 0 || abs(step) == 0) {
+        printf("error: size or step incorrect;\n");
+        return -1;
+    }
+    int i = (step > 0) ? 0 : size - 1;
+    int max = data[i], min = data[i], idx_max = i, idx_min = i;
+    for (; (step > 0 && i < size) || (step < 0 && i >= 0); i += step) {
+        if (data[i] > max) {    //не оптимален.
+            max = data[i];
+            idx_max = i;
+        }
+        if (data[i] < min) {
+            min = data[i];
+            idx_min = i;
+        }
+    }
+    //printf("min = %d(%d), max = %d(%d);\n",min,idx_min,max,idx_max);
+    if (type != 0) {
+        *idx = idx_max;
+        return max;
+    } else {
+        *idx = idx_min;
+        return min;
+    }
+}
+
 void chapter_11()
 {
     printf("11.1 - 11.2, moving data across arrays;\n");
@@ -861,13 +894,156 @@ void chapter_11()
             if (data[i] != data[i + 1])
                 ++result;
             a = 0;
-        } else if (data[i] == data[i + 1] && a == 1) {
+        } else if (data[i] == data[i + 1] && a == 1)
             ++length;
-        }
     }
     printf("\ncounter of sequences = %d, uniq elements = %d, longest element = %d(elem = %d);\n\n",
            counter, result, max, b);
+    printf("11.107, search max and min;\nsource array: ");
+    random_max = 10; quantity = 5;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    int *ptr_max = &random_max, *ptr_min = &quantity;
+    max = array_min_max(data,quantity,1,1,ptr_max);
+    min = array_min_max(data,quantity,0,1,ptr_min);
+    printf("\nmax = %d\nmin = %d\ndiff(max - min) = %d\nidx max = %d;\nidx min = %d;\n\n",
+           max, min, max - min, *ptr_max, *ptr_min);
+    printf("11.111, search max;\n");
+    result = 0;
+    int max_idx = 1, min_idx = 0;
+    max = array_min_max(data,quantity,1,1,&max_idx);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("max score = %d, idx = %d\n\n", max, max_idx);
+    printf("11.113, search diff max and min;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    max = array_min_max(data,quantity,1,1,&max_idx);
+    min = array_min_max(data,quantity,0,1,&min_idx);
+    printf("\ndiff = %d;\n\n", max - min);
+    printf("11.114, athlete assessment;\n");
+    random_max = 10; quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    min = array_min_max(data,quantity,0,1,&min_idx);
+    max = array_min_max(data,quantity,1,1,&max_idx);
+    data[max_idx] = 0;
+    data[min_idx] = 0;
+    result = array_information(data,quantity,inf_sum);
+    printf("\nmax = %d(%d)\nmin = %d(%d)\nscore = %d / %d = %d;\n\n", max, max_idx, min, min_idx,
+           result, quantity, result / quantity);
+    printf("11.118, finding the first max and last max;\n");
+    quantity = 10;
+    array_print(data, quantity, prt_element | prt_indexes);
+    max = array_min_max(data,quantity,1,1,&max_idx); // first max
+    printf("\nfirst max: %d(%d)\n",max,max_idx);
+    max = array_min_max(data,quantity,1,-1,&max_idx); // last max
+    printf("last max: %d(%d)\n\n",max,max_idx);
+    printf("11.123, how many coldest days;\n");
+    random_max = 5; quantity = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    min = array_min_max(data,quantity,0,1,&min_idx);
+    result = array_chk_counter(data,quantity,min,chk_equal);
+    printf("\ncoldest = %d\nquantity = %d;\n\n", min, result);
+    printf("11.124, how many max and min;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    max = array_min_max(data,quantity,1,1,&max_idx);
+    min = array_min_max(data,quantity,0,1,&min_idx);
+    printf("\nall indexes of max elements(%d): ", max);
+    result = -1;
+    while ((result = array_scan_element(data,result + 1,quantity,max,chk_equal)) != -1)
+        printf("%d ", result);
+    printf("\nall indexes of min elements(%d): ", min);
+    result = -1;
+    while ((result = array_scan_element(data,result + 1,quantity,min,chk_equal)) != -1)
+        printf("%d ", result);
+    printf("\n\n");
+    printf("11.127,;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    max = array_min_max(data,quantity,1,1,&max_idx);
+    min = array_min_max(data,quantity,0,1,&min_idx);
+    if (max - min == 10)
+        printf("\nYes!, more than 10, max = %d, min = %d\n\n",max,min);
+    else
+        printf("\nNo!, less than 10, max = %d, min = %d\n\n",max,min);
+    printf("11.130, first max or first min idx;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_min_max(data,quantity,1,1,&max_idx);
+    array_min_max(data,quantity,0,1,&min_idx);
+    if (max_idx < min_idx)
+        printf("\nMax (%d)(%d);\n\n",max_idx, min_idx);
+    else
+        printf("\nMin (%d)(%d);\n\n",max_idx, min_idx);
+    printf("11.132, 11.138, 11.140 - 11.141, finding some highest and lowest values;\n");
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    int idxs_max[OBJECTS_MAX], idxs_min[OBJECTS_MAX], data_max[OBJECTS_MAX], data_min[OBJECTS_MAX];
+    counter = 5;
+    for (i = 0; i < counter; ++i) {
+        data_max[i] = -random_max;
+        data_min[i] = random_max;
+        idxs_max[i] = 0;
+        idxs_min[i] = 0;
+    }
+    for (i = 0; i < quantity; ++i) {
+        for (k = counter - 1; k >= 0; --k) {
+            if (data_max[k] <= data[i]) {
+                for (j = 0; j < k; ++j) {
+                    data_max[j] = data_max[j + 1];
+                    idxs_max[j] = idxs_max[j + 1];
+                }
+                data_max[k] = data[i];
+                idxs_max[k] = i;
+                break;
+            }
+        }
+        for (k = counter - 1; k >= 0; --k) {
+            if (data_min[k] >= data[i]) {
+                for (j = 0; j < k; ++j) {
+                    data_min[j] = data_min[j + 1];
+                    idxs_min[j] = idxs_min[j + 1];
+                }
+                data_min[k] = data[i];
+                idxs_min[k] = i;
+                break;
+            }
+        }
+    }
+    printf("\nMax:\n");
+    for (i = counter - 1; i >= 0; --i)
+        printf("%d) %d[%d];\n", i + 1, data_max[i], idxs_max[i]);
+    printf("Min:\n");
+    for (i = counter - 1; i >= 0; --i)
+        printf("%d) %d[%d];\n", i + 1, data_min[i], idxs_min[i]);
+    printf("\n11.142, change the sign of the element maximum in absolute value;\n");
+    max = data[0];
+    for (i = 1; i < quantity; ++i) {
+        if ((data[i] > 0 && data[i] > max) || (data[i] < 0 && data[i] * -1 > max)) {
+            max = data[i];
+            idx = i;
+        }
+    }
+    data[idx] *= -1;
+    printf("\nresult = %d;\n\n", data[idx]);
+    printf("11.143, bubble sort;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity; ++i) {
+        for (j = 0; j < quantity - i - 1; ++j)
+            if (data[j] > data[j + 1]) {
+                result = data[j];
+                data[j] = data[j + 1];
+                data[j + 1] = result;
+                /*
+                data[j] ^= data[j + 1];
+                data[j] ^= data[j + 1];
+                data[j] ^= data[j + 1];
+                */
+            }
+    }
+    printf("\nresult: ");
+    array_print(data, quantity, prt_element | prt_indexes);
 }
+
 
 
 
