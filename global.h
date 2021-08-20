@@ -170,7 +170,9 @@ void chapter_10();
 void chapter_11();
 
 // Функции и константы для допольнительных задач.
-
+int uniq_gen_fast_alt(int number[], int length, int limit);
+int uniq_gen_fast(int number[], int length, int limit);
+int uniq_gen_fast_symbols(char string[], int length);
 int bits_counter(int value);
 void bulls_and_cows();
 void hack_the_terminal(int length, int quantity, int attempts);

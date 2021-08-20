@@ -1,6 +1,24 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int uniq_gen_fast_alt(int number[], int length, int limit)
+{
+    const int num_max = limit;
+    if (length < 1 || length > num_max)
+        return -1;
+    for (int i = 0; i < limit; ++i)
+        number[i] = i;
+    int tmp = 0, idx_1 = 0 , idx_2 = 0;
+    for (int i = 0; i < length * length; ++i) {
+        idx_1 = rand() % num_max;
+        idx_2 = rand() % num_max;
+        tmp = number[idx_1];
+        number[idx_1] = number[idx_2];
+        number[idx_2] = tmp;
+    }
+    return 0;
+}
+
 int uniq_gen_fast(int number[], int length, int limit)
 {
     const int num_max = limit;

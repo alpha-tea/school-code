@@ -10,6 +10,10 @@ enum array_check_type {chk_info, chk_more, chk_less, chk_equal, chk_div, chk_sqr
 
 enum array_action_type {act_info, act_mov, act_add, act_sub, act_mult, act_div, act_abs, act_sqrt, act_end};
 
+enum array_xchg_type {xchg_forward, xchg_backward, xchg_even_odd};
+
+static const char* array_xchg_name[] = {"forward", "backward", "even-odd"};
+
 static const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
 
 static const char* array_check_name[] = {"info", "is more than", "is less than", "is equal", "is devided by",
@@ -474,6 +478,132 @@ int array_min_max(int data[], int size, int type, int step, int* idx)
         *idx = idx_min;
         return min;
     }
+}
+
+int array_xchg_elements(int data[], int size, int idx_a, int idx_b)
+{
+    if (idx_a == idx_b || idx_a < 0 || idx_a >= size || idx_b < 0 || idx_b >= size) {
+        printf("error: in indexes;");
+        return -1;
+    }
+    int tmp = data[idx_a];
+    data[idx_a] = data[idx_b];
+    data[idx_b] = tmp;
+    return 0;
+}
+
+int array_xchg_range(int data[], int size, int idx_size_flags[])
+{   //idx size flags offsets: 0 - start, 1 - length, 2 - exchange type.
+    if (size <= 0) {
+        printf("error: size incorrect;\n");
+        return -1;
+    }
+    const int idx_size = 3;
+    int i = 0, j = 0, counter = 0;
+    while (idx_size_flags[i + 1] > 0) {
+        if (idx_size_flags[i] > size)
+            printf("warning: start element more than size");
+        switch (idx_size_flags[i + 2]) {
+        case xchg_forward:
+            //printf("forward ");
+            for (j = 0; j < idx_size_flags[i + 1] && j < idx_size_flags[i + 4]; ++j)
+                array_xchg_elements(data,size,idx_size_flags[i] + j,idx_size_flags[i + 3] + j);
+            i += idx_size * 2;
+            counter += j;
+            break;
+        case xchg_backward:
+            //printf("backward ");
+            for (j = 0; j < idx_size_flags[i + 1] && j < idx_size_flags[i + 4]; ++j)
+                array_xchg_elements(data,size,idx_size_flags[i] + j,
+                                    idx_size_flags[i + 3] + idx_size_flags[i + 4] - j - 1);
+            i += idx_size * 2;
+            counter += j;
+            break;
+        case xchg_even_odd:
+            //printf("even-odd ");
+            for (j = 0; j < idx_size_flags[i + 1]; j += 2)
+                array_xchg_elements(data,size,idx_size_flags[i] + j, idx_size_flags[i] + j + 1);
+            i += idx_size;
+            counter += j / 2;
+            break;
+        default:
+            printf("error: exchange type not correct;\n");
+            ++i;
+        }
+    }
+    return counter;
+}
+
+int array_delete_element(int data[], int size, int index)
+{
+    if (index < 0 || index >= size) {
+        printf("error in index;\n");
+        return -1;
+    }
+    int i = 0;
+    for (i = index; i < size - 1; ++i)
+        data[i] = data[i + 1];
+    data[size - 1] = 0;
+    return 0;
+}
+
+int array_delete_all(int data[], int size, int parameter, enum array_check_type type)
+{
+    if (size < 1 || type < 0 || type >= chk_end) {
+        printf("error in size or type;");
+        return -1;
+    }
+    for (int i = 0; i < size;) {
+        if (array_check_element(data,i,parameter,type,size))
+            array_delete_element(data,size,i);
+        else
+            ++i;
+    }
+    return 0;
+}
+
+int array_delete_equal(int data[], int size)
+{
+    if (size < 2) {
+        printf("error in size;/n");
+        return -1;
+    }
+    int i = 0, j = 0, k = 0, number = 0;
+    for (i = 0; i < size; ++i) {
+        number = data[i];
+        for (j = i + 1; j < size; ++j)
+            if (data[j] == number) {
+                for (k = j; k < size - 1; ++k)
+                    data[k] = data[k + 1];
+                size--;
+            }
+    }
+    return size;
+}
+
+int array_insert_element(int data[], int size, int element, int index)
+{
+    if (size < 1) {
+        printf("error in size;");
+        return -1;
+    }
+    int i = size - 1;
+    for (;i > index; --i)
+        data[i] = data[i - 1];
+    data[index] = element;
+    return size + 1;
+}
+
+int array_insert_all(int data[], int size, int element, int parameter, enum array_check_type type)
+{
+    if (size < 1) {
+        printf("error in size;/n");
+        return -1;
+    }
+    for (int i = 0; i < size; ++i)
+        if (array_check_element(data,i,parameter,type,OBJECTS_MAX))
+            array_insert_element(data,size,element,i);
+    return 0;
 }
 
 void chapter_11()
@@ -1024,7 +1154,7 @@ void chapter_11()
         }
     }
     data[idx] *= -1;
-    printf("\nresult = %d;\n\n", data[idx]);
+    printf("result = %d;\n\n", data[idx]);
     printf("11.143, bubble sort;\n");
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity; ++i) {
@@ -1041,6 +1171,220 @@ void chapter_11()
             }
     }
     printf("\nresult: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.144, exchange elements;\nsource array: ");
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = 2; b = 7; array_min_max(data,quantity,1,1,&result);
+    array_xchg_elements(data,quantity,a,b);
+    printf("\na,b) result(%d,%d): ",a,b);
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_xchg_elements(data,quantity,3,result);
+    printf("\nc) result(%d,%d): ",3,result);
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_min_max(data,quantity,0,-1,&result);
+    array_xchg_elements(data,quantity,0,result);
+    printf("\nd) result(%d,%d): ",0,result);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.145, exchange elements;\nsource array: ");
+    int ranges[] = {0, 5, xchg_forward, 5, 5, xchg_forward, 0, 0, 0,
+                    0, 10, xchg_even_odd, 0, 0, 0, 0, 0, 0,
+                    0, 5, xchg_backward, 5, 5, xchg_backward, 0, 0, 0};
+    array_print(data, quantity, prt_element | prt_indexes);
+    char* info_ranges[] = {"a, forward exchange in half array:",
+                           "b, even-odd exchange:",
+                           "c, backward exchange in half array:"};
+    for (i = 0; i < 3; ++i) {
+        printf("\n%s", info_ranges[i]);
+        array_xchg_range(data,quantity,&ranges[i * 9]);
+        printf("\n");
+        array_print(data, quantity, prt_element | prt_indexes);
+    }
+    printf("\n\n11.147, exchange elements;\nsource array: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_min_max(data,quantity,1,1,&a);
+    array_min_max(data,quantity,0,1,&b);
+    if (a > b) {
+        max = a;
+        min = b;
+    } else {
+        max = b;
+        min = a;
+    }
+    for (i = 0; i < (max - min) / 2 + 1 - (max - min) % 2; ++i)
+        array_xchg_elements(data,quantity,min + i,max - i);
+    printf("\nresult(max = %d, min = %d):\n", max, min);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.149, delete elements;\nsource array: ");
+    result = rand() % quantity;
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\nresult(%d) = ", result);
+    array_delete_element(data,quantity,result);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.151, delete max and min elements;\n");
+    uniq_gen_fast_alt(data,quantity,20);
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_min_max(data,quantity,1,1,&a);
+    array_delete_element(data,quantity,a);
+    array_min_max(data,quantity,0,1,&b);
+    array_delete_element(data,quantity,b);
+    printf("\nresult(max %d, min = %d): ", a, b);
+    array_print(data, quantity - 2, prt_element | prt_indexes);
+    return;
+    printf("\n\n11.153, delete first negative and first even elements;\n");
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = array_scan_element(data,0,quantity,0,chk_less);
+    b = array_scan_element(data,0,quantity,2,chk_div);
+    array_delete_element(data,quantity,a);
+    if (a != b)
+        array_delete_element(data,quantity,b);
+    printf("\nresult(negativ = %d, even = %d);\n", a, ++b);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.156, delete elements;\n");
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_delete_all(data,quantity,0,chk_less);
+    printf("\na, negative: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % random_max;
+    array_delete_all(data,quantity,a,chk_more);
+    printf("\nb, more than a(%d): ",a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % quantity;
+    b = (a != 0) ? rand() % a: 0;
+    for (i = b; i < a; ++i)
+        array_delete_element(data,quantity,b);
+    printf("\nc, from b(%d) to a(%d): ", b, a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.157, delete elements;\n");
+    array_create_sequence(data, 1, 1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity; ++i)
+        if (i % 2 != 0 && data[i] % 2 == 0)
+            array_delete_element(data,quantity,i);
+    printf("\na: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity; ++i)
+        if (data[i] % 3 == 0 || data[i] % 5 == 0)
+            array_delete_element(data,quantity,i);
+    printf("\nb: ");
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.158, delete equal elements;\n");
+    random_max = 10; quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = array_delete_equal(data,quantity);
+    printf("\n%d|",a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.159, insert element;\n");
+    a = rand() % random_max;
+    b = rand() % quantity;
+    random_max = 20; quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    array_insert_element(data,quantity,a,b);
+    printf("\nresult(idx = %d, num = %d): ",b,a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.161, insert element;\n");
+    char names[] = "afkrx";
+    quantity = 5;
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = 'a' + rand() % 27;
+    printf("\n");
+    for (i = 0; names[i] != '\0'; ++i)
+        printf("%c",names[i]);
+    for (i = 0; names[i] < a && names[i] != '\0'; ++i)
+        ;
+    quantity = array_insert_element(data,quantity,b,i);
+    printf("\nname = %c, height = %d, index = %d;\n",a,b,i);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.163, insert elements before and after max;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % random_max;
+    b = rand() % random_max;
+    array_min_max(data,quantity,1,1,&result);
+    quantity = array_insert_element(data,quantity,a,result + 1);
+    quantity = array_insert_element(data,quantity,b,result);
+    printf("max idx = %d, before = %d, after = %d\n", result, b, a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.164, insert elements before multiples of a and after all negative elements;\n");
+    quantity = 10;
+    a = rand() % quantity + 1;
+    b = rand() % random_max;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity; ++i) {
+        if (data[i] % a == 0)
+            array_insert_element(data,quantity,b,i++);
+        if (data[i] < 0)
+            array_insert_element(data,quantity,b,i++);
+    }
+    printf("a = %d, number = %d;\n", a, b);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.167, insert the number and after the number where there is a digit 5;\n");
+    a = rand() % random_max;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity; ++i) {
+        result = data[i];
+        while (result != 0) {
+            b = result % 10;
+            result /= 10;
+            if (b == 5) {
+                array_insert_element(data,quantity,a,i++);
+                break;
+            }
+        }
+    }
+    printf("a = %d\n",a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.168, insert the number n between numbers with the same sign;\n");
+    a = rand() % random_max;
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity - 1; ++i)
+        if (abs(data[i]) / data[i] == abs(data[i + 1]) / data[i + 1])
+            array_insert_element(data,quantity,a,++i);
+    printf("a = %d\n",a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.170, rearrange the first element in place of k;\n");
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % quantity;
+    b = data[0];
+    for (i = 0; i < a; ++i)
+        data[i] = data[i + 1];
+    data[a] = b;
+    printf("a = %d;\n", a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.174, rearrange the last element in place of k;\n");
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % quantity;
+    array_insert_element(data,quantity,data[quantity - 1],a);
+    printf("a = %d;\n", a);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.177, correct sequence order;\n");
+    b = rand() % (quantity - 1) + 1;
+    for (i = 0, a = 0; i < quantity; ++i) {
+        if (i != b) {
+            a += rand() % random_max + random_max;
+            data[i] = a;
+        } else {
+            a -= rand() % random_max;
+            data[i] = a;
+        }
+    }
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; i < quantity - 1 && data[i] < data[i + 1]; ++i)
+        ;
+    if (i + 1 != quantity)
+        data[i + 1] = data[i] + rand() % (data[i + 2] - data[i]);
+    else
+        data[i + 1] = data[i] + rand() % random_max;
+    printf("error in %d, b = %d;\n",i + 1, b);
     array_print(data, quantity, prt_element | prt_indexes);
 }
 
