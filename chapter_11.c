@@ -176,12 +176,12 @@ int array_information(int data[], int size, enum array_inf_val ret)
         return data_int[ret];
 }
 
-enum array_print_mode {prt_nope = 0x00, prt_element = 0x01, prt_indexes = 0x02};
+enum array_print_mode {prt_nope = 0x00, prt_element = 0x01, prt_indexes = 0x02, prt_chars = 0x04};
 
 void array_print(int data[], int limit, int mode)   //Вывод масива в заданном режиме, разделитель - пробел.
 {
     for (int i = 0; i < limit; ++i) {
-        for (enum array_print_mode mask = prt_element; mask <= prt_indexes; mask <<= 1) {
+        for (enum array_print_mode mask = prt_element; mask <= prt_chars; mask <<= 1) {
             switch ((enum array_print_mode)mode & mask) {
             case prt_nope:
                 break;
@@ -190,6 +190,12 @@ void array_print(int data[], int limit, int mode)   //Вывод масива в
                 break;
             case prt_indexes:
                 printf("[%d]", i);
+                break;
+            case prt_chars:
+                if (data[i] >= 0 && data[i] <= 127)
+                    printf("'%c'", data[i]);
+                else
+                    printf("''");
                 break;
             default:
                 printf("error, data = %p, limit = %d, mode = %d;\n", data, limit, mode);
@@ -553,13 +559,14 @@ int array_delete_all(int data[], int size, int parameter, enum array_check_type 
         printf("error in size or type;");
         return -1;
     }
-    for (int i = 0; i < size;) {
-        if (array_check_element(data,i,parameter,type,size))
-            array_delete_element(data,size,i);
-        else
+    int counter = 0;
+    for (int i = 0; i < size;)
+        if (array_check_element(data,i,parameter,type,size)) {
+            array_delete_element(data,size--,i);
+            counter++;
+        } else
             ++i;
-    }
-    return 0;
+    return counter;
 }
 
 int array_delete_equal(int data[], int size)
@@ -569,41 +576,44 @@ int array_delete_equal(int data[], int size)
         return -1;
     }
     int i = 0, j = 0, k = 0, number = 0;
-    for (i = 0; i < size; ++i) {
+    for (i = 0; i < size - 1; ++i) {
         number = data[i];
-        for (j = i + 1; j < size; ++j)
+        for (j = i + 1; j < size - 1;)
             if (data[j] == number) {
                 for (k = j; k < size - 1; ++k)
                     data[k] = data[k + 1];
                 size--;
-            }
+            } else
+                ++j;
     }
-    return size;
+    return size - 1;
 }
 
 int array_insert_element(int data[], int size, int element, int index)
-{
-    if (size < 1) {
+{   // Функция вставки элементов, массив расширяется без контроля длинны.
+    if (size < 1 || index >= size || index < 0) {
         printf("error in size;");
         return -1;
     }
-    int i = size - 1;
-    for (;i > index; --i)
+    for (int i = size; i > index; --i)
         data[i] = data[i - 1];
     data[index] = element;
-    return size + 1;
+    return 0;
 }
 
 int array_insert_all(int data[], int size, int element, int parameter, enum array_check_type type)
 {
-    if (size < 1) {
-        printf("error in size;/n");
+    if (size < 1 || type < 0 || type >= chk_end) {
+        printf("error in size or type;/n");
         return -1;
     }
+    int counter = 0;
     for (int i = 0; i < size; ++i)
-        if (array_check_element(data,i,parameter,type,OBJECTS_MAX))
-            array_insert_element(data,size,element,i);
-    return 0;
+        if (array_check_element(data, i, parameter, type, size)) {
+            array_insert_element(data, size++, element, i);
+            counter++;
+        }
+    return counter;
 }
 
 void chapter_11()
@@ -1231,54 +1241,57 @@ void chapter_11()
     array_delete_element(data,quantity,b);
     printf("\nresult(max %d, min = %d): ", a, b);
     array_print(data, quantity - 2, prt_element | prt_indexes);
-    return;
     printf("\n\n11.153, delete first negative and first even elements;\n");
-    random_max = 20; quantity = 10;
+    random_max = 20; quantity = 10; a = -1; b = -1;
     array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_scan_element(data,0,quantity,0,chk_less);
-    b = array_scan_element(data,0,quantity,2,chk_div);
-    array_delete_element(data,quantity,a);
-    if (a != b)
-        array_delete_element(data,quantity,b);
-    printf("\nresult(negativ = %d, even = %d);\n", a, ++b);
+    if (a != -1)
+        array_delete_element(data,quantity,a);
+    for (i = quantity - 1; i >= 0 && data[i] % 2 != 0; --i)     //not use functions
+        ;
+    if (i != -1)
+        array_delete_element(data,quantity,i);
+    printf("\nresult(negative = %d, even = %d);\n", a, i);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.156, delete elements;\n");
+    quantity = 20;
     array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
-    array_delete_all(data,quantity,0,chk_less);
+    quantity -= array_delete_all(data,quantity,0,chk_less);
     printf("\na, negative: ");
     array_print(data, quantity, prt_element | prt_indexes);
-    a = rand() % random_max;
-    array_delete_all(data,quantity,a,chk_more);
+    a = rand() % random_max / 2 + 10;
+    quantity -= array_delete_all(data,quantity,a,chk_more);
     printf("\nb, more than a(%d): ",a);
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % quantity;
     b = (a != 0) ? rand() % a: 0;
-    for (i = b; i < a; ++i)
+    for (i = b; i <= a; ++i, quantity--)
         array_delete_element(data,quantity,b);
     printf("\nc, from b(%d) to a(%d): ", b, a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.157, delete elements;\n");
+    quantity = 10;
     array_create_sequence(data, 1, 1, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
-    for (i = 0; i < quantity; ++i)
-        if (i % 2 != 0 && data[i] % 2 == 0)
-            array_delete_element(data,quantity,i);
+    for (i = 1; i < quantity; i += 2)
+        if (array_check_element(data,i,2,chk_div,quantity))
+            data[i] = random_max;
+    quantity -= array_delete_all(data, quantity, random_max, chk_equal);
     printf("\na: ");
     array_print(data, quantity, prt_element | prt_indexes);
-    for (i = 0; i < quantity; ++i)
-        if (data[i] % 3 == 0 || data[i] % 5 == 0)
-            array_delete_element(data,quantity,i);
+    quantity -= array_delete_all(data, quantity, 3, chk_div);
+    quantity -= array_delete_all(data, quantity, 5, chk_div);
     printf("\nb: ");
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.158, delete equal elements;\n");
-    random_max = 10; quantity = 10;
+    random_max = 10; quantity = 30;
     array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_delete_equal(data,quantity);
     printf("\n%d|",a);
-    array_print(data, quantity, prt_element | prt_indexes);
+    array_print(data, a, prt_element | prt_indexes);
     printf("\n\n11.159, insert element;\n");
     a = rand() % random_max;
     b = rand() % quantity;
@@ -1289,27 +1302,26 @@ void chapter_11()
     printf("\nresult(idx = %d, num = %d): ",b,a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.161, insert element;\n");
-    char names[] = "afkrx";
+    int names[] = {'a', 'f', 'k', 'r', 'x'};
     quantity = 5;
-    array_print(data, quantity, prt_element | prt_indexes);
-    a = 'a' + rand() % 27;
-    printf("\n");
-    for (i = 0; names[i] != '\0'; ++i)
-        printf("%c",names[i]);
-    for (i = 0; names[i] < a && names[i] != '\0'; ++i)
-        ;
-    quantity = array_insert_element(data,quantity,b,i);
-    printf("\nname = %c, height = %d, index = %d;\n",a,b,i);
-    array_print(data, quantity, prt_element | prt_indexes);
+    a = 'a' + rand() % ('z' - 'a');
+    printf("\nsource string with peaks: ");
+    array_print(names, quantity, prt_chars | prt_indexes);
+    b = array_scan_element(names,0,quantity,a,chk_more);
+    array_insert_element(names,quantity,a,b);
+    printf("\nname = %c, height = %d, index = %d;\n", a, b, i);
+    array_print(names, quantity + 1, prt_chars | prt_indexes);
     printf("\n\n11.163, insert elements before and after max;\n");
+    quantity = 10;
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % random_max;
     b = rand() % random_max;
     array_min_max(data,quantity,1,1,&result);
-    quantity = array_insert_element(data,quantity,a,result + 1);
-    quantity = array_insert_element(data,quantity,b,result);
+    array_insert_element(data,quantity++,a,result + 1);
+    array_insert_element(data,quantity++,b,result);
     printf("max idx = %d, before = %d, after = %d\n", result, b, a);
     array_print(data, quantity, prt_element | prt_indexes);
+    return;
     printf("\n\n11.164, insert elements before multiples of a and after all negative elements;\n");
     quantity = 10;
     a = rand() % quantity + 1;
