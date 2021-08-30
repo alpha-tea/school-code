@@ -497,13 +497,13 @@ int flip_number(int n)
     return flip_number(n / base);
 }
 
-int revers_number(int n, int result)
+int reverse_number(int n, int result)
 {
     const int base = 10;                    // Улучшить функцию...
     result = result * base + n % base;
     if (n > base) {
         printf("\nrevers, n = %d, result before = %d\n", n, result);
-        result = revers_number(n / base, result);
+        result = reverse_number(n / base, result);
         printf("\nrevers, n = %d, result after = %d\n", n, result);
     }
     return result;
@@ -1026,7 +1026,7 @@ void chapter_10()
     n = 12345;
     result = 0;
     printf("10.52, flip the number, number = %d;\n", n);
-    printf("result = %d;\n\n", revers_number(n,result));
+    printf("result = %d;\n\n", reverse_number(n,result));
     const int bases[] = {2,4,8,16,10};
     const int tab_size = 5;
     for (i = 0; i < tab_size; ++i)

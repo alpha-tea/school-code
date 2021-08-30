@@ -122,7 +122,7 @@ int ackermann(int m, int n);
 int symmetric_check_recur(char string[], int start, int end, int limit);
 int prime_check_recur(int number, int* num_ptr);
 void print_integer_recur(int number, int base);
-int revers_number(int n, int result);
+int reverse_number(int n, int result);
 int flip_number(int n);
 int find_max_recur(int numbers[], int length, int* idx, int max);
 int fibonacci_recur(int n);
@@ -170,6 +170,7 @@ void chapter_10();
 void chapter_11();
 
 // Функции и константы для допольнительных задач.
+void rotate_test();
 int uniq_gen_fast_alt(int number[], int length, int limit);
 int uniq_gen_fast(int number[], int length, int limit);
 int uniq_gen_fast_symbols(char string[], int length);

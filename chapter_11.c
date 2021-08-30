@@ -610,7 +610,7 @@ int array_insert_all(int data[], int size, int element, int parameter, enum arra
     int counter = 0;
     for (int i = 0; i < size; ++i)
         if (array_check_element(data, i, parameter, type, size)) {
-            array_insert_element(data, size++, element, i);
+            array_insert_element(data, size++, element, i++);
             counter++;
         }
     return counter;
@@ -1321,19 +1321,14 @@ void chapter_11()
     array_insert_element(data,quantity++,b,result);
     printf("max idx = %d, before = %d, after = %d\n", result, b, a);
     array_print(data, quantity, prt_element | prt_indexes);
-    return;
     printf("\n\n11.164, insert elements before multiples of a and after all negative elements;\n");
     quantity = 10;
-    a = rand() % quantity + 1;
-    b = rand() % random_max;
     array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
-    for (i = 0; i < quantity; ++i) {
-        if (data[i] % a == 0)
-            array_insert_element(data,quantity,b,i++);
-        if (data[i] < 0)
-            array_insert_element(data,quantity,b,i++);
-    }
+    a = rand() % quantity + 1;
+    b = rand() % random_max;
+    array_insert_all(data,quantity,b,a,chk_div);
+    array_insert_all(data,quantity,b,0,chk_less);
     printf("a = %d, number = %d;\n", a, b);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.167, insert the number and after the number where there is a digit 5;\n");
@@ -1341,12 +1336,10 @@ void chapter_11()
     array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity; ++i) {
-        result = data[i];
-        while (result != 0) {
-            b = result % 10;
-            result /= 10;
-            if (b == 5) {
-                array_insert_element(data,quantity,a,i++);
+        result = number_to_digits(data[i],data_extra,2);
+        while (result > 0) {
+            if (data_extra[--result] == 5) {
+                array_insert_element(data,quantity++,a,i++);
                 break;
             }
         }
@@ -1359,7 +1352,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity - 1; ++i)
         if (abs(data[i]) / data[i] == abs(data[i + 1]) / data[i + 1])
-            array_insert_element(data,quantity,a,++i);
+            array_insert_element(data,quantity++,a,++i);
     printf("a = %d\n",a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.170, rearrange the first element in place of k;\n");
@@ -1370,13 +1363,13 @@ void chapter_11()
     for (i = 0; i < a; ++i)
         data[i] = data[i + 1];
     data[a] = b;
-    printf("a = %d;\n", a);
+    printf("k = %d;\n", a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.174, rearrange the last element in place of k;\n");
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % quantity;
     array_insert_element(data,quantity,data[quantity - 1],a);
-    printf("a = %d;\n", a);
+    printf("k = %d;\n", a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.177, correct sequence order;\n");
     b = rand() % (quantity - 1) + 1;

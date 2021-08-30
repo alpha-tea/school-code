@@ -144,3 +144,43 @@ int string_insert( char dst[], char ins[], int start, int limit)
         dst[j] = ins[i];
     return 0;
 }
+
+int array_rotate_range(int data[], int size, int start, int length, int direct)
+{
+    if (size < 2 || start + length > size || length <= 1) {
+        printf("error: in size or start or length;\n");
+        return -1;
+    }
+    if (direct == 0) {  //Направление движения: если direct = 0 - влево, иначе вправо.
+        int element = data[start];
+        for (int i = start; i < start + length; ++i)
+            data[i] = data[i + 1];
+        data[start + length - 1] = element;
+    } else {
+        int element = data[start + length - 1];
+        for (int i = start + length - 1; i > start; --i)
+            data[i] = data[i - 1];
+        data[start] = element;
+    }
+    return 0;
+}
+
+int number_to_digits(int number, int data[], int size)
+{           // Преобразование числа в масив цифры, знак не учитывается.
+    if (size < 1) {
+        printf("error: int size or number;\n");
+        return -1;
+    }
+    int counter = 0;
+    do {
+        data[counter] = number % 10;
+        number /= 10;
+        counter++;
+    } while (number != 0 && counter < size);
+    for (int i = 0; i < counter / 2; ++i) {
+        int tmp = data[i];
+        data[i] = data[counter - i - 1];
+        data[counter - i - 1] = tmp;
+    }
+    return counter;
+}

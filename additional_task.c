@@ -74,6 +74,26 @@ void demo()
     }
 }
 
+void rotate_test()
+{
+    int data[] = {0,1,2,3,4};
+    printf("Rotate function test, 5 right and 5 left:\n");
+    printf(" Right:\n");
+    for (int i = 0; i < 5; ++i) {
+        array_rotate_range(data,5,0,5,1);
+        for (int j = 0; j < 5; ++j)
+            printf("%d ",data[j]);
+        printf("\n");
+    }
+    printf(" Left:\n");
+    for (int i = 0; i < 5; ++i) {
+        array_rotate_range(data,5,0,5,0);
+        for (int j = 0; j < 5; ++j)
+            printf("%d ",data[j]);
+        printf("\n");
+    }
+}
+
 void lesson_test_1()
 {
     //int i1 = 1;

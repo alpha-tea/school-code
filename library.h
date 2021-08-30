@@ -25,4 +25,8 @@ int prime_number(int number);
 
 int string_char_find(char s[], char c, int direct, int debug);
 
+int array_rotate_range(int data[], int size, int start, int length, int direct);
+
+int number_to_digits(int number, int data[], int size);
+
 #endif
