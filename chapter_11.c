@@ -12,7 +12,7 @@ enum array_action_type {act_info, act_mov, act_add, act_sub, act_mult, act_div, 
 
 enum array_xchg_type {xchg_forward, xchg_backward, xchg_even_odd};
 
-static const char* array_xchg_name[] = {"forward", "backward", "even-odd"};
+//static const char* array_xchg_name[] = {"forward", "backward", "even-odd"};
 
 static const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
 
@@ -60,9 +60,11 @@ int array_modify_element(int data[], int offset, enum array_action_type type, in
     case act_sqrt:
         data[offset] = (int)(sqrt((double)data[offset])); //Лучше так не делать!
         break;
+    case act_end:
+        ;
     default:
-        printf("error, info: data = %p, offset = %d, parameter = %d, type = '%s', limit = %d;\n",
-               data, offset, parameter, array_action_name[type], limit);
+        ;//printf("error, info: data = %p, offset = %d, parameter = %d, type = '%s', limit = %d;\n",
+        // data, offset, parameter, array_action_name[type], limit);
     }
     return 0;     //data[offset];
 }
@@ -115,9 +117,11 @@ int array_check_element(int data[], int offset, int parameter, enum array_check_
         if (offset % 2 == 0)
             return 1;
         break;
-    default:
-        printf("error, info: data = %p, offset = %d, parameter = %d, type = '%s', limit = %d;\n",
-               data, offset, parameter, array_check_name[type], limit);
+        //default:
+        //printf("error, info: data = %p, offset = %d, parameter = %d, type = '%s', limit = %d;\n",
+        //     data, offset, parameter, array_check_name[type], limit);
+    case chk_end:
+        ;
     }
     return 0;
 }
@@ -207,6 +211,7 @@ void array_print(int data[], int limit, int mode)   //Вывод масива в
 
 int array_scan_element(int data[], int offset, int size, int parameter, enum array_check_type type)
 {       //Линейный поиск элемента в масиве с учётом типа проверки и параметров.
+        //Подумать над направлением поиска.
     if (size <= 0 || type < chk_info || type >= chk_end) {
         printf("error, size or type incorrect;\n");
         return -1;
@@ -231,7 +236,7 @@ int array_modify_action(int data[], int size, int parameter, enum array_action_t
     return result;
 }
 
-int array_create_input(int data[], int init[], int isInput, int limit)
+int array_create_input(int data[], int init[], int direct, int isInput, int limit)
 {
     int i = 0;
     if (limit <= 0) {
@@ -240,8 +245,12 @@ int array_create_input(int data[], int init[], int isInput, int limit)
     }
     switch (isInput) {
     case 0:
-        for (i = 0; i < limit; ++i)
-            data[i] = init[i];
+        if (direct > 0)
+            for (i = 0; i < limit; ++i)
+                data[i] = init[i];
+        else
+            for (i = limit - 1; i >= 0; --i)
+                data[limit - 1 - i] = init[i];
         break;
     default:
         for (i = 0; i < limit; ++i)
@@ -555,6 +564,7 @@ int array_delete_element(int data[], int size, int index)
 
 int array_delete_all(int data[], int size, int parameter, enum array_check_type type)
 {
+    //Удаляет все элементы по условию, возвращает кол-во удаленных элементов.
     if (size < 1 || type < 0 || type >= chk_end) {
         printf("error in size or type;");
         return -1;
@@ -571,6 +581,7 @@ int array_delete_all(int data[], int size, int parameter, enum array_check_type 
 
 int array_delete_equal(int data[], int size)
 {
+    //Посмотреть быстрые методы для полностью случайного массива.
     if (size < 2) {
         printf("error in size;/n");
         return -1;
@@ -591,7 +602,7 @@ int array_delete_equal(int data[], int size)
 
 int array_insert_element(int data[], int size, int element, int index)
 {   // Функция вставки элементов, массив расширяется без контроля длинны.
-    if (size < 1 || index >= size || index < 0) {
+    if (size < 1 || index > size || index < 0) {
         printf("error in size;");
         return -1;
     }
@@ -616,6 +627,230 @@ int array_insert_all(int data[], int size, int element, int parameter, enum arra
     return counter;
 }
 
+int digits_mul(int factor_a[], int factor_b[], int result[], int size)
+{                   //Дополнить произвольным основанием системы счисления.
+    if (size < 1)
+        return -1;
+    int number_tmp[size], a = 0;
+    for (int j = size - 1, counter = 0, k = 0; j >= 0; --j, ++counter, k = 0) {
+        if (factor_b[j] != 0) {
+            for (int i = 0; i < size; ++i)
+                number_tmp[i] = 0;
+            for (int i = size - 1; i >= 0; --i) {
+                int a = factor_a[i] * factor_b[j];
+                number_tmp[i] += ((a % 10) + k) % 10;
+                if ((a % 10) + k > 9)
+                    k = a / 10 + 1;
+                else
+                    k = a / 10;
+            }
+            int b = k;      //Переполнение.
+            for (k = size - 1; k >= 0; --k) { // После оформить в функцию если понадобится.
+                a = result[k + size - counter] + number_tmp[k];
+                result[k + size - counter] = a % 10;
+                if (a > 9)
+                    result[k + size - counter - 1]++;
+                if (k == 0)
+                    result[k + size - counter - 1] += b;
+            }
+        }
+    }
+    return 0;
+}
+
+int digits_add(int add_a[], int add_b[], int result[], int size)
+{                     //Дополнить произвольным основанием системы счисления.
+    if (size < 1)
+        return -1;
+    for (int i = size - 1; i >= 0; --i) {
+        int a = add_a[i] + add_b[i];
+        if (a > 9) {
+            if (i > 0)
+                result[i - 1]++;
+            else
+                return -1;
+        }
+        result[i] = a % 10;
+    }
+    return 0;
+}
+
+int digits_sub(int sub_a[], int sub_b[], int result[], int size)
+{                       //Дополнить произвольным основанием системы счисления.
+    if (size < 1)
+        return -1;
+    for (int i = size - 1; i >= 0; --i) {
+        int a = sub_a[i] - sub_b[i];
+        if (a < 0) {
+            if (i != 0) {
+                result[i - 1]--;        //Подумать для страховки.
+            } else
+                return -1;
+            result[i] = 10 - abs(sub_b[i] - sub_a[i]);
+        } else
+            sub_a[i] = a;
+    }
+    return 0;
+}
+
+int digits_div(int div_a[], int div_b[], int result[], int size, int size_result)
+{
+    int num_2 = 0, num_1 = 0, number = 0;       //Сделать без преобразования в num,
+    //можно создавать доп.массивы
+    int b = 0, i = 0, j = 0, k = 0, tmp = 0, length = 0, counter = 0;
+    for (b = 0; div_b[b] == 0; ++b)          //Напишем вместе, оформить в функцию.
+        ;
+    for (i = size - 1; i >= 0; --i)
+        num_2 += div_b[i] * pow(10,size - i - 1);
+    for (b = 0; div_a[b] == 0; ++b)
+        ;
+    for (i = size - 1; i >= 0; --i)
+        num_1 += div_a[i] * pow(10,size - i - 1);
+    length = size - b;
+    printf("num 1 = %d, num 2 = %d, length = %d, b = %d;\n", num_1, num_2, length, b);
+    for (i = b; i < size; ++i) {
+        //for (j = b; j <= i; ++j)
+        number = number * 10 + div_a[i];
+        //printf("!%d ",number);
+        if (number >= num_2) {
+            for (k = 0, tmp = 0; tmp < number; ++k) {
+                tmp += num_2;
+            }
+            if (tmp != number) {
+                tmp -= num_2;
+                --k;
+            }
+            for (j = 0; k != 0 && j < size_result; ++j, ++ counter) {
+                result[counter] = k / 10;
+                k /= 10;
+            }
+            number -= tmp;
+        }
+
+        if (div_a[i] == 0 && num_1 % tmp == 0) {
+            result[counter] = 0;
+            ++counter;
+        }
+    }
+    printf("number = %d, tmp = %d", number, tmp);
+    result[counter] = -1;
+    return 0;
+}
+
+int array_add(int data_a[], int data_b[], int data_r[], int size)
+{   //Функция сложения двух массивов по элементно и сохранение в третий.
+    //Возвращает сумму всех элементов.
+    if (size < 1)
+        return -1;
+    int i = 0, result = 0;
+    for (i = 0; i < size; ++i) {
+        data_r[i] = data_a[i] + data_b[i];
+        result += data_r[i];
+    }
+    return result;
+}
+
+int array_sub(int data_a[], int data_b[], int data_r[], int size)
+{   //Функция вычитание двух массивов по элементно и сохранение в третий.
+    //Возвращает разность всех элементов.
+    if (size < 1)
+        return -1;
+    int i = 0, result = 0;
+    for (i = 0; i < size; ++i) {
+        data_r[i] = data_a[i] - data_b[i];
+        result -= data_r[i];
+    }
+    return result;
+}
+
+int array_mul(int data_a[], int data_b[], int data_r[], int size)
+{   //Функция умножения двух массивов по элементно и сохранение в третий.
+    //Возвращает произведение всех элементов.
+    if (size < 1)
+        return -1;
+    int i = 0, result = 1;
+    for (i = 0; i < size; ++i) {
+        data_r[i] = data_a[i] * data_b[i];
+        result *= data_r[i];
+    }
+    return result;
+}
+
+int array_div(int data_a[], int data_b[], int data_r[], int size)
+{   //Функция деления двух массивов по элементно и сохранение в третий.
+    //Возвращает сред. арифметическое результирующих элементов.
+    if (size < 1)
+        return -1;
+    int i = 0, result = 1;
+    for (i = 0; i < size; ++i) {
+        data_r[i] = data_a[i] / data_b[i];
+        result += data_r[i];
+    }
+    return result / (i + 1);
+}
+
+int array_is_descending(int data[], int size)
+{               //Функция определения строго убывающей последовательности.
+    if (size < 1)
+        return -1;
+    int i = 0;
+    for (i = 0; i < size - 1 && data[i] > data[i + 1]; ++i)
+        ;
+    if (i == size - 1)
+        return 1;
+    return 0;
+}
+
+int array_is_ascending(int data[], int size)
+{
+    //Функция определения строго возврастающей последовательности.
+    if (size < 1)
+        return -1;
+    int i = 0;
+    for (i = 0; i < size - 1 && data[i] < data[i + 1]; ++i)
+        ;
+    if (i == size - 1)
+        return 1;
+    return 0;
+}
+
+int array_is_equal(int data[], int size)
+{
+    //Функция определения равнойэлементной последовательности.
+    if (size < 1)
+        return -1;
+    int i = 0;
+    for (i = 0; i < size - 1 && data[i] == data[i + 1]; ++i)
+        ;
+    if (i == size - 1)
+        return 1;
+    return 0;
+}
+
+int array_find_if(int data[], int result[], int par, int size, enum array_check_type type)
+{
+    if (size < 1)
+        return -1;
+    int i = 0, counter = 0;
+    for (i = 0; i < size; ++i)
+        if (array_check_element(data,i,par,type,OBJECTS_MAX))
+            result[counter++] = data[i];
+    return counter;
+}
+
+int array_comparison(int data_1[], int data_2[], int data_result[], int par, enum array_check_type type, int length)
+{
+    if (length < 1)
+        return -1;
+    for (int i = 0; i < length; ++i) {
+        if (array_check_element(data_1,i,par,type,length) == array_check_element(data_2,i,par,type,length))
+            data_result[i] = 1;
+        else
+            data_result[i] = 0;
+    }
+    return 0;
+}
+
 void chapter_11()
 {
     printf("11.1 - 11.2, moving data across arrays;\n");
@@ -628,7 +863,7 @@ void chapter_11()
         init[i] = rand() % random_max;
     printf("source elements: ");
     array_print(init,length,prt_element);
-    array_create_input(data, init, 0, length);
+    array_create_input(data, init, 1, 0, length);
     printf("output: ");
     for (i = 0; i < length; ++i)
         printf("%d ",data[i]);
@@ -836,6 +1071,7 @@ void chapter_11()
             printf("\t\t\t%d[%d]", data[i],i);
         printf("\n");
     }
+    /*
     printf("11.46 - 11.51, using string of commands;\n");
     quantity = 10; random_max = 10;
     printf("all posible checks, command letter:\n");
@@ -853,14 +1089,12 @@ void chapter_11()
                      "11.51, all negative add a1, all zeroes sub b"};
     printf("!\n");
     for (i = 0; i < 6; ++i) {
-        /*
         for (j = 0; j < string_length(commands[i]); ++j) { // найти функцию.
             printf("%c\n", commands[i][j]);
             if (commands[i][j] == '_')
                 commands[i][j] = (char)('0' + (rand() % random_max)); //Разобраться.
             printf("%c\n", commands[i][j]);
         }
-        */
         printf("\n\n%s, command = %s;\nsource array: ", tasks[i], commands[i]);
         for (j = 0; j < quantity; ++j) {
             data[j] = rand() % random_max - 5;
@@ -871,6 +1105,7 @@ void chapter_11()
         printf("result array: ");
         array_print(data, quantity, prt_element);
     }
+    */
     printf("\n\n11.55, calculation of the sum of elements matching the condition;\n");
     quantity = 10;
     int a = 3, b = 5;
@@ -1215,14 +1450,14 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     array_min_max(data,quantity,1,1,&a);
     array_min_max(data,quantity,0,1,&b);
-    if (a > b) {
+    if (data[a] > data[b]) {
         max = a;
         min = b;
     } else {
         max = b;
         min = a;
     }
-    for (i = 0; i < (max - min) / 2 + 1 - (max - min) % 2; ++i)
+    for (i = 0; i <= (max - min) / 2 + 1 - (max - min) % 2; ++i)
         array_xchg_elements(data,quantity,min + i,max - i);
     printf("\nresult(max = %d, min = %d):\n", max, min);
     array_print(data, quantity, prt_element | prt_indexes);
@@ -1237,8 +1472,8 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     array_min_max(data,quantity,1,1,&a);
     array_delete_element(data,quantity,a);
-    array_min_max(data,quantity,0,1,&b);
-    array_delete_element(data,quantity,b);
+    array_min_max(data,quantity - 1,0,1,&b);
+    array_delete_element(data,quantity - 1,b);
     printf("\nresult(max %d, min = %d): ", a, b);
     array_print(data, quantity - 2, prt_element | prt_indexes);
     printf("\n\n11.153, delete first negative and first even elements;\n");
@@ -1290,12 +1525,12 @@ void chapter_11()
     array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_delete_equal(data,quantity);
-    printf("\n%d|",a);
+    printf("\nnew size = %d|",a);
     array_print(data, a, prt_element | prt_indexes);
     printf("\n\n11.159, insert element;\n");
+    random_max = 20; quantity = 10;
     a = rand() % random_max;
     b = rand() % quantity;
-    random_max = 20; quantity = 10;
     array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     array_insert_element(data,quantity,a,b);
@@ -1307,7 +1542,7 @@ void chapter_11()
     a = 'a' + rand() % ('z' - 'a');
     printf("\nsource string with peaks: ");
     array_print(names, quantity, prt_chars | prt_indexes);
-    b = array_scan_element(names,0,quantity,a,chk_more);
+    b = array_scan_element(names,0,quantity,a,chk_more);    //В упорядоченном массиве можно использовать более быстрый поиск.
     array_insert_element(names,quantity,a,b);
     printf("\nname = %c, height = %d, index = %d;\n", a, b, i);
     array_print(names, quantity + 1, prt_chars | prt_indexes);
@@ -1327,8 +1562,8 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % quantity + 1;
     b = rand() % random_max;
-    array_insert_all(data,quantity,b,a,chk_div);
-    array_insert_all(data,quantity,b,0,chk_less);
+    quantity += array_insert_all(data,quantity,b,a,chk_div);
+    quantity += array_insert_all(data,quantity,b,0,chk_less);
     printf("a = %d, number = %d;\n", a, b);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.167, insert the number and after the number where there is a digit 5;\n");
@@ -1337,12 +1572,11 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity; ++i) {
         result = number_to_digits(data[i],data_extra,2);
-        while (result > 0) {
+        while (result > 0)
             if (data_extra[--result] == 5) {
                 array_insert_element(data,quantity++,a,i++);
                 break;
             }
-        }
     }
     printf("a = %d\n",a);
     array_print(data, quantity, prt_element | prt_indexes);
@@ -1362,7 +1596,7 @@ void chapter_11()
     b = data[0];
     for (i = 0; i < a; ++i)
         data[i] = data[i + 1];
-    data[a] = b;
+    data[a] = b;            //Сохраняем элемент в позицию а.
     printf("k = %d;\n", a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.174, rearrange the last element in place of k;\n");
@@ -1370,10 +1604,10 @@ void chapter_11()
     a = rand() % quantity;
     array_insert_element(data,quantity,data[quantity - 1],a);
     printf("k = %d;\n", a);
-    array_print(data, quantity, prt_element | prt_indexes);
+    array_print(data, ++quantity, prt_element | prt_indexes);
     printf("\n\n11.177, correct sequence order;\n");
     b = rand() % (quantity - 1) + 1;
-    for (i = 0, a = 0; i < quantity; ++i) {
+    for (i = 0, a = 0; i < quantity; ++i) { //Использовать арифметическую последовательность.
         if (i != b) {
             a += rand() % random_max + random_max;
             data[i] = a;
@@ -1386,19 +1620,373 @@ void chapter_11()
     for (i = 0; i < quantity - 1 && data[i] < data[i + 1]; ++i)
         ;
     if (i + 1 != quantity)
-        data[i + 1] = data[i] + rand() % (data[i + 2] - data[i]);
+        data[i + 1] = data[i] + rand() % (data[i + 2] - data[i]); // 0-1 не бывает.
     else
         data[i + 1] = data[i] + rand() % random_max;
     printf("error in %d, b = %d;\n",i + 1, b);
     array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n\n11.182, print all elements in array except first and last zero;\n");
+    quantity = 10;
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    printf("\n");
+    for (i = 0; data[i] != 0 && i < quantity; ++i)
+        printf("%d ", data[i]);
+    for (i++; i < quantity; ++i)
+        printf("%d ", data[i]);
+    printf("\n\n11,183, ascending array with numbers: ");
+    quantity = 16;
+    array_create_sequence(data, 0, 48, 3, 0b00000010, OBJECTS_MAX);
+    array_print(data, quantity, prt_element | prt_indexes);
+    a = rand() % 48;
+    printf("\na) elements less than %d:\n", a);
+    for (i = 0; data[i] < a && i < quantity; ++i)
+        printf("%d ", data[i]);
+    printf("\nb) fast search forward: ");
+    for (i = 0, j = 1, k = 0; i < quantity && data[i] < a; i += j, j++, ++k)
+        ;
+    if (i > quantity)   //если дошли до конца массива.
+        i = quantity - 1;
+    printf("element more or equal than %d founded at %d position;\n", a ,i);
+    for (; (data[i - 1] >= a || i == 0) && i >= 0; --i, ++k)
+        ;
+    printf(" element: %d, index: %d, counter: %d;\n", data[i], i, k);
+    printf("c) fast search with minimum diff to a = %d;\n", a);
+    for (i = quantity / 2, j = quantity / 2, k = 0; data[i] != a && j != 0; j /= 2, ++k) {
+        printf("i = %d, j = %d\n", i, j);
+        if (data[i] > a)
+            i -= j / 2;
+        else
+            i += j / 2;
+    }
+    printf("Position: %d, counter = %d", i, k);
+    for (i = 1, j = abs(data[0] - a), k = 0; j > abs(data[i] - a); ++i, ++k)
+        j = abs(data[i] - a);
+    i--;
+    printf("\nPosotion with minimum diff is %d, element = %d, counter = %d;\n", i, data[i], k);
+    printf("\n11,185, scores of teams in descending order;\n");
+    random_max = 50;        //Можно применить быстрый поиск.
+    idx = rand() % 16;
+    for (i = 0; i < quantity; ++i) {
+        data[i] = random_max;
+        if (random_max > 5)
+            random_max -= 2 + rand() % 4;
+        if (idx == i)
+            a = data[i];
+    }
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; data[i] > a && i < quantity; ++i)
+        ;
+    printf("\nteam position: %d, score = %d, ", i, data[i]);
+    printf("\n\n11,187, scores in class from 5 - 2;\n");
+    int score[4] = {4 , 4 , 4, 4};
+    for (j = 0; j < quantity; j++) {
+        int idx_1 = rand() % 4;
+        int idx_2 = rand() % 4;
+        if (score[idx_1] > 0) {
+            score[idx_1]--;
+            score[idx_2]++;
+        }
+    }
+    for (i = 0, k = 0; i < 4; ++i)
+        for (j = score[i]; j > 0; --j, ++k)
+            data[k] = 5 - i;
+    array_print(data, quantity, prt_element | prt_indexes);
+    for (i = 0; data[i] == 5; ++i)
+        ;
+    printf("\nquantity: %d\n\n", i);
+    const int d_size = 8;
+    int number_1[] = {9,9,9,9,9,9,9,9};
+    int number_2[] = {9,9,9,9,9,9,9,9};
+    //int number_4[] = {0,0,0,0,0,0,0,0};
+    int number_3[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    printf("11.189, digital calculator for arrays");
+    printf("\nadd 1:\t");
+    array_print(number_1, d_size, prt_element);
+    printf("\nadd 2:\t");
+    array_print(number_2, d_size, prt_element);
+    printf("\nsum:\t");
+    digits_add(number_1,number_2,number_1,8);
+    array_print(number_1, d_size, prt_element);
+    printf("\nsub_2:\t");
+    array_print(number_2, d_size, prt_element);
+    digits_sub(number_1,number_2,number_1,8);
+    printf("\ndiff:\t");
+    array_print(number_1, d_size, prt_element);
+    printf("\nmul_2:\t");
+    array_print(number_2, d_size, prt_element);
+    printf("\n");
+    digits_mul(number_1,number_2,number_3,8);
+    printf("mul:\t");
+    array_print(number_3, d_size * 2, prt_element);
+    printf("\ndiv1:\t");
+    array_print(number_1, d_size, prt_element);
+    printf("\ndiv2:\t");
+    array_print(number_2, d_size, prt_element);
+    printf("\nprivat:\t\n");
+    a = 123545;
+    return;
+    printf("\n11.191, search uniq. digits in number %d\n", a);
+    int array_digit[6];
+    int uniq_array_digit[6];
+    number_to_digits(a,array_digit,6);
+    array_print(array_digit,6,prt_element | prt_indexes);
+    result = array_unique_elements(array_digit,6,uniq_array_digit);
+    printf("\nresult = %d\n\n", result);
+    printf("*11,193, 2^100 digits: ");
+    printf("\nMethod #1: factorization of size int, 2^100 = 2^25 * 2^25 * 2^25 * 2^25(in binary);\n");
+    for (i = 0; i < 4; ++i) {
+        unsigned int number = 1;
+        for (j = 0; j < 25; ++j)
+            number <<= 1;
+        //print_binary_dword(number);
+    }
+    printf("\nMethod #2: factorization of size int, 2^100 = 2^25 * 2^25 * 2^25 * 2^25(in dec);\n");
+    int data_nums[] = {5,2,3,1 << 25}; // 128 bits total.
+    char hex_num[OBJECTS_MAX];
+    hex_num[16] = '\0';     //Вывод в 16-ой системе счисления.
+    for (i = 0; i < 4; ++i) {
+        int_to_string(&hex_num[i * 4],data_nums[i],16);
+        printf("%s:",hex_num);
+    }
+    printf("\nmethod #3: binary data 128 bit to 32 bit data * 4, convert to array of digits:\n");
+    int array_result[128];
+    int array_number[8];
+    for (i = 0; i < 8; ++i)
+        array_number[i] = 0;
+    for (i = 0; i < 128; ++i)
+        array_result[i] = 0;
+    number_to_digits(data_nums[3],&array_result[119],8);
+    number_to_digits(data_nums[3],array_number,8);
+    array_print(array_number,8,prt_element);
+    printf("\n");
+    array_print(array_result,128,prt_element);
+    printf("\nmethod #4: using arrays:\n");
+    int num_a[OBJECTS_MAX];
+    int num_b[OBJECTS_MAX];
+    int num_r[OBJECTS_MAX];
+    int num_s[OBJECTS_MAX]; // слогаемое при умножении на num_r.
+    int n_digits = 32, carry = 0, g = 0;
+    num_a[n_digits - 1] = 1;
+    num_a[n_digits - 2] = 0;
+    num_b[n_digits - 1] = 2;
+    num_b[n_digits - 2] = 3;
+    for (i = 0; i < OBJECTS_MAX; ++i) {
+        if (i < n_digits - 2)
+            num_a[i] = num_b[i] = 0;
+        num_r[i] = num_s[i] = 0;
+    }
+    array_print(num_a,n_digits,prt_element);
+    printf("\n");
+    array_print(num_b,n_digits,prt_element);
+    printf("\n");
+    array_print(num_r,n_digits,prt_element);
+    printf("\n");
+    array_print(num_s,n_digits,prt_element);
+    printf("\n");
+    time_t t1 = time(NULL);
+    for (i = 0; i < 20; ++i) { //main cycle.
+        for (j = n_digits - 1, carry = 0; j >= 0; --j) {
+            for (k = n_digits - 1; k >= 0 || carry > 0; --k) {
+                num_s[k] = (num_a[k] * num_b[j] + carry) % 10;
+                carry = (num_a[k] * num_b[j] + carry) / 10;
+                //printf("n_a = %d, n_b = %d, n_s = %d, carry = %d;\n", num_a[k], num_b[j], num_s[k], carry);
+            }
+            for (g = n_digits - 1, b = j; g != k; --g, --b) {
+                int digit = num_r[b] + num_s[g];
+                num_r[b] = (digit + carry) % 10;
+                carry = (digit + carry) / 10;
+                //printf("n_s = %d, n_r = %d, carry = %d, g = %d;\n", num_s[g], num_r[b], carry, g);
+            }
+        }
+        for (g = 0; g < n_digits; ++g) {
+            num_a[g] = num_r[g];
+            num_r[g] = 0;
+        }
+    }
+    time_t t2 = time(NULL);
+    array_print(num_a,n_digits,prt_element);
+    printf("\n%s", asctime(gmtime(&t1)));
+    printf("\n%s", asctime(gmtime(&t2)));
+    /*
+    int numerator[] = {0,0,0,0,1,0,2,4};
+    int denominator[] = {0,0,0,0,0,5,1,2};
+    int result_array[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    digits_div(numerator,denominator,result_array,8, 16);
+    printf("\n");
+    array_print(result_array,16,prt_element);
+    */
+    printf("\n\n11.210 - 11.212, func fir check sequence;\n");
+    quantity = 15;
+    array_create_sequence(data,0,quantity,1,0b00000010,OBJECTS_MAX);
+    array_print(data,quantity,prt_element);
+    printf("\nis ascending:\t%d\n", array_is_ascending(data,quantity));
+    printf("is descending:\t%d\n", array_is_descending(data,quantity));
+    printf("is equals:\t%d\n", array_is_equal(data,quantity));
+    printf("\n11.214, costs of goods in first and second months;\n");
+    int data_1[OBJECTS_MAX] = {1,2,3,4,5}, data_2[OBJECTS_MAX] = {5,4,3,2,1}, data_result[OBJECTS_MAX];
+    printf("1)");
+    array_print(data_1,5,prt_element);
+    printf("\n2)");
+    array_print(data_2,5,prt_element);
+    array_add(data_1,data_2,data_result,5);
+    printf("\nresult: ");
+    array_print(data_result,5,prt_element);
+    printf("\n\n11.217, total harvest from areas;\n");
+    int areas[OBJECTS_MAX] = {1,2,3,4,5}, yield[OBJECTS_MAX] = {6,3,8,4,0}, harvest[OBJECTS_MAX];
+    printf("1)");
+    array_print(areas,5,prt_element);
+    printf("\n2)");
+    array_print(yield,5,prt_element);
+    result = array_mul(areas,yield,harvest,5);
+    result = array_information(harvest,5,inf_sum);
+    printf("\nharvest(three arrays): ");
+    array_print(harvest,5,prt_element);
+    array_mul(areas,yield,areas,5);
+    printf("\nharvest(two arrays): ");
+    array_print(areas,5,prt_element);
+    printf("\ntotal: %d;\n\n",result);
+    printf("11.218, parallelepiped with sizes and volumes;\n");
+    int parall[] = {2,3,8,6,5,3,5,7,4,2,1,6};
+    for (i = 0; i < 12; i += 3) {
+        int v = parall[i] * parall[i + 1] * parall[i + 2];
+        printf("%d * %d * %d = %d;\n",parall[i], parall[i + 1], parall[i + 2], v);
+    }
+    printf("\n11.219, search 10 motores with 80 hourse power;\n");
+    int car_cost[] = {100,500,230,125,549};
+    int car_power[] = {100,70,130,125,49};
+    result = array_find_if(car_power,data_result,80,5,chk_less);
+    printf("cars cost: ");
+    array_print(car_cost, 5, prt_element);
+    printf("\ncars power: ");
+    array_print(car_power, 5, prt_element);
+    printf("\nresult: ");
+    array_print(data_result, result, prt_element);
+    printf("\n\n11.223, football, goals and loses;\nPlus: ");
+    int s_plus[5] = {1,4,3,5,2};  //Забитые.
+    int s_minus[5] = {4,5,2,1,2}; //Пропущенные.
+    char* result_in_game[] = {"Lose!", "Draw!", "Win!"};
+    array_print(s_plus, 5, prt_element);
+    printf("\nMinus: ");
+    array_print(s_minus, 5, prt_element);
+    printf("\na) ");
+    for (i = 0; i < 5; ++i) {
+        if (s_plus[i] > s_minus[i])
+            printf("%d: %s, ", i + 1, result_in_game[2]);
+        else if (s_plus[i] < s_minus[i])
+            printf("%d: %s, ", i + 1, result_in_game[0]);
+        else
+            printf("%d: %s, ", i + 1, result_in_game[1]);
+    }
+    summ = 0;
+    array_sub(s_plus,s_minus,data,5);
+    result = array_information(data,5,inf_negativ);
+    summ += result * 3;
+    printf("\nb) %d - wins;", result);
+    array_sub(s_plus,s_minus,data,5);
+    result = array_information(data,5,inf_positiv);
+    summ += result * 0;
+    printf("\nc) %d - loses;", result);
+    array_sub(s_plus,s_minus,data,5);
+    result = array_chk_counter(data,5,0,chk_equal);
+    summ += result;
+    printf("\nd) %d - draws;\n", result);
+    printf("e) %d - scores;\n\n", summ);
+    printf("11,232, distants and time, speed: \n");
+    int dist[] = {80,72,108,94,96};
+    int timer[] = {2,1,3,2,2};
+    int speed[5];
+    array_div(dist,timer,speed,5);
+    array_print(speed,5,prt_element);
+    array_min_max(speed,5,1,1,&result);
+    printf("\nMax in idx = %d(%d);\n", result, speed[result]);
+    printf("\n11.234, find min square of rectangle;\n");
+    int points[] = {0,9, 9,0, 6,1, 7,4, 1,9, 9,1};
+    min = 81;
+    for (i = 0; i < 12; i += 4) {
+        int tmp = abs((points[i] - points[i + 2]) * (points[i + 1] - points[i + 3]));
+        printf("Square #%d: %d:%d %d:%d, S = %d;\n",
+               i + 1, points[i], points[i + 1],  points[i + 2],  points[i + 3], tmp);
+        if (tmp < min)
+            min = tmp;
+    }
+    printf("Min size = %d;\n\n", min);
+    printf("11.235, copying array elements in different order;\nsource: \n");
+    int mass_1[] = {0,1,2,3,4};
+    int mass_2[5];
+    array_print(mass_1,5,prt_element);
+    printf("\n");
+    array_create_input(mass_2,mass_1,1,0,5);
+    printf("\n");
+    array_print(mass_2,5,prt_element);
+    array_create_input(mass_2,mass_1,0,0,5);
+    printf("\n");
+    array_print(mass_2,5,prt_element);
+    printf("\n\n11.236, copying array elements according to the rules;\nsource: \n");
+    array_print(mass_1,5,prt_element);
+    printf("\n");
+    for (i = 0; i < 5; ++i)
+        if (mass_1[i] % 2 == 0)
+            mass_2[i] = pow(mass_1[i],2);
+        else
+            mass_2[i] = 2 * mass_1[i];
+    array_print(mass_2,5,prt_element);
+    printf("\n\n11.239, copying array elements according to the rules;\nsource: \n");
+    array_print(mass_2,5,prt_element);
+    printf("\n");
+    for (i = 0; i < 5; ++i)
+        if (mass_2[i] % 2 == 0)
+            mass_2[i] = mass_2[i] * 2;
+    array_print(mass_2,5,prt_element);
+    printf("\n\n11.242, copying array elements according to the rules;\nsource: \n");
+    array_print(mass_1,5,prt_element);
+    printf("\n");
+    for (i = 0; i < 5; ++i)
+        if (mass_1[i] % 2 != 0)
+            mass_2[i] = mass_1[i];
+    array_print(mass_2,5,prt_element);
+    printf("\n");
+    counter = 0;
+    for (i = 0; i < 5; ++i)
+        if (mass_1[i] % 2 != 0)
+            mass_2[counter++] = mass_1[i];
+    array_print(mass_2,5,prt_element);
+    printf("\n\n11.245, first negative then positive;\nsource: \n");
+    quantity = 10;
+    srand(time(NULL));
+    array_create_sequence(data,-1,-1,random_max,0b00000001,quantity);
+    array_print(data,10,prt_element);
+    printf("\n");
+    int count_neg = 0, count_pos = quantity - 1;
+    for (i = 0; i < quantity; ++i)
+        if (data[i] < 0)
+            data_extra[count_neg++] = data[i];
+        else
+            data_extra[count_pos--] = data[i];
+    array_print(data_extra,10,prt_element);
+    printf("\n\n11.247, comparison of signs of arrays if equal then 1 else 0;\nsource: \n");
+    array_print(data,quantity,prt_element);
+    array_create_sequence(data_extra,-1,-1,random_max,0b00000001,quantity);
+    printf("\n");
+    array_print(data_extra,quantity,prt_element);
+    printf("\n");
+    array_comparison(data,data_extra,data_result,0,chk_less,quantity);
+    array_print(data_result,quantity,prt_element);
+    printf("\n\n11.248, mountain plateau wind data;\n");
+    random_max = 8;
+    int n = 9; //кол-во исследователей.
+    int data_scient[n][quantity];
+    for (i = 0; i < n; ++i)
+        array_create_sequence(data_scient[i],1,1,random_max,0b00000001,quantity);
+    printf("+ ");
+    for (i = 0; i < quantity; ++i)
+        printf("%d ", i + 1);
+    for (i = 0; i < n; ++i) {
+        printf("\n%d:",i + 1);
+        for (j = 0; j < quantity; ++j)
+            printf("%d ", data_scient[i][j]);
+    }
 }
-
-
-
-
-
-
-
 
 
 

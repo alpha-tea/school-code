@@ -10,4 +10,5 @@ set(CMAKE_C_FLAGS "-Wall -Wextra")
 #  chapter_06.c chapter_07.c chapter_08.c chapter_09.c chapter_10.c library.c)
 
 aux_source_directory(. SRC_LIST)
+aux_source_directory(./KR SRC_LIST)
 add_executable(${PROJECT_NAME} ${SRC_LIST})
