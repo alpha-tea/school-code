@@ -2,6 +2,7 @@
 #define GLOBAL_H
 
 #include <stdlib.h>
+#include <float.h>
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
@@ -168,8 +169,7 @@ void chapter_10();
 // Функции и константы для одиннадцатой главы задачника.
 
 void chapter_11();
-
-// Функции и константы для допольнительных задач.
+// Функции и константы для дополнительных задач.
 void rotate_test();
 int uniq_gen_fast_alt(int number[], int length, int limit);
 int uniq_gen_fast(int number[], int length, int limit);
@@ -177,4 +177,9 @@ int uniq_gen_fast_symbols(char string[], int length);
 int bits_counter(int value);
 void bulls_and_cows();
 void hack_the_terminal(int length, int quantity, int attempts);
+
+// Керниган и Ритчи.
+void KernighanRitchie_1();
+void KernighanRitchie_2();
+
 #endif      // global.h

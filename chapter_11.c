@@ -211,7 +211,7 @@ void array_print(int data[], int limit, int mode)   //Вывод масива в
 
 int array_scan_element(int data[], int offset, int size, int parameter, enum array_check_type type)
 {       //Линейный поиск элемента в масиве с учётом типа проверки и параметров.
-        //Подумать над направлением поиска.
+    //Подумать над направлением поиска.
     if (size <= 0 || type < chk_info || type >= chk_end) {
         printf("error, size or type incorrect;\n");
         return -1;
@@ -627,7 +627,96 @@ int array_insert_all(int data[], int size, int element, int parameter, enum arra
     return counter;
 }
 
+int digits_add(int add_a[], int add_b[], int result[], int size)
+{                     //Дополнить произвольным основанием системы счисления.
+    //Беззнаковые числа, если отрицательные, то - ошибка.
+    if (size < 1)
+        return -1;
+    int carry = 0;
+    for (int i = size - 1; i >= 0; --i) {
+        if ((add_a[i] <= 9 && add_a[i] >= 0) && (add_b[i] <= 9 && add_b[i] >= 0)) {
+            result[i] = add_a[i] + add_b[i] + carry;
+            if (result[i] > 9) {
+                carry = 1;
+                result[i] %= 10;
+            } else
+                carry = 0;
+        } else {
+            printf("error: array of digits has wrong values;\n");
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int digits_sub(int sub_a[], int sub_b[], int result[], int size)
+{                       //Дополнить произвольным основанием системы счисления.
+    //Беззнаковые числа, если отрицательные, то - ошибка.
+    //Возвращает признак результата, -1, 0, 1, если первое число меньше, равно или больше второго соответственно;
+    int i = 0, carry = 0;
+    if (size < 1)
+        return -1;
+    for (i = size - 1; i >= 0; --i) {
+        if ((sub_a[i] <= 9 && sub_a[i] >= 0) && (sub_b[i] <= 9 && sub_b[i] >= 0)) {
+            result[i] = sub_a[i] - sub_b[i] - carry;
+            if (result[i] < 0) {
+                result[i] = 10 + result[i];
+                carry = 1;
+            } else
+                carry = 0;
+        } else {
+            printf("error: array of digits has wrong values;\n");
+            return -1;
+        }
+    }
+    for (i = 0; i < size && result[i] == 0; ++i) // all digits zero
+        ;
+    if (i == size) // all digits zero
+        return 0;
+    if (!carry)     //left > right
+        return 1;
+    else
+        return -1;  //left < right
+}
+
 int digits_mul(int factor_a[], int factor_b[], int result[], int size)
+{
+    if (size < 1)
+        return -1;
+    int add[size * 2], i = 0, j = 0, carry = 0;
+    printf("multiply a:\t");
+    array_print(factor_a,size,prt_element);
+    printf("\nmultiply b:\t");
+    array_print(factor_b,size,prt_element);
+    for (i = 0; i < size * 2; ++i)
+        result[i] = 0;
+    for (i = size - 1; i >= 0; --i) {
+        printf("\n\t\t");
+        for (j = 0; j < size * 2; ++j)
+            add[j] = 0;
+        for(j = size - 1, carry = 0; j >= 0 || carry; --j) {
+            int pos = size * 2 - (size - j - 1) - (size - i - 1) - 1;
+            if (pos >= 0) {
+                if (j >= 0)
+                    add[pos] = factor_b[i] * factor_a[j] + carry;
+                else
+                    add[pos] = carry;
+                carry = add[pos] / 10;
+                add[pos] %= 10;
+            } else {
+                printf("one of adder is more than %d digits;\n", size);
+                return -1;
+            }
+        }
+        array_print(add, size * 2, prt_element);
+        digits_add(result, add, result, size * 2);
+        printf("\t");
+        array_print(result, size * 2, prt_element);
+    }
+    return 0;
+}
+
+int digits_mul_alt(int factor_a[], int factor_b[], int result[], int size)
 {                   //Дополнить произвольным основанием системы счисления.
     if (size < 1)
         return -1;
@@ -637,12 +726,17 @@ int digits_mul(int factor_a[], int factor_b[], int result[], int size)
             for (int i = 0; i < size; ++i)
                 number_tmp[i] = 0;
             for (int i = size - 1; i >= 0; --i) {
-                int a = factor_a[i] * factor_b[j];
-                number_tmp[i] += ((a % 10) + k) % 10;
-                if ((a % 10) + k > 9)
-                    k = a / 10 + 1;
-                else
-                    k = a / 10;
+                if ((factor_a[i] <= 9 && factor_a[i] >= 0) && (factor_b[i] <= 9 && factor_b[i] >= 0)) {
+                    int a = factor_a[i] * factor_b[j];
+                    number_tmp[i] += ((a % 10) + k) % 10;
+                    if ((a % 10) + k > 9)
+                        k = a / 10 + 1;
+                    else
+                        k = a / 10;
+                } else {
+                    printf("error: array of digits has wrong values;\n");
+                    return -1;
+                }
             }
             int b = k;      //Переполнение.
             for (k = size - 1; k >= 0; --k) { // После оформить в функцию если понадобится.
@@ -658,82 +752,83 @@ int digits_mul(int factor_a[], int factor_b[], int result[], int size)
     return 0;
 }
 
-int digits_add(int add_a[], int add_b[], int result[], int size)
-{                     //Дополнить произвольным основанием системы счисления.
-    if (size < 1)
-        return -1;
-    for (int i = size - 1; i >= 0; --i) {
-        int a = add_a[i] + add_b[i];
-        if (a > 9) {
-            if (i > 0)
-                result[i - 1]++;
-            else
-                return -1;
-        }
-        result[i] = a % 10;
-    }
-    return 0;
-}
-
-int digits_sub(int sub_a[], int sub_b[], int result[], int size)
-{                       //Дополнить произвольным основанием системы счисления.
-    if (size < 1)
-        return -1;
-    for (int i = size - 1; i >= 0; --i) {
-        int a = sub_a[i] - sub_b[i];
-        if (a < 0) {
-            if (i != 0) {
-                result[i - 1]--;        //Подумать для страховки.
-            } else
-                return -1;
-            result[i] = 10 - abs(sub_b[i] - sub_a[i]);
-        } else
-            sub_a[i] = a;
-    }
-    return 0;
-}
-
-int digits_div(int div_a[], int div_b[], int result[], int size, int size_result)
+int digits_extend_size(int data[], int size)
 {
-    int num_2 = 0, num_1 = 0, number = 0;       //Сделать без преобразования в num,
-    //можно создавать доп.массивы
-    int b = 0, i = 0, j = 0, k = 0, tmp = 0, length = 0, counter = 0;
-    for (b = 0; div_b[b] == 0; ++b)          //Напишем вместе, оформить в функцию.
-        ;
-    for (i = size - 1; i >= 0; --i)
-        num_2 += div_b[i] * pow(10,size - i - 1);
-    for (b = 0; div_a[b] == 0; ++b)
-        ;
-    for (i = size - 1; i >= 0; --i)
-        num_1 += div_a[i] * pow(10,size - i - 1);
-    length = size - b;
-    printf("num 1 = %d, num 2 = %d, length = %d, b = %d;\n", num_1, num_2, length, b);
-    for (i = b; i < size; ++i) {
-        //for (j = b; j <= i; ++j)
-        number = number * 10 + div_a[i];
-        //printf("!%d ",number);
-        if (number >= num_2) {
-            for (k = 0, tmp = 0; tmp < number; ++k) {
-                tmp += num_2;
-            }
-            if (tmp != number) {
-                tmp -= num_2;
-                --k;
-            }
-            for (j = 0; k != 0 && j < size_result; ++j, ++ counter) {
-                result[counter] = k / 10;
-                k /= 10;
-            }
-            number -= tmp;
-        }
+    for (int i = 0; i < size * 2; ++i)
+        if (i < size)
+            data[i + size] = data[i];
+        else
+            data[i - size] = 0;
+    return 0;
+}
 
-        if (div_a[i] == 0 && num_1 % tmp == 0) {
-            result[counter] = 0;
-            ++counter;
+int digits_half_size(int data[], int size)
+{
+    for (int i = 0; i < size; ++i)          //Размер чётный.
+        if (i < size / 2)
+            data[i] = data[i + size / 2];
+        else
+            data[i] = 0;
+    return 0;
+}
+//     102|3
+//-     9 |34
+//      12
+//-     12
+//       0
+int digits_div(int div_a[], int div_b[], int result[], int size)
+{       //Деление первого числа на второе и возврат реальный размер результата
+    int i = 0, r = 0, res_size = 0, pos = 0, div_size = 1;
+    int mult[OBJECTS_MAX], subtr[OBJECTS_MAX], diff[OBJECTS_MAX], div[OBJECTS_MAX];
+    printf("div a:\t");
+    array_print(div_a,size,prt_element);
+    printf("\ndiv b:\t");
+    array_print(div_b,size,prt_element);
+    printf("\n");
+    for (i = 0; i < size * 2; ++i)
+        mult[i] = subtr[i] = diff[i] = div[i] = 0;
+    while (pos < size && div_size <= size) {
+        for (i = 0; i < size - 1; ++i)
+            div[i] = div[i + 1];
+        div[size - 1] = div_a[pos + div_size - 1];
+        printf("divided: ");
+        array_print(div, size, prt_element);
+        printf("\n");
+        r = -1;
+        mult[size - 1] = 9; //start with 1
+        while ((r == -1 && mult[size - 1] > 0) && !(div[size - 1] == 0 && div_size == 1)) {
+            r = digits_mul(div_b,mult,subtr,size);
+            printf("\nsubtr(%d):", r);
+            array_print(subtr,size * 2,prt_element);
+            digits_extend_size(div,size);
+            r = digits_sub(div,subtr,diff,size * 2);
+            printf("\ndiff(%d):", r);
+            array_print(diff,size * 2,prt_element);
+            printf("\n");
+            digits_half_size(subtr,size * 2);
+            digits_half_size(div,size * 2);
+            mult[size - 1]--;
+        }
+        if (div_size == 1 && div[size - 1] == 0 && res_size > 0) {
+            result[res_size++] = 0;
+            pos += div_size;
+            printf("\nzero to result\n");
+        } else if (r >= 0 && ++mult[size - 1] > 0) {
+            result[res_size++] = mult[size - 1];
+            for (i = 0; i < size; ++i) {
+                div[i] = diff[i];       //new div = diff.
+                diff[i] = 0;
+            }
+            pos += div_size;
+            div_size = 1;
+            printf("\n");
+        } else {
+            printf("\ncan't divide with multiplier, next digit or exit...\n");
+            div_size++;
         }
     }
-    printf("number = %d, tmp = %d", number, tmp);
-    result[counter] = -1;
+    printf("result: ");
+    array_print(result,res_size,prt_element);
     return 0;
 }
 
@@ -1695,37 +1790,44 @@ void chapter_11()
     for (i = 0; data[i] == 5; ++i)
         ;
     printf("\nquantity: %d\n\n", i);
-    const int d_size = 8;
-    int number_1[] = {9,9,9,9,9,9,9,9};
-    int number_2[] = {9,9,9,9,9,9,9,9};
-    //int number_4[] = {0,0,0,0,0,0,0,0};
-    int number_3[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    printf("11.189, digital calculator for arrays");
+    const int d_size = 4;
+    int number_1[OBJECTS_MAX] = {9,9,9,9};
+    int number_2[OBJECTS_MAX] = {9,9,9,9};
+    int number_3[OBJECTS_MAX] = {0,0,0,0};
+    printf("11.189, digital calculator for arrays(add, sub, multiply, division)\n");
+    for (i = 0; i < OBJECTS_MAX; ++i)
+        if (i >= d_size)
+            number_1[i] = number_2[i] = number_3[i] = 0;
+    /*
+    digits_div(number_1,number_2,number_3, d_size);
+    printf("\nmul_1:\t");
+    array_print(number_1, d_size, prt_element);
+    printf("\nmul_2:\t");
+    array_print(number_2, d_size, prt_element);
+    printf("\n");
+    result = digits_mul(number_1,number_2,number_3,d_size);
+    printf("\nmul(%d):", result);
+    array_print(number_3, d_size * 2, prt_element);
+    printf("\nsub_1:\t");
+    array_print(number_1, d_size, prt_element);
+    printf("\nsub_2:\t");
+    array_print(number_2, d_size, prt_element);
+    result = digits_sub(number_1,number_2,number_1,8);
+    printf("\ndiff(%d):",result);
+    array_print(number_1, d_size, prt_element);
     printf("\nadd 1:\t");
     array_print(number_1, d_size, prt_element);
     printf("\nadd 2:\t");
     array_print(number_2, d_size, prt_element);
     printf("\nsum:\t");
-    digits_add(number_1,number_2,number_1,8);
-    array_print(number_1, d_size, prt_element);
-    printf("\nsub_2:\t");
-    array_print(number_2, d_size, prt_element);
-    digits_sub(number_1,number_2,number_1,8);
-    printf("\ndiff:\t");
-    array_print(number_1, d_size, prt_element);
-    printf("\nmul_2:\t");
-    array_print(number_2, d_size, prt_element);
-    printf("\n");
-    digits_mul(number_1,number_2,number_3,8);
-    printf("mul:\t");
-    array_print(number_3, d_size * 2, prt_element);
+    digits_add(number_1,number_2,number_3,d_size);
+    array_print(number_3, d_size, prt_element);
     printf("\ndiv1:\t");
     array_print(number_1, d_size, prt_element);
     printf("\ndiv2:\t");
     array_print(number_2, d_size, prt_element);
     printf("\nprivat:\t\n");
     a = 123545;
-    return;
     printf("\n11.191, search uniq. digits in number %d\n", a);
     int array_digit[6];
     int uniq_array_digit[6];
@@ -1733,6 +1835,7 @@ void chapter_11()
     array_print(array_digit,6,prt_element | prt_indexes);
     result = array_unique_elements(array_digit,6,uniq_array_digit);
     printf("\nresult = %d\n\n", result);
+    */
     printf("*11,193, 2^100 digits: ");
     printf("\nMethod #1: factorization of size int, 2^100 = 2^25 * 2^25 * 2^25 * 2^25(in binary);\n");
     for (i = 0; i < 4; ++i) {
@@ -1769,9 +1872,9 @@ void chapter_11()
     int n_digits = 32, carry = 0, g = 0;
     num_a[n_digits - 1] = 1;
     num_a[n_digits - 2] = 0;
-    num_b[n_digits - 1] = 2;
-    num_b[n_digits - 2] = 3;
-    for (i = 0; i < OBJECTS_MAX; ++i) {
+    num_b[n_digits - 1] = 2;    //a + b = a + 1 + 1... + b times
+    num_b[n_digits - 2] = 3;    //a * b = a + a... + b times
+    for (i = 0; i < OBJECTS_MAX; ++i) { // a ^ b = a * a * a... * b times
         if (i < n_digits - 2)
             num_a[i] = num_b[i] = 0;
         num_r[i] = num_s[i] = 0;
@@ -1790,7 +1893,7 @@ void chapter_11()
             for (k = n_digits - 1; k >= 0 || carry > 0; --k) {
                 num_s[k] = (num_a[k] * num_b[j] + carry) % 10;
                 carry = (num_a[k] * num_b[j] + carry) / 10;
-                //printf("n_a = %d, n_b = %d, n_s = %d, carry = %d;\n", num_a[k], num_b[j], num_s[k], carry);
+                printf("n_a = %d, n_b = %d, n_s = %d, carry = %d;\n", num_a[k], num_b[j], num_s[k], carry);
             }
             for (g = n_digits - 1, b = j; g != k; --g, --b) {
                 int digit = num_r[b] + num_s[g];
@@ -1808,6 +1911,7 @@ void chapter_11()
     array_print(num_a,n_digits,prt_element);
     printf("\n%s", asctime(gmtime(&t1)));
     printf("\n%s", asctime(gmtime(&t2)));
+    return;
     /*
     int numerator[] = {0,0,0,0,1,0,2,4};
     int denominator[] = {0,0,0,0,0,5,1,2};

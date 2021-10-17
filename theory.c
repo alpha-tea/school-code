@@ -1,4 +1,7 @@
-﻿//Разбираем теорию С.Прато.
+﻿#include "global.h"
+#include "library.h"
+
+//Разбираем теорию С.Прато.
 #include <stdio.h>
 #define DATA_SIZE 3
 void theory_10_1(int data[], int n)
@@ -54,10 +57,10 @@ void theory_10(void)
     printf("Array and addreses:\nTheory part 10;\n");
     //const int data_size = 3;
     //int data[data_size];
-    int var_array[sizeof (short) * 5];
+    //int var_array[sizeof (short) * 5];
     int data[DATA_SIZE] = {1, 2, 3};
     printf("data array of integers, elements = %d, size in memory = %u;\n", DATA_SIZE, sizeof (data));
-    const char* colors[] = {"red", "yellow", "green"};
+    //const char* colors[] = {"red", "yellow", "green"};
     //colors[0][1] = 'a'; - error
     short short_arr[] = {1, [2] = 5};
     printf("Partly defined array: ");
@@ -125,7 +128,33 @@ void theory_10(void)
     theory_10_1((int[3]){1,2,3},3);
 }
 
-
+void theory_bonus()
+{
+    static char a = 'a';
+    static short b = 500;
+    static int c = 128;
+    a = b;
+    printf("a = %d(%p), b = %c(%p), c = %c(%p);\n", a, &a, b, &b, c, &c);
+    int a1 = -14, b2 = 17;
+    printf("%d / 5 = %d, %d / 5 remain %d;\n", a1, a1 / 5, a1, a1 % 5);
+    printf("%d / 5 = %d, %d / 5 remain %d;\n", b2, b2 / 5, b2, b2 % 5);
+    printf("%.2f to int = %d, %.2f to int = %d", -2.9, (int)(-2.9), 2.9, (int)2.9);
+    char string[OBJECTS_MAX] = "8-Bit Tea Party!";
+    char key = '6';
+    printf("\nsource text: ");
+    for (int i = 0; i < 16; ++i)
+        printf("%c",string[i]);
+    printf("\nresult: ");
+    for (int i = 0; i < 16; ++i) {
+        string[i] ^= key;
+        printf("%c",string[i]);
+    }
+    printf("\ndecript: ");
+    for (int i = 0; i < 16; ++i) {
+        string[i] ^= key;
+        printf("%c",string[i]);
+    }
+}
 
 
 

@@ -1,5 +1,9 @@
 ﻿#include <stdio.h>
-
+#include <stdlib.h>
+#include <math.h>
+#include <ctype.h>
+#include <float.h>
+#include <limits.h>
 #define IN 1 /* внутри слова */
 #define OUT 0 /* снаружи слова */
 #define MAXLINE 1000
@@ -307,4 +311,203 @@ void KernighanRitchie_1()
             printf("%c", line[i]);
         printf("\n");
     }
+}
+
+int htoi(char s[])
+{
+    int i = 0, j = 0, result = 0;
+    for (i = 0; s[i] != '\0' && s[j] != '\0';) {
+        for (j = i; s[j] != '0' && s[j] != '\0'; ++j)
+            ;
+        if (s[++j] == 'x' || s[++j] == 'X')
+            break;
+        else
+            i = j;
+    }
+    for (i = j; s[i + 1] != '\0'; ++i)
+        ;
+    int length = i;
+    while (i > j) {
+        if (s[i] >= '0' && s[i] <= '9')
+            result += (s[i] - '0') * pow(16,length - i);
+        else if (s[i] >= 'A' && s[i] <= 'F')
+            result += (s[i] - 'A' + 10) * pow(16,length - i);
+        else
+            break;
+        --i;
+    }
+    return result;
+}
+
+void squeeze(char s1[], char s2[])
+{
+    int i = 0, counter = 0, j = 0;
+    for (i = 0; s1[i] != '\0'; ++i) {
+        for (j = 0; s2[j] != '\0' && s2[j] != s1[i]; ++j)
+            ;
+        if (s2[j] == '\0')
+            s1[counter++] = s1[i];
+    }
+    s1[counter] = '\0';
+}
+
+int any(char s1[], char s2[])
+{
+    int i = 0, j = 0;
+    for (i = 0; s1[i] != '\0'; ++i) {
+        for (j = 0; s2[j] != '\0' && s2[j] != s1[i]; ++j)
+            ;
+        if (s2[j] != '\0')
+            return i;
+    }
+    return -1;
+}
+
+void print_byte(unsigned char byte)
+{
+    for (int i = 0; i < CHAR_BIT; ++i)
+        printf("%d", (byte & (0x80 >> i)) >> (CHAR_BIT - i - 1));
+}
+
+int set_bits(unsigned char x, unsigned char p, unsigned char n, unsigned char y)
+{
+    unsigned char mask = 0x00;
+    for (int i = 0; i < n; ++i)
+        mask = (mask << 0x01) | 0x01;
+    printf("set right bits from y = %x, to left x = %x, pos = %d, counter = %d;\n", y, x, p, n);
+    printf("x:\t\t");
+    print_byte(x);
+    printf("\ny:\t\t");
+    print_byte(y);
+    printf("\nmask for y:\t");
+    print_byte(mask);
+    y = y & mask;
+    printf("\ny with mask:\t");
+    print_byte(y);
+    y = y << (p - n + 1);
+    printf("\ny shift left:\t");
+    print_byte(y);
+    mask = mask << (p - n + 1);
+    printf("\nmask shift left:");
+    print_byte(mask);
+    mask = ~mask;
+    printf("\nmask for x:\t");
+    print_byte(mask);
+    x = x & mask;
+    printf("\nx & mask:\t");
+    print_byte(x);
+    x = x | y;
+    printf("\nx | y:\t\t");
+    print_byte(x);
+    return x;
+}
+
+int invert_bits(unsigned char x, unsigned char p, unsigned char n)
+{
+    unsigned char mask = 0x00;
+    for (int i = 0; i < n; ++i)
+        mask = (mask << 0x01) | 0x01;
+    printf("invert right bits of x = %X, pos = %d, counter = %d;\n", x, p, n);
+    printf("x:\t\t");
+    print_byte(x);
+    printf("\nmask for x:\t");
+    print_byte(mask);
+    mask = mask << (p - n + 1);
+    printf("\nmask shift left:");
+    print_byte(mask);
+    x = x ^ mask;
+    printf("\nx ^ mask:\t");
+    print_byte(x);
+    return x;
+}
+
+int rightrot(unsigned char x, unsigned char n)
+{
+    printf("rrl bits of x = %X, counter = %d;\n", x, n);
+    printf("x:\t\t");
+    print_byte(x);
+    for (int i = 0; i < n; ++i) {
+        unsigned char mask = 0x01;
+        mask = x & mask;
+        mask <<= CHAR_BIT - 1;
+        x >>= 1;
+        x |= mask;
+    }
+    printf("\nres:\t\t");
+    print_byte(x);
+    return x;
+}
+
+void KernighanRitchie_2()
+{
+    printf("INT:\n");
+    printf(" max:\n");
+    printf("  signed = %d;\n", INT_MAX);
+    printf("  unsigned = %u;\n", UINT_MAX);
+    printf(" min:\n");
+    printf("  signed = %d;\n", INT_MIN);
+    printf("  unsigned = 0;\n\n");
+    printf("SHORT:\n");
+    printf(" max:\n");
+    printf("  signed = %d;\n", SHRT_MAX);
+    printf("  unsigned = %u;\n", USHRT_MAX);
+    printf(" min:\n");
+    printf("  signed = %d;\n", SHRT_MIN);
+    printf("  unsigned = 0;\n\n");
+    printf("CHAR:\n");
+    printf(" max:\n");
+    printf("  signed = %d;\n", CHAR_MAX);
+    printf("  unsigned = %u;\n", UCHAR_MAX);
+    printf(" min:\n");
+    printf("  signed = %d;\n", CHAR_MIN);
+    printf("  unsigned = 0;\n\n");
+    printf("LONG:\n");
+    printf(" max:\n");
+    printf("  signed = %ld;\n", LONG_MAX);
+    printf("  unsigned = %lu;\n", ULONG_MAX);
+    printf(" min:\n");
+    printf("  signed = %ld;\n", LONG_MIN);
+    printf("  unsigned = 0;\n\n");
+    printf("FLOAT:\n");
+    printf(" max: = %e\n", FLT_MAX);
+    printf(" min: = %e\n\n", FLT_MIN);
+    printf("DOUBLE:\n");
+    printf(" max: = %e\n", DBL_MAX);
+    printf(" min: = %e\n\n", DBL_MIN);
+    printf("2.2;\n");
+    //for (i=0; i<lim-l && (c=getchar()) != '\n' && с != EOF; ++i)
+    //s[i] = c;
+    int i = 0, lim = MAXLINE, l = 10, c = 0;
+    char s[MAXLINE];
+    /*
+    for (i = 0; i < lim - l; ++i) {
+        if ((c = getchar()) == '\n')
+            break;
+        else if (c == EOF)
+            break;
+        s[i] = c;
+    }
+    if (i != 0)
+       printf("%s",s);
+    */
+    printf("\n\n2.3\n");
+    char str_1[] = "  0xA12BC5D";
+    int result = htoi(str_1);
+    printf("%d\n\n",result);
+    printf("2.4\n");
+    char str_2[] = "h53Rdx38K-joBnifMMt O21TceSfa wVPLkaQrtyqcS!3";
+    char str_3[] = "QkLVwfSc12OMn ojK3xdqR5h";
+    squeeze(str_2,str_3);
+    printf("%s\n\n",str_2);
+    printf("2.5\n");
+    char str_4[] = "12345";
+    char str_5[] = "4";
+    result = any(str_4,str_5);
+    printf("result = %d;\n\n",result);
+    printf("2.6\n");
+    set_bits(42,5,3,~42);
+    printf("\n\n2.7;\n");
+    invert_bits(0xAA,7,8);
+    printf("\n\n2.8;\n");
+    rightrot(28,4);
 }
