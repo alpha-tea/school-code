@@ -181,5 +181,5 @@ void hack_the_terminal(int length, int quantity, int attempts);
 // Керниган и Ритчи.
 void KernighanRitchie_1();
 void KernighanRitchie_2();
-
+void KernighanRitchie_3();
 #endif      // global.h

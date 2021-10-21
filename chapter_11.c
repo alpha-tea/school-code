@@ -1827,7 +1827,8 @@ void chapter_11()
     printf("\ndiv2:\t");
     array_print(number_2, d_size, prt_element);
     printf("\nprivat:\t\n");
-    a = 123545;
+    */
+    a = 123;
     printf("\n11.191, search uniq. digits in number %d\n", a);
     int array_digit[6];
     int uniq_array_digit[6];
@@ -1835,7 +1836,6 @@ void chapter_11()
     array_print(array_digit,6,prt_element | prt_indexes);
     result = array_unique_elements(array_digit,6,uniq_array_digit);
     printf("\nresult = %d\n\n", result);
-    */
     printf("*11,193, 2^100 digits: ");
     printf("\nMethod #1: factorization of size int, 2^100 = 2^25 * 2^25 * 2^25 * 2^25(in binary);\n");
     for (i = 0; i < 4; ++i) {
@@ -1888,12 +1888,12 @@ void chapter_11()
     array_print(num_s,n_digits,prt_element);
     printf("\n");
     time_t t1 = time(NULL);
-    for (i = 0; i < 20; ++i) { //main cycle.
+    for (i = 0; i < 1; ++i) { //main cycle.
         for (j = n_digits - 1, carry = 0; j >= 0; --j) {
             for (k = n_digits - 1; k >= 0 || carry > 0; --k) {
                 num_s[k] = (num_a[k] * num_b[j] + carry) % 10;
                 carry = (num_a[k] * num_b[j] + carry) / 10;
-                printf("n_a = %d, n_b = %d, n_s = %d, carry = %d;\n", num_a[k], num_b[j], num_s[k], carry);
+                //printf("n_a = %d, n_b = %d, n_s = %d, carry = %d;\n", num_a[k], num_b[j], num_s[k], carry);
             }
             for (g = n_digits - 1, b = j; g != k; --g, --b) {
                 int digit = num_r[b] + num_s[g];
@@ -1911,22 +1911,21 @@ void chapter_11()
     array_print(num_a,n_digits,prt_element);
     printf("\n%s", asctime(gmtime(&t1)));
     printf("\n%s", asctime(gmtime(&t2)));
-    return;
-    /*
-    int numerator[] = {0,0,0,0,1,0,2,4};
-    int denominator[] = {0,0,0,0,0,5,1,2};
-    int result_array[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    digits_div(numerator,denominator,result_array,8, 16);
+    printf("11.199-11.200, all elements less than 5;\n");
+    for (i = 0; i < 5; ++i)     //find code or do fast variant.
+        printf("%d ",i);
     printf("\n");
-    array_print(result_array,16,prt_element);
-    */
+    for (; i < 10; ++i)
+        printf("%d ",i);
     printf("\n\n11.210 - 11.212, func fir check sequence;\n");
     quantity = 15;
     array_create_sequence(data,0,quantity,1,0b00000010,OBJECTS_MAX);
-    array_print(data,quantity,prt_element);
+    data[quantity] = 1;
+    array_print(data,quantity,prt_element); //Переофромить в виде одной функции array_order();
     printf("\nis ascending:\t%d\n", array_is_ascending(data,quantity));
     printf("is descending:\t%d\n", array_is_descending(data,quantity));
     printf("is equals:\t%d\n", array_is_equal(data,quantity));
+    //many arrays
     printf("\n11.214, costs of goods in first and second months;\n");
     int data_1[OBJECTS_MAX] = {1,2,3,4,5}, data_2[OBJECTS_MAX] = {5,4,3,2,1}, data_result[OBJECTS_MAX];
     printf("1)");
@@ -1959,13 +1958,14 @@ void chapter_11()
     printf("\n11.219, search 10 motores with 80 hourse power;\n");
     int car_cost[] = {100,500,230,125,549};
     int car_power[] = {100,70,130,125,49};
-    result = array_find_if(car_power,data_result,80,5,chk_less);
     printf("cars cost: ");
     array_print(car_cost, 5, prt_element);
     printf("\ncars power: ");
     array_print(car_power, 5, prt_element);
-    printf("\nresult: ");
-    array_print(data_result, result, prt_element);
+    printf("\n");
+    for (i = 0; i < 5; ++i)
+        if (car_power[i] < 80)
+            printf("%d(%d) ", car_cost[i], i);
     printf("\n\n11.223, football, goals and loses;\nPlus: ");
     int s_plus[5] = {1,4,3,5,2};  //Забитые.
     int s_minus[5] = {4,5,2,1,2}; //Пропущенные.
@@ -1996,7 +1996,7 @@ void chapter_11()
     summ += result;
     printf("\nd) %d - draws;\n", result);
     printf("e) %d - scores;\n\n", summ);
-    printf("11,232, distants and time, speed: \n");
+    printf("11.232, distants and time, speed: \n");
     int dist[] = {80,72,108,94,96};
     int timer[] = {2,1,3,2,2};
     int speed[5];
@@ -2016,45 +2016,47 @@ void chapter_11()
     }
     printf("Min size = %d;\n\n", min);
     printf("11.235, copying array elements in different order;\nsource: \n");
-    int mass_1[] = {0,1,2,3,4};
-    int mass_2[5];
-    array_print(mass_1,5,prt_element);
-    printf("\n");
-    array_create_input(mass_2,mass_1,1,0,5);
-    printf("\n");
-    array_print(mass_2,5,prt_element);
-    array_create_input(mass_2,mass_1,0,0,5);
-    printf("\n");
-    array_print(mass_2,5,prt_element);
+    int mass_1[OBJECTS_MAX] = {0,1,2,3,4};
+    int mass_2[OBJECTS_MAX];
+    quantity = 5;
+    array_print(mass_1,quantity,prt_element);
+    array_create_input(mass_2,mass_1,1,0,quantity);
+    printf("\nforward direction: ");
+    array_print(mass_2,quantity,prt_element);
+    array_create_input(mass_2,mass_1,0,0,quantity);
+    printf("\nbackward direction: ");
+    array_print(mass_2,quantity,prt_element);
     printf("\n\n11.236, copying array elements according to the rules;\nsource: \n");
-    array_print(mass_1,5,prt_element);
+    quantity = 5;
+    array_print(mass_1,quantity,prt_element);
     printf("\n");
-    for (i = 0; i < 5; ++i)
-        if (mass_1[i] % 2 == 0)
+    for (i = 0; i < quantity; ++i)
+        if (i % 2 == 0)
             mass_2[i] = pow(mass_1[i],2);
         else
             mass_2[i] = 2 * mass_1[i];
-    array_print(mass_2,5,prt_element);
+    array_print(mass_2,quantity,prt_element);
     printf("\n\n11.239, copying array elements according to the rules;\nsource: \n");
     array_print(mass_2,5,prt_element);
     printf("\n");
-    for (i = 0; i < 5; ++i)
+    for (i = 0; i < quantity; ++i)
         if (mass_2[i] % 2 == 0)
             mass_2[i] = mass_2[i] * 2;
-    array_print(mass_2,5,prt_element);
+    array_print(mass_2,quantity,prt_element);
     printf("\n\n11.242, copying array elements according to the rules;\nsource: \n");
-    array_print(mass_1,5,prt_element);
+    array_print(mass_1,quantity,prt_element);
     printf("\n");
-    for (i = 0; i < 5; ++i)
+    for (i = 0; i < quantity; ++i)
         if (mass_1[i] % 2 != 0)
             mass_2[i] = mass_1[i];
-    array_print(mass_2,5,prt_element);
+        else
+            mass_2[i] = 0;
+    array_print(mass_2,quantity,prt_element);
     printf("\n");
-    counter = 0;
-    for (i = 0; i < 5; ++i)
+    for (i = 0, j = 0; i < quantity; ++i)
         if (mass_1[i] % 2 != 0)
-            mass_2[counter++] = mass_1[i];
-    array_print(mass_2,5,prt_element);
+            mass_2[j++] = mass_1[i];
+    array_print(mass_2,j,prt_element);
     printf("\n\n11.245, first negative then positive;\nsource: \n");
     quantity = 10;
     srand(time(NULL));

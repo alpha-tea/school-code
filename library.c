@@ -166,7 +166,7 @@ int array_rotate_range(int data[], int size, int start, int length, int direct)
 }
 
 int number_to_digits(int number, int data[], int size)
-{           // Преобразование числа в масив цифры, знак не учитывается.
+{           // Преобразование числа в масив цифр, знак не учитывается.
     if (size < 1) {
         printf("error: int size or number;\n");
         return -1;
