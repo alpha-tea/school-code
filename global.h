@@ -10,11 +10,16 @@
 #include <time.h>
 
 
-// Глобальные константы (define) для всего проэкта.
+// Глобальные константы (define) для всего проeкта.
 #define STRING_MAX 256
 #define OBJECTS_MAX 256
 #define BYTE_NUMS 256   // Пока только в 9 главе. Кол - во чисел в байте.
 #define WORD_BITS 16
+
+// Керниган и Ритчи.
+void KernighanRitchie_1();
+void KernighanRitchie_2();
+void KernighanRitchie_3();
 
 // Функции и константы для первой главы задачника.
 
@@ -169,8 +174,14 @@ void chapter_10();
 // Функции и константы для одиннадцатой главы задачника.
 
 void chapter_11();
+
+// Функции и константы для одиннадцатой главы задачника.
+
+void chapter_12();
+
 // Функции и константы для дополнительных задач.
 void rotate_test();
+int uniq_gen_fast_alt_1(int number[], int start, int limit);
 int uniq_gen_fast_alt(int number[], int length, int limit);
 int uniq_gen_fast(int number[], int length, int limit);
 int uniq_gen_fast_symbols(char string[], int length);
@@ -178,8 +189,4 @@ int bits_counter(int value);
 void bulls_and_cows();
 void hack_the_terminal(int length, int quantity, int attempts);
 
-// Керниган и Ритчи.
-void KernighanRitchie_1();
-void KernighanRitchie_2();
-void KernighanRitchie_3();
 #endif      // global.h

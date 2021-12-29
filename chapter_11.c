@@ -128,7 +128,7 @@ int array_check_element(int data[], int offset, int parameter, enum array_check_
 
 int array_information(int data[], int size, enum array_inf_val ret)
 {               // Функция для целочисленного массива, но платформозависимая.
-    // Коректно работает при сборке под 32 бита, иначе информация может быть искажена.
+    // Корректно работает при сборке под 32 бита, иначе информация может быть искажена.
     if (!size) {
         printf("array empty, nothing to do.");
         return -1;

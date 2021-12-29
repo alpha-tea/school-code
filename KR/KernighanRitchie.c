@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <ctype.h>
 #include <float.h>
@@ -438,6 +439,19 @@ int rightrot(unsigned char x, unsigned char n)
     return x;
 }
 
+int bitcount(unsigned x)
+{
+    int b;
+    for (b = 0; x != 0; x &= (x - 1))
+        b++;
+    return b;
+}
+
+int lower_spec(int c)
+{
+    return (c >= 'A' && c <= 'Z') ? (c + 'a' - 'A' ): (c);
+}
+
 void KernighanRitchie_2()
 {
     printf("INT:\n");
@@ -479,7 +493,6 @@ void KernighanRitchie_2()
     //s[i] = c;
     int i = 0, lim = MAXLINE, l = 10, c = 0;
     char s[MAXLINE];
-    /*
     for (i = 0; i < lim - l; ++i) {
         if ((c = getchar()) == '\n')
             break;
@@ -489,7 +502,6 @@ void KernighanRitchie_2()
     }
     if (i != 0)
        printf("%s",s);
-    */
     printf("\n\n2.3\n");
     char str_1[] = "  0xA12BC5D";
     int result = htoi(str_1);
@@ -510,4 +522,173 @@ void KernighanRitchie_2()
     invert_bits(0xAA,7,8);
     printf("\n\n2.8;\n");
     rightrot(28,4);
+    printf("\n\n2.9\n");
+    result = 123;
+    print_byte(result);
+    printf("\n%d",bitcount(result));
+    printf("\n\n2.10\n");
+    printf("%c",lower_spec('A'));
+}
+
+int binsearch(int x, int v[], int n)
+{
+    int low, high, mid;
+    low = 0;
+    high = n - 1;
+    mid = (low + high) / 2;
+    while (low <= high && x != v[mid]) {
+        if (x < v[mid])
+            high = mid - 1;
+        else
+            low = mid + 1 ;
+        mid = (low + high) / 2;
+    }
+    if (x == v[mid])
+        return mid;
+    else
+        return 0;
+}
+
+void escape(char s[], char t[])
+{
+    int i = 0, j = 0;
+    for (i = 0, j = 0; s[i] != '\0'; ++i) {
+        switch (s[i]) {
+        case '\n':
+            t[j++] = '\\';
+            t[j++] = 'n';
+            break;
+        case '\t':
+            t[j++] = '\\';
+            t[j++] = 't';
+            break;
+        default:
+            t[j++] = s[i];
+        }
+    }
+    t[j] = '\0';
+}
+
+void unescape(char s[], char t[])
+{
+    int i = 0, j = 0;
+    for (i = 0, j = 0; s[i] != '\0'; ++i) {
+        switch (s[i]) {
+        case '\\':
+            if (s[i + 1] == 'n')
+                t[j++] = '\n';
+            if (s[i + 1] == 't')
+                t[j++] = '\t';
+            break;
+        default:
+            t[j++] = s[i];
+        }
+    }
+    t[j] = '\0';
+}
+
+void reverse(char s[])
+{
+    int c, i, j;
+    for (i = 0, j = strlen(s)-1; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+void itoa_spec(int n, char s[])
+{
+    int i = 0, sign = n;
+    do
+        s[i++] = abs(n % 10) + '0';
+    while (n /= 10);
+    if (sign < 0)
+        s[i++] = '-';
+    s[i] = '\0';
+    reverse(s);
+}
+
+void expand(char s1[], char s2[])
+{
+    int i = 0, j = 0, counter = 0, start = 0;
+    char allowed[] = {"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"};
+    for (i = 1; s1[i + 1] != '\0'; ++i)
+        if (s1[i] == '-') {
+            start = s1[i - 1];
+            for (j = 0; allowed[j] != '\0' && start != allowed[j]; ++j)
+                ;
+            if (allowed[j] != '\0') {
+                if (s1[i - 2] == '-' && (i - 2) < 0)
+                    start = allowed[j + 1];
+                for (j = 0; allowed[j] != '\0' && start != allowed[j]; ++j)
+                    ;
+                if (j != '\0' && s1[i + 1] != '\0') {
+                    for (j = start; j <= s1[i + 1]; ++j, ++counter)
+                        s2[counter] = j;
+                }
+            }
+            ++i;
+        }
+    s2[counter] = '\0';
+}
+
+void itob(int n, char s[], int b)
+{
+    char string[] = {"0123456789ABCDEF"};
+    int i = 0;
+    if (b < 2 || b > 16)
+        return;
+    for (i = 0; n > 0; ++i) {
+        s[i] = string[n % b];
+        n /= b;
+    }
+    s[i] = '\0';
+    reverse(s);
+}
+
+void itoa_alt(int n, char s[], int min_length)
+{
+    int i = 0, sign = n;
+    do {
+        s[i++] = abs(n % 10) + '0';
+        if (i > min_length)
+            break;
+    } while (n /= 10);
+    if (sign < 0)
+        s[i++] = '-';
+    for (; i < min_length; ++i)
+        s[i] = ' ';
+    s[i] = '\0';
+    reverse(s);
+}
+
+void KernighanRitchie_3()
+{
+    printf("3.1\n");
+    int array[] = {1,2,3,4,5,6,7,8,9};
+    int x = 3;
+    int result = binsearch(x,array,9);
+    printf("result = %d;\n\n", result);
+    printf("3.2;\n");
+    char string[] = {"Hello\t, world!"};
+    char string_1[256];
+    printf("Source: %s\n",string);
+    escape(string,string_1);
+    printf("%s\n",string_1);
+    unescape(string,string_1);
+    printf("%s\n\n",string_1);
+    printf("3.3\n");
+    char string_2[] = {"-A-a-z"};
+    expand(string_2,string);
+    printf("%s\n\n",string);
+    printf("3.4;\n");
+    itoa_spec(INT_MIN,string);
+    printf("%s",string);
+    printf("\n\n3.5\n");
+    itob(41234132,string,11);
+    printf("%s",string);
+    printf("\n\n3.6\n");
+    itoa_alt(41234132,string,11);
+    printf("%s",string);
 }

@@ -1,6 +1,24 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int uniq_gen_fast_alt_1(int number[], int start, int limit)
+{
+    const int num_max = limit;
+    if (limit < 1)
+        return -1;
+    for (int i = 0; i < limit; ++i)
+        number[i] = start + i;
+    int tmp = 0, idx_1 = 0 , idx_2 = 0;
+    for (int i = 0; i < limit * limit; ++i) {
+        idx_1 = rand() % num_max;
+        idx_2 = rand() % num_max;
+        tmp = number[idx_1];
+        number[idx_1] = number[idx_2];
+        number[idx_2] = tmp;
+    }
+    return 0;
+}
+
 int uniq_gen_fast_alt(int number[], int length, int limit)
 {
     const int num_max = limit;
@@ -154,10 +172,92 @@ void hack_the_terminal(int length, int quantity, int attempts)
                 div--;
             }
         }
-
     }
     printf("Variants likeness: \n");
     for (int i = 0; i < quantity; ++i)
         printf("%d ", likeness_idx[i]);
     return;
+}
+
+int stalker_evaluation_function(int properties[])
+{
+    const int properties_quantity = 14;
+    double properties_point[14] = {16,32,120,4.7,8,80.1,50,32,50,32,32,32,28,0.01};
+    if (properties[0] < 0)
+        return INT_MIN;
+    double points = 0;
+    for (int i = 0; i < properties_quantity; ++i)
+        points += properties[i] * properties_point[i];
+    return (int)(points);
+}
+
+void stalker_best_combination_of_artifacts()
+{
+    const int artifacts_quantity = 15;
+    const int properties_quantity = 14;
+    const char* artifacts[15] = {"Пружина","Вспышка","Глаз Ворона","Душа","Выверт","Слизь","Слизняк","Кровь камня",
+                                 "Каменный цветок","Дикобраз","Капля","Морской ёж","Колючка","Ломоть мяса","Медуза"};
+    const int artifacts_properties[15][14] =
+    {{0,0,0,0,0,0,0,0,10,0,0,0,0,0},{0,-10,0,0,0,6,0,0,0,-10,0,0,0,0},{-10,0,-7,0,0,0,0,0,0,15,20,10,-10,0},
+     {10,10,0,0,60,0,-7,0,-7,0,0,0,0,0},{-3,0,0,0,0,0,2,0,2,0,0,0,0,0},{0,0,0,67,0,0,0,0,0,0,-20,-10,0,0},
+     {0,0,0,133,0,0,0,0,0,0,-10,-10,0,0},{3,3,0,0,20,0,-3,0,-3,0,0,0,0,0},{-5,0,4,0,0,0,0,0,0,0,0,0,0,0},
+     {40,0,0,0,0,-2,0,0,0,0,0,0,0,0},{5,0,0,0,0,-7,0,0,0,0,0,0,0,0},{20,0,0,-100,0,0,0,0,0,0,0,0,0,0},
+     {5,0,0,-100,0,0,0,0,0,0,0,0,0,0},{5,5,0,0,40,0,-5,0,-5,0,0,0,0,0},{0,-3,2,0,0,0,0,0,0,0,0,0,0,0}};
+    int artifacts_counter[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int properties[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    char* properties_name[14] = {"Вывод радиации","Радиация","Пулестойкость","Кровотечение","Здоровье","Выносливость",
+                                 "Разрыв", "Взрыв","Удар","Электрошок","Ожог","Химический ожог","Телепатия","Сытость"};
+    int i = 0, j = 0, k = 0, tmp = 0, properties_max;
+    int a_c[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int a_p[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    for (i = 0; i < artifacts_quantity; ++i) {
+        printf("%s: ", artifacts[i]);
+        scanf("%d",&artifacts_counter[i]);
+        printf("\n");
+    }
+    // 0 0 0 - no artifacts.
+    // 1 0 1 - raven and spring.
+
+    for (i = 0; i < artifacts_quantity; ++i)
+        for (j = 0; j < artifacts_counter[i]; ++j)
+            for (k = 0; k < properties_quantity; ++k)
+                properties[k] += artifacts_properties[i][k];
+    for (int i = 0; i < 14; ++i)
+        printf("%d ",properties[i]);
+    properties_max = stalker_evaluation_function(properties);
+    printf("%d ",properties_max);
+    for (a_c[0] = 0; a_c[0] <= artifacts_counter[0]; ++a_c[0])      //представить наличие или отсутствие артефакта в двочном виде.
+        for (a_c[1] = 0; a_c[1] <= artifacts_counter[1]; ++a_c[1])
+            for (a_c[2] = 0; a_c[2] <= artifacts_counter[2]; ++a_c[2])
+                for (a_c[3] = 0; a_c[3] <= artifacts_counter[3]; ++a_c[3])
+                    for (a_c[4] = 0; a_c[4] <= artifacts_counter[4]; ++a_c[4])
+                        for (a_c[5] = 0; a_c[5] <= artifacts_counter[5]; ++a_c[5])
+                            for (a_c[6] = 0; a_c[6] <= artifacts_counter[6]; ++a_c[6])
+                                for (a_c[7] = 0; a_c[7] <= artifacts_counter[7]; ++a_c[7])
+                                    for (a_c[8] = 0; a_c[8] <= artifacts_counter[8]; ++a_c[8])
+                                        for (a_c[9] = 0; a_c[9] <= artifacts_counter[9]; ++a_c[9])
+                                            for (a_c[10] = 0; a_c[10] <= artifacts_counter[10]; ++a_c[10])
+                                                for (a_c[11] = 0; a_c[11] <= artifacts_counter[11]; ++a_c[11])
+                                                    for (a_c[12] = 0; a_c[12] <= artifacts_counter[12]; ++a_c[12])
+                                                        for (a_c[13] = 0; a_c[13] <= artifacts_counter[13]; ++a_c[13])
+                                                            for (a_c[14] = 0; a_c[14] <= artifacts_counter[14]; ++a_c[14]) {
+                                                                for (i = 0; i < artifacts_quantity; ++i)
+                                                                    for (j = 0; j < a_c[i]; ++j)
+                                                                        for (k = 0; k < properties_quantity; ++k)
+                                                                            a_p[k] += artifacts_properties[i][k];
+                                                                tmp = stalker_evaluation_function(a_p);
+                                                                if (tmp > properties_max) {
+                                                                    properties_max = tmp;
+                                                                    printf("\n");
+                                                                    for (int i = 0; i < 15; ++i)
+                                                                        printf("%d ",a_c[i]);
+                                                                    printf(" | %d",tmp);
+                                                                    printf("\n");
+                                                                    for (int i = 0; i < 14; ++i)
+                                                                        printf("%d ",a_p[i]);
+                                                                }
+                                                                for (i = 0; i < 14; ++i)
+                                                                    a_p[i] = 0;
+                                                            }
+
 }
