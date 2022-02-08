@@ -4,26 +4,19 @@
 enum array_inf_val {inf_info, inf_addr, inf_mem_size, inf_elements, inf_positiv, inf_negativ,
                     inf_zeros, inf_evens, inf_odds, inf_avarage_a, inf_avarage_g, inf_prim,
                     inf_sum, inf_mult, inf_var_sum, inf_sqr_sum, inf_end};
-
 enum array_check_type {chk_info, chk_more, chk_less, chk_equal, chk_div, chk_sqrt,
                        chk_sign, chk_parity, chk_idx_odd, chk_idx_even, chk_end};
-
 enum array_action_type {act_info, act_mov, act_add, act_sub, act_mult, act_div, act_abs, act_sqrt, act_end};
-
 enum array_xchg_type {xchg_forward, xchg_backward, xchg_even_odd};
-
-//static const char* array_xchg_name[] = {"forward", "backward", "even-odd"};
-
-static const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
-
-static const char* array_check_name[] = {"info", "is more than", "is less than", "is equal", "is devided by",
+enum array_print_mode {prt_nope = 0x00, prt_element = 0x01, prt_indexes = 0x02, prt_chars = 0x04};
+const char* array_action_name[] = {"info", "mov", "add", "sub", "mult", "div", "abs", "sqrt"};
+const char* array_check_name[] = {"info", "is more than", "is less than", "is equal", "is devided by",
                                          "is sqrt of", "sign", "parity", "index odd", "index even"};
-static const char* array_info_names[] = { "Array information, 32-bit compile with integers other may be incorrect.", "Address of array", "Size in memory, bytes",
+const char* array_info_names[] = { "Array information, 32-bit compile with integers other may be incorrect.", "Address of array", "Size in memory, bytes",
                                           "Elements in array", "Positive numbers", "Negative numbers", "Zeros numbers", "Even numbers", "Odd numbers", "Avarage ariphmetic",
                                           "Avarage geometric", "Primary numbers", "Sum of all elements", "Multiply of all elements", "Variable sum, all elements", "Reverse sum" };
-
-static char comm_chk_name[] = "IMLEDRSP";
-static char comm_act_name[] = "IMASUDBR";
+char comm_chk_name[] = "IMLEDRSP";
+char comm_act_name[] = "IMASUDBR";
 
 int array_modify_element(int data[], int offset, enum array_action_type type, int parameter, int limit)
 {
@@ -179,8 +172,6 @@ int array_information(int data[], int size, enum array_inf_val ret)
     } else
         return data_int[ret];
 }
-
-enum array_print_mode {prt_nope = 0x00, prt_element = 0x01, prt_indexes = 0x02, prt_chars = 0x04};
 
 void array_print(int data[], int limit, int mode)   //Вывод масива в заданном режиме, разделитель - пробел.
 {
@@ -355,7 +346,8 @@ int is_digit(char c)
 // Пример: char commands[] = "L0A0 V4D2" - первая пара: все отрицательные элементы взять по модулю;
 // вторая пара: все элементы которые делятся на 4, разделить на 2.
 
-int array_update_commands(int data[], char commands[], int limit) {
+int array_update_commands(int data[], char commands[], int limit)
+{
     const int min_command_size = 4;
     if (limit <= 0 && string_length(commands) < min_command_size) {
         printf("error, size array or commands incorrect;\n");

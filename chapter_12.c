@@ -2,16 +2,17 @@
 #include "library.h"
 
 static const int matrix_act_mask = 0x1F;            // Константная маска до модификатора. Изменить, если поменяется назначение бит.
-static const int matrix_check_mask = 0xF000;       // Маска для модификатора проверки массиива или элемента.
+static const int matrix_check_mask = 0xF000;       // Маска для модификатора проверки массива или элемента.
 
 enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_column, mx_init_row,
                    mx_cr_val, mx_cr_rnd, mx_cr_ariphmetic, mx_cr_geometry,
                    mx_roll_left, mx_roll_right, mx_roll_up, mx_roll_down,
-                   mx_info_status, mx_info_sum, mx_info_multiply, mx_info_avr, mx_info_idxs,
+                   mx_info_status, mx_info_sum, mx_info_multiply, mx_info_avr, mx_info_min, mx_info_max, mx_info_pairs, mx_info_idxs,
                    mx_prn_default = 0x20, mx_prn_row = 0x40, mx_prn_column = 0x80, mx_prn_flipv = 0x100, mx_prn_fliph = 0x200,
-                   mx_chk_equal = 0x1000, mx_chk_more = 0x2000, mx_chk_less = 0x4000, mx_chk_div = 0x8000,
-                   mx_mod_col = 0x10000, mx_mod_row = 0x20000, mx_mod_sq = 0x40000, mx_mod_pair = 0x80000,
-                   mx_end = 0xF0000
+                   mx_chk_idxs = 0x400, mx_chk_equal = 0x800, mx_chk_more = 0x1000, mx_chk_less = 0x2000,
+                   mx_chk_not_div = 0x4000, mx_chk_div = 0x8000, mx_chk_pairs = 0x10000,
+                   mx_mod_col = 0x20000, mx_mod_row = 0x40000, mx_mod_sq = 0x80000, mx_mod_last = 0x100000,
+                   mx_end = 0x200000
                  };
 
 static char* matrix_type_name[] = { "matrix nope",
@@ -175,21 +176,27 @@ int matrix_roll(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int c
 }
 
 
-int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, enum matrix_type type)
+int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enum matrix_type type)
 {
-    if (columns < 0 || rows < 0 || columns > OBJECTS_MAX || rows > OBJECTS_MAX ||
+    if (*columns < 0 || *rows < 0 || *columns > OBJECTS_MAX || *rows > OBJECTS_MAX ||
             type < mx_info_status || type >= mx_end) {
-        printf("error: columns = %d, rows = %d, type = %d;\n", columns, rows, type);
+        printf("error: columns = %d, rows = %d, type = %d;\n", *columns, *rows, type);
         return -1;
     }
-    int result = 0, counter = 0, square = 0, start_row = 0, start_column = 0, element = 0;
+    int result = 0, counter = 0, square = 0, start_row = 0, start_column = 0, element = 0,
+            first_last = 0, idx_col = 0, idx_row = 0, max = 0, min = 0, len_col = *columns,
+            len_row = *rows, pair_mod = 0, pairs = 0;
     result = ((type & matrix_act_mask) == mx_info_multiply) ? 1 : 0;
     square = (type & mx_mod_sq) ? 1 : 0;
-    start_column = (type & mx_mod_col) ? columns++ : 0;
-    start_row = (type & mx_mod_row) ? rows++ : 0;
-    //printf("square = %d, start column = %d, start row = %d;\n", square, start_column, start_row);
-    for (int i = start_row; i < rows; ++i)
-        for (int j = start_column; j < columns; ++j) {
+    start_column = (type & mx_mod_col) ? len_col++ : 0;
+    start_row = (type & mx_mod_row) ? len_row++ : 0;
+    first_last = (type & mx_mod_last) ? 1 : 0;
+    pair_mod = (type & (mx_mod_col | mx_mod_row));
+    max = min = data[start_row][start_column];
+    idx_col = start_column; idx_row = start_row;
+    //printf("square = %d, start column = %d, start row = %d, row = %d;\n", square, start_column, start_row, *rows);
+    for (int i = start_row; i < len_row; ++i)
+        for (int j = start_column; j < len_col; ++j) {
             if (!square)
                 element = data[i][j];
             else
@@ -208,24 +215,43 @@ int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, enum 
             case mx_info_idxs:
                 result += i + j;
                 break;
+            case mx_info_max:
+                if ((first_last && data[i][j] >= max) || (!first_last && data[i][j] > max)) {
+                    max = data[i][j];
+                    idx_row = i;
+                    idx_col = j;
+                }
+                break;
+            case mx_info_min:
+                if ((first_last && data[i][j] <= min) || (!first_last && data[i][j] < min)) {
+                    min = data[i][j];
+                    idx_row = i;
+                    idx_col = j;
+                }
+                break;
+            case mx_info_pairs: //В парах учитывае оба модификатора.
+                if ((i > 0 && (pair_mod & mx_mod_row) != 0) && (element == data[i - 1][j]))
+                    ++pairs;
+                if ((j > 0 && (pair_mod & mx_mod_col) != 0) && (element == data[i][j - 1]))
+                    ++pairs;
+                break;
             default:
                 printf("incorrect type of action %d;\n", type & matrix_act_mask);
                 return -1;
             }
         }
-    /*
-    if (ret & mx_prn_default) {
-        matrix_print(data,rows,columns,0,mx_prn_default);
-        printf("\n");
-        printf("sum = %d;\n", data_inf[0]);
-        printf("sum of column(%d) = %d;\n", columns, data_inf[1]);
-        printf("sum of row(%d) = %d;\n", rows, data_inf[2]);
-        printf("average = %d;\n", data_inf[3]);
-        printf("average sqrt = %d;\n", data_inf[4]);
-    }
-    */
     if (counter)
         result /= counter;
+    if ((type & matrix_act_mask) == mx_info_max || (type & matrix_act_mask) == mx_info_min) {
+        *columns = idx_col;
+        *rows = idx_row;
+        if ((type & matrix_act_mask) == mx_info_max)
+            result = max;
+        else
+            result = min;
+    }
+    if ((type & matrix_act_mask) == mx_info_pairs)
+        result = pairs;
     return result;
 }
 
@@ -244,6 +270,23 @@ int matrix_check_element(int data[OBJECTS_MAX][OBJECTS_MAX], int column, int row
         return (data[row][column] < parameter);
     case mx_chk_div:
         return (data[row][column] % parameter == 0);
+    case mx_chk_not_div:
+        return (data[row][column] % parameter != 0);
+    case mx_chk_idxs:
+        return ((row + column) % parameter == 0);
+        /*                  немного обновить
+    case mx_chk_pairs:
+        if (parameter == 0 && row != 0)
+            return (data[row][column] == data[row - 1][column]);
+        if (parameter == 1 && column != 0)
+            return (data[row][column] == data[row][column - 1]);
+        if (parameter == 2 && row < OBJECTS_MAX - 1)
+            return (data[row][column] == data[row + 1][column]);
+        if (parameter == 3 && column < OBJECTS_MAX - 1) {
+            return (data[row][column] == data[row][column + 1]);
+        }
+        return 0;
+        */
     default:
         printf("error check element: columns = %d, rows = %d, type = %d;\n", column, row, check);
     }
@@ -257,13 +300,13 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
         printf("error: columns = %d, rows = %d, type = %d;\n", columns, rows, check);
         return -1;
     }
-    int result = 0, counter = 0, square = 0, start_row = 0, start_column = 0,
+    int result = 0, square = 0, start_row = 0, start_column = 0,
             element = 0, check_type = 0, par = *par_cnt; *par_cnt = 0;
     result = ((check & matrix_act_mask) == mx_info_multiply) ? 1 : 0;
     square = (check & mx_mod_sq) ? 1 : 0;
     start_column = (check & mx_mod_col) ? columns++ : 0;
     start_row = (check & mx_mod_row) ? rows++ : 0;
-    for (int i = mx_chk_equal; i <= mx_chk_div; i <<= 1)
+    for (int i = mx_chk_idxs; i <= mx_chk_pairs; i <<= 1)
         check_type = (check & i) ? i: check_type;
     //printf("square = %d, start column = %d, start row = %d;\n", square, start_column, start_row);
     for (int i = start_row; i < rows; ++i)
@@ -471,48 +514,48 @@ void chapter_12()
     matrix_print(array,columns,rows,0,mx_prn_default);
     int a1 = 2, a2 = 2;
     printf("\n12.35, sum of elements %d row and sum of %d colmn;\n", a1, a2);
-    int result = matrix_info(array,columns, a1, mx_info_sum | mx_mod_row);
+    int result = matrix_info(array,&columns, &a1, mx_info_sum | mx_mod_row);
     printf("a) sum = %d;\n",result);
-    result = matrix_info(array, a2, rows, mx_info_sum | mx_mod_col);
+    result = matrix_info(array, &a2, &rows, mx_info_sum | mx_mod_col);
     printf("b) sum = %d;\n",result);
     printf("\n12.38, 12.41, source matrix:\n");
     number = 3; columns = 5; rows = 5;
     int rand_max = 10;
     matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
     matrix_print(array,columns,rows,0,mx_prn_default);
-    result = matrix_info(array, number, rows, mx_info_sum | mx_mod_col);
+    result = matrix_info(array, &number, &rows, mx_info_sum | mx_mod_col);
     printf("sum of scores spotrsmans = %d, column = %d;\n",result, number);
-    result = matrix_info(array, columns, number, mx_info_sum | mx_mod_row);
+    result = matrix_info(array, &columns, &number, mx_info_sum | mx_mod_row);
     printf("sum of salary = %d, row = %d;\n", result, number);
     printf("\n12.44;\n");
     number = 3; columns = 5; rows = 5;
     matrix_print(array,columns,rows,0,mx_prn_default);
-    result = matrix_info(array, number, rows, mx_info_sum | mx_mod_col);
+    result = matrix_info(array, &number, &rows, mx_info_sum | mx_mod_col);
     printf("students counter = %d, column = %d;\n",result, number);
     printf("\n12.47, multiply of %d row;\n", a1);
-    result = matrix_info(array, columns, a1, mx_info_multiply | mx_mod_row);
+    result = matrix_info(array, &columns, &a1, mx_info_multiply | mx_mod_row);
     printf("multiply = %d;\n",result);
     printf("\n12.48;\n");
     matrix_print(array,columns,rows,0,mx_prn_default);
     a1 = 2; a2 = 3;
-    result = matrix_info(array, columns, a1, mx_info_sum | mx_mod_sq | mx_mod_row);
+    result = matrix_info(array, &columns, &a1, mx_info_sum | mx_mod_sq | mx_mod_row);
     printf("a) sum of square(row = %d) = %d;\n",a1,result);
-    result = matrix_info(array, a2, rows, mx_info_sum | mx_mod_sq | mx_mod_col);
+    result = matrix_info(array, &a2, &rows, mx_info_sum | mx_mod_sq | mx_mod_col);
     printf("b) sum of square(column = %d) = %d;\n\n",a2,result);
     printf("12.50, 12.55;\n");
     matrix_print(array,columns,rows,0,mx_prn_default);
     a1 = 2; a2 = 3;
-    result = matrix_info(array, columns, a1, mx_info_avr | mx_mod_row);
+    result = matrix_info(array, &columns, &a1, mx_info_avr | mx_mod_row);
     printf("a) average(row = %d) = %d;\n",a1,result);
-    result = matrix_info(array, a2, rows, mx_info_avr | mx_mod_col);
+    result = matrix_info(array, &a2, &rows, mx_info_avr | mx_mod_col);
     printf("b) average(column = %d) = %d;\n\n",a2,result);
     printf("12.56;\n");
     matrix_print(array,columns,rows,0,mx_prn_default);
-    result = matrix_info(array, columns, rows, mx_info_sum);
+    result = matrix_info(array, &columns, &rows, mx_info_sum);
     printf("a) sum of all elements = %d;\n",result);
-    result = matrix_info(array, columns, rows, mx_info_sum | mx_mod_sq);
+    result = matrix_info(array, &columns, &rows, mx_info_sum | mx_mod_sq);
     printf("b) sum of square all elements = %d;\n",result);
-    result = matrix_info(array, columns, rows, mx_info_avr);
+    result = matrix_info(array, &columns, &rows, mx_info_avr);
     printf("c) average of all elements = %d;\n\n",result);
     printf("12.59;\n");
     a1 = 0;
@@ -522,7 +565,7 @@ void chapter_12()
     printf("12.61;\n");
     matrix_print(array, columns, rows, 0, mx_prn_default);
     double average_rating = 0;
-    result = matrix_info(array, columns, rows, mx_info_sum);
+    result = matrix_info(array, &columns, &rows, mx_info_sum);
     average_rating = (double)result / (double)(columns * rows);
     printf("scores of students = %.2f;\n\n",average_rating);
     printf("12.65, scores of students;\n");
@@ -533,7 +576,7 @@ void chapter_12()
         printf("group #%d:\n", k);
         matrix_create_sequence(array,columns,rows,10,mx_cr_rnd);
         matrix_print(array, columns, rows, 0, mx_prn_default);
-        result = matrix_info(array, columns, rows, mx_info_sum);
+        result = matrix_info(array, &columns, &rows, mx_info_sum);
         average_rating = (double)result / (double)(columns * rows);
         printf("average = %.2f;\n\n", average_rating);
         if (average_rating > max_d) {
@@ -542,24 +585,294 @@ void chapter_12()
         }
     }
     printf("max ratinf of groups #%d = %.2f;\n", idx, max_d);
-    printf("12.67, 12.69;\nsource matrix:\n");
+    printf("12.67, 12.69, 12.72;\nsource matrix:\n");
     columns = 5; rows = 5;
     matrix_create_sequence(array,columns,rows,-rand_max,mx_cr_rnd);
     matrix_print(array, columns, rows, 0, mx_prn_default);
-    char* tasks[] = {"a) sum negative elements of 4-th row:",
-                    "b) sum elements less than 5 of 3-rd column:",
-                    "c) counter of elements of 3-rd row less than -3:",
-                    "d) counter of elements of 1-st column more than -5:",
-                    "a) average of odd elements of 2-nd row:",
-                    "b) average of 3-th column, divided by 4:"};
-    enum matrix_type tasks_type[] = {mx_info_sum | mx_chk_less | mx_mod_row,
-                                    mx_info_sum | mx_chk_less | mx_mod_col
+    char* tasks[] = {"\n12.67\na) sum negative elements of 4-th row:",
+                     "b) sum elements less than 5 of 3-rd column:",
+                     "c) counter of elements of 3-rd row less than -3:",
+                     "d) counter of elements of 1-st column more than -5:",
+                     "\n12.69\na) average of odd elements of 2-nd row:",
+                     "b) average of 3-th column, divided by 4:",
+                     "\n12.72\na) sum of even elements: ",
+                     "b) counter of elements less than 0: ",
+                     "c) average of odd elements: ",
+                     "d) sum of elements, indexes divided by 3: "
+                    };
+    enum matrix_type tasks_type[] = {mx_info_sum | mx_chk_less | mx_mod_row,    //12.67 a
+                                     mx_info_sum | mx_chk_less | mx_mod_col,
+                                     mx_chk_less | mx_mod_row | mx_info_sum,
+                                     mx_chk_more | mx_mod_col | mx_info_sum,
+                                     mx_info_avr | mx_mod_row | mx_chk_not_div,
+                                     mx_info_avr | mx_mod_col | mx_chk_div,
+                                     mx_info_sum | mx_chk_div,
+                                     mx_info_sum |mx_chk_less,
+                                     mx_info_avr | mx_chk_not_div,
+                                     mx_info_sum | mx_chk_idxs
                                     };
-    int tasks_par[] = {columns, 4, 0, // параметры задачи: столбц(ы), строк(и), параметр проверки
-                      3, rows, 5};
-    for (i = 0; i < 2; ++i) {
+    int tasks_par[] = {columns, 4, 0, //12.67 a;  параметры задачи: столбц(ы), строк(и), параметр проверки
+                       3, rows, 5,
+                       columns, 3, -3,
+                       1, rows, -5,
+                       columns, 2, 2,
+                       3, rows, 4,
+                       columns, rows, 2,
+                       columns, rows, 0,
+                       columns, rows, 2,
+                       columns, rows, 3};
+    for (i = 0; i < 10; ++i) {
         result = matrix_check_info(array, tasks_par[i * 3], tasks_par[i * 3 + 1], &tasks_par[i * 3 + 2],
                 tasks_type[i]);
-        printf("#%d, %s %d;\n", i, tasks[i], result); // доделать...
+        if (i != 2 && i != 3 && i != 7)
+            printf("%s %d;\n", tasks[i], result);
+        else
+            printf("%s %d;\n", tasks[i], tasks_par[i * 3 + 2]);
     }
+    printf("\n12.73, search max and min:\n");
+    int max = array[0][0], min = array[0][0];
+    a1 = 1; a2 = 1;
+    for (i = 0; i < rows; ++i)
+        for (j = 0; j < columns; ++j) {
+            if (array[i][j] > max) {
+                a1 = 1;
+                max = array[i][j];
+            }
+            if (array[i][j] == max)
+                a1++;
+            if (array[i][j] < min) {
+                a2 = 1;
+                min = array[i][j];
+            }
+            if (array[i][j] == min)
+                a2++;
+        }
+    printf("a) max = %d, counter = %d;\n", max, a1);
+    printf("b) min = %d, counter = %d;\n", min, a2);
+    printf("\n12.74 - 12.75, pairs counter and signs;\n");
+    matrix_create_sequence(array,columns,rows,-rand_max,mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    a1 = 0; a2 = 0;
+    const int pairs_types = 3;
+    int pairs[] = {0, 0, 0}, sign = (array[0][0] >= 0) ? 1 : -1;
+    int counter = 0;
+    char* pairs_names[] = {"pairs in row", "pairs in column", "pairs in row and column"};
+    printf("All elements pairs in matrix with indexes;\n");
+    for (i = 0; i < rows; ++i)
+        for (j = 0; j < columns; ++j) {
+            int p[3];
+            if ((sign == 1 && array[i][j] < 0) || (sign == -1 && array[i][j] >= 0)) {
+                sign *= -1;
+                counter++;
+            }
+            p[0] = (i < rows - 1 && array[i][j] == array[i + 1][j]);
+            p[1] = (j < columns - 1 && array[i][j] == array[i][j + 1]);
+            p[2] = (p[0] && p[1]);
+            for (k = 0; k < pairs_types; ++k) {
+                if (p[k]) {
+                    printf("%s = %d[%d:%d]\n",pairs_names[k], array[i][j], i, j);
+                    ++pairs[k];
+                }
+            }
+        }
+    printf("pairs counter:\n");
+    for (i = 0; i < pairs_types; ++i)
+        printf("%d ", pairs[i]);
+    printf("\nSign chg = %d;\n",counter);
+    printf("\n12.77, parameters for each column;\nsource matrix:\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    printf("a, sum of odd elements:\n");
+    for (i = 0; i < columns; ++i) {
+        a1 = 2;
+        result = matrix_check_info(array, i, rows, &a1, mx_info_sum | mx_chk_not_div | mx_mod_col);
+        printf("column #%d = %d;\n", i, result);
+    }
+    printf("\nb, counter of all positive elements:\n");
+    for (i = 0; i < columns; ++i) {
+        a1 = -1;
+        result = matrix_check_info(array, i, rows, &a1, mx_info_sum | mx_chk_more | mx_mod_col);
+        printf("column #%d = %d;\n", i, a1);
+    }
+    printf("\nc, counter elements divided 2 or 3:\n");
+    for (i = 0; i < columns; ++i) {
+        for (j = 0, counter = 0; j < rows; ++j)
+            if (array[j][i] % 2 == 0 || array[j][i] % 3 == 0)
+                ++counter;
+        printf("column #%d = %d;\n", i, counter);
+    }
+    printf("\n12.78 - 12.79, pairs in matrix;\nsource matrix:\n");
+    rand_max = 5;
+    matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    printf("a, pairs and sum of each row;\n");
+    for (i = 0, result = 0, sum = 0; i < rows; ++i) {
+         result += matrix_info(array, &columns, &i, mx_info_pairs | mx_mod_row);
+         sum = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+         printf("%d: pairs = %d, rows = %d;\n", i, result, sum);
+    }
+    printf("b, pairs and sum of each column;\n");
+    for (j = 0, result = 0, sum = 0; j < columns; ++j) {
+         result += matrix_info(array, &j, &rows, mx_info_pairs | mx_mod_col);
+         sum = matrix_info(array, &j, &rows, mx_info_sum | mx_mod_col);
+         printf("%d: pairs = %d, column = %d;\n", j, result, sum);
+    }
+    return;
+    printf("\n12.80;\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    i = 0, j = 0;
+    int unique_array[OBJECTS_MAX], result_unique_array[OBJECTS_MAX];
+    for (k = 0; k < rows; ++k)
+        for (i = 0; i < columns; ++i)
+            unique_array[counter++] = array[k][i];
+    a1 = counter; counter = 0;
+    for (i = 0; i < a1; ++i) {
+        for (j = 0; j < a1 && (i == j || unique_array[i] != unique_array[j]); ++j)
+            ;
+        if (j == a1)
+            result_unique_array[counter++] = unique_array[i];
+    }
+    printf("result = ");
+    for (i = 0; i < counter; ++i)
+        printf("%d ", result_unique_array[i]);
+    printf("\n\n12.84;\n");
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_max);
+    printf("max = %d (%d:%d);\n",result, length_y, length_x);
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_min);
+    printf("min = %d (%d:%d);\n",result, length_y, length_x);
+    printf("\n12.88;\n");
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_max | mx_mod_last);
+    printf("last max = %d (%d:%d);\n",result, length_y, length_x);
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_min | mx_mod_last);
+    printf("last min = %d (%d:%d);\n",result, length_y, length_x);
+    printf("\n12.89;\n");
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_max);
+    printf("first max = %d (%d:%d);\n",result, length_y, length_x);
+    length_x = columns; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_min | mx_mod_last);
+    printf("last min = %d (%d:%d);\n",result, length_y, length_x);
+    printf("\n12.93;\n");
+    max = min = array[0][0];
+    a1 = a2 = 0;
+    for (i = 0; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (max < result) {
+            max = result;
+            a1 = i;
+        }
+    }
+    printf("max = %d, row = %d\n", max, a1);
+    for (i = 0; i < columns; ++i) {
+        result = matrix_info(array, &i, &rows, mx_info_sum | mx_mod_col);
+        if (max < result) {
+            max = result;
+            a1 = i;
+        }
+    }
+    printf("max = %d, col = %d\n\n", max, a1);
+    printf("12.94;\n");
+    for (i = 0; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (result > max) {
+            max = result;
+            a1 = i;
+        }
+    }
+    printf("max = %d, row = %d;\n", max, a1);
+    for (i = 0; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (result < min) {
+            min = result;
+            a1 = i;
+        }
+    }
+    printf("min = %d, row = %d;\n",min , a1);
+    printf("\n12.97;\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    for (i = 0; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (result >= max) {
+            max = result;
+            a1 = i;
+        }
+    }
+    printf("max = %d, row = %d;\n", max, a1);
+    for (i = 0; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (result <= min) {
+            min = result;
+            a1 = i;
+        }
+    }
+    printf("min = %d, row = %d;\n\n",min , a1);
+    printf("12.100 - 12.101;\n");
+    printf("Teams:\n");
+    int score[] = {0, 1, 3};
+    for (i = 0; i < rows; ++i)
+        for (j = 0; j < i; ++j) {
+            a1 = rand() % 3;
+            array[i][j] = score[a1];
+            array[j][i] = score[2 - a1];
+        }
+    printf("   ");
+    for (i = 0; i < columns; ++i)
+        printf("%d  ", i + 1);
+    printf("\n");
+    for (i = 0; i < rows; ++i) {
+        printf("%d: ", i + 1);
+        for (j = 0; j < columns; ++j)
+            if (i != j)
+                printf("%d  ",array[i][j]);
+            else
+                printf("-  ");
+        printf("\n");
+    }
+    max = 0, min = 3 * rows, a1 = 0, a2 = 0;
+    for (i = 0; i < rows; ++i) {
+        sum = 0;
+        for (j = 0; j < columns; ++j) {
+            if (i != j)
+                sum += array[i][j];
+        }
+        if (sum > max) {
+            max = sum;
+            a1 = i;
+        }
+        if (sum < min) {
+            min = sum;
+            a2 = i;
+        }
+    }
+    printf("Winner: score = %d, number = %d;\n", max, a1 + 1);
+    printf("Loser: score = %d, number = %d;\n\n", min, a2 + 1);
+    printf("12.104, 12.108;\n");
+    max = 0, a1 = 0;
+    matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    for (i = 0; i < rows - 1; ++i) {
+        sum = 0;
+        for (j = 0; j < columns - 1; ++j)
+            sum += array[i][j] + array[i + 1][j + 1];
+        if (sum > max) {
+            max = sum;
+            a1 = i;
+        }
+    }
+    printf("max sum = %d, rows = %d and %d;\n", max, a1, a1 + 1);
+    printf("\n12.103, 12.107;\n");
+    min = 0, a2 = 0;
+    for (i = 0; i < columns - 1; ++i) {
+        sum = 0;
+        for (j = 0; j < rows - 1; ++j)
+            sum += array[j][i] + array[j + 1][i + 1];
+        if (sum < max) {
+            min = sum;
+            a2 = i;
+        }
+    }
+    printf("min sum = %d, rows = %d and %d;\n", min, a2, a2 + 1);
 }

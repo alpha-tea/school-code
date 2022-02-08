@@ -173,6 +173,53 @@ void chapter_10();
 
 // Функции и константы для одиннадцатой главы задачника.
 
+enum array_inf_val;
+enum array_check_type;
+enum array_action_type;
+enum array_xchg_type;
+enum array_print_mode;
+
+int array_modify_element(int data[], int offset, enum array_action_type type, int parameter, int limit);
+int array_check_element(int data[], int offset, int parameter, enum array_check_type type, int limit);
+int array_information(int data[], int size, enum array_inf_val ret);
+void array_print(int data[], int limit, int mode);
+int array_scan_element(int data[], int offset, int size, int parameter, enum array_check_type type);
+int array_modify_action(int data[], int size, int parameter, enum array_action_type type);
+int array_create_input(int data[], int init[], int direct, int isInput, int limit);
+int is_Fibonacci(int n);
+int array_create_sequence(int data[], int first, int last, int par, int flags, int limit);
+int is_digit(char c);
+int array_update_commands(int data[], char commands[], int limit);
+int array_sum_elements(int data[], int size, int parameter, enum array_check_type type);
+int array_chk_counter(int data[], int size, int parameter, enum array_check_type type);
+int array_chk_counter(int data[], int size, int parameter, enum array_check_type type);
+int array_unique_elements(int data[], int size, int unique_data[]);
+int array_copy_elements(int data[], int size, int copies_data[]);
+int array_min_max(int data[], int size, int type, int step, int* idx);
+int array_xchg_elements(int data[], int size, int idx_a, int idx_b);
+int array_xchg_range(int data[], int size, int idx_size_flags[]);
+int array_delete_element(int data[], int size, int index);
+int array_delete_all(int data[], int size, int parameter, enum array_check_type type);
+int array_delete_equal(int data[], int size);
+int array_insert_element(int data[], int size, int element, int index);
+int array_insert_all(int data[], int size, int element, int parameter, enum array_check_type type);
+int digits_add(int add_a[], int add_b[], int result[], int size);
+int digits_sub(int sub_a[], int sub_b[], int result[], int size);
+int digits_mul(int factor_a[], int factor_b[], int result[], int size);
+int digits_mul_alt(int factor_a[], int factor_b[], int result[], int size);
+int digits_extend_size(int data[], int size);
+int digits_half_size(int data[], int size);
+int digits_div(int div_a[], int div_b[], int result[], int size);
+int array_add(int data_a[], int data_b[], int data_r[], int size);
+int array_sub(int data_a[], int data_b[], int data_r[], int size);
+int array_mul(int data_a[], int data_b[], int data_r[], int size);
+int array_div(int data_a[], int data_b[], int data_r[], int size);
+int array_is_descending(int data[], int size);
+int array_is_ascending(int data[], int size);
+int array_is_equal(int data[], int size);
+int array_find_if(int data[], int result[], int par, int size, enum array_check_type type);
+int array_comparison(int data_1[], int data_2[], int data_result[], int par, enum array_check_type type, int length);
+
 void chapter_11();
 
 // Функции и константы для одиннадцатой главы задачника.

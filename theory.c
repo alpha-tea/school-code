@@ -2,7 +2,6 @@
 #include "library.h"
 
 //Разбираем теорию С.Прато.
-#include <stdio.h>
 #define DATA_SIZE 3
 void theory_10_1(int data[], int n)
 {
