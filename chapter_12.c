@@ -706,111 +706,147 @@ void chapter_12()
     matrix_print(array, columns, rows, 0, mx_prn_default);
     printf("a, pairs and sum of each row;\n");
     for (i = 0, result = 0, sum = 0; i < rows; ++i) {
-         result += matrix_info(array, &columns, &i, mx_info_pairs | mx_mod_row);
-         sum = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
-         printf("%d: pairs = %d, rows = %d;\n", i, result, sum);
+        result += matrix_info(array, &columns, &i, mx_info_pairs | mx_mod_row);
+        sum = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        printf("%d: pairs = %d, rows = %d;\n", i, result, sum);
     }
     printf("b, pairs and sum of each column;\n");
     for (j = 0, result = 0, sum = 0; j < columns; ++j) {
-         result += matrix_info(array, &j, &rows, mx_info_pairs | mx_mod_col);
-         sum = matrix_info(array, &j, &rows, mx_info_sum | mx_mod_col);
-         printf("%d: pairs = %d, column = %d;\n", j, result, sum);
+        result += matrix_info(array, &j, &rows, mx_info_pairs | mx_mod_col);
+        sum = matrix_info(array, &j, &rows, mx_info_sum | mx_mod_col);
+        printf("%d: pairs = %d, column = %d;\n", j, result, sum);
     }
-    return;
-    printf("\n12.80;\n");
+    printf("\n12.80, find uniq elements in matrix;\n");
+    rand_max = 10;
+    i = 0; j = 0; counter = 0; rows = 5; columns = 5;
+    matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
     matrix_print(array, columns, rows, 0, mx_prn_default);
-    i = 0, j = 0;
-    int unique_array[OBJECTS_MAX], result_unique_array[OBJECTS_MAX];
-    for (k = 0; k < rows; ++k)
-        for (i = 0; i < columns; ++i)
-            unique_array[counter++] = array[k][i];
-    a1 = counter; counter = 0;
-    for (i = 0; i < a1; ++i) {
-        for (j = 0; j < a1 && (i == j || unique_array[i] != unique_array[j]); ++j)
-            ;
-        if (j == a1)
-            result_unique_array[counter++] = unique_array[i];
+    printf("First variant(linean search):\n");
+    for (i = 0; i < rows * columns; ++i)
+        for (j = 0; j < rows * columns; ++j, ++counter) {
+            if ((array[i / columns][i % columns] == array[j / columns][j % columns]) && i != j)
+                break;
+            if (j == (rows * columns - 1))
+                printf("%d[%d] ", array[i / columns][i % columns], counter);
+        }
+    printf("counter = %d\n", counter);
+    printf("Second variant(rewrite array):\n");
+    for (i = 0, counter = 0; i < rows * columns; ++i) {
+        int is_find = 0;
+        for (j = i + 1; j < rows * columns && array[i / columns][i % columns] != -1; ++j, ++counter) {
+            if (array[i / columns][i % columns] == array[j / columns][j % columns]) {
+                array[j / columns][j % columns] = -1;
+                is_find = 1;
+            }
+        }
+        if (!is_find && array[i / columns][i % columns] != -1)
+            printf("%d[%d] ", array[i / columns][i % columns], counter);
     }
-    printf("result = ");
-    for (i = 0; i < counter; ++i)
-        printf("%d ", result_unique_array[i]);
-    printf("\n\n12.84;\n");
-    length_x = columns; length_y = rows;
-    result = matrix_info(array, &length_x, &length_y, mx_info_max);
+    printf("counter = %d", counter);
+    printf("\nThird variant(Using big extra array):\n");
+    int copies_array[OBJECTS_MAX], copies = 0, element = 0; //Если много, то отвал
+    matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
+    //matrix_print(array, columns, rows, 0, mx_prn_default);
+    for (i = 0, counter = 0; i < rows * columns; ++i) {
+        element = array[i / columns][i % columns];
+        for (j = 0; j < copies && element != copies_array[j]; ++j, ++counter)
+            ;
+        if (j == copies) {
+            //printf("\ncache missed, ");
+            for (j = 0; j < rows * columns; ++j, ++counter)
+                if ((element == array[j / columns][j % columns]) && i != j)
+                    break;
+            if (j == rows * columns) {
+                printf("uniq %d[%d]\n", element, counter);
+            } else {
+                //printf("add to cache %d[%d] ", element, counter);
+                copies_array[copies++] = element;
+            }
+        } else
+            ;//printf("cache hit, element = %d\n", element);
+    }
+    printf("counter = %d", counter);
+    printf("\n\n12.84, search max and min;\nsource matrix:\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    length_x = columns; length_y = 1;
+    result = matrix_info(array, &length_x, &length_y, mx_info_max | mx_mod_row);
     printf("max = %d (%d:%d);\n",result, length_y, length_x);
-    length_x = columns; length_y = rows;
-    result = matrix_info(array, &length_x, &length_y, mx_info_min);
+    length_x = 1; length_y = rows;
+    result = matrix_info(array, &length_x, &length_y, mx_info_min | mx_mod_col);
     printf("min = %d (%d:%d);\n",result, length_y, length_x);
-    printf("\n12.88;\n");
+    printf("\n12.88, search in full matrix;\n");
     length_x = columns; length_y = rows;
     result = matrix_info(array, &length_x, &length_y, mx_info_max | mx_mod_last);
     printf("last max = %d (%d:%d);\n",result, length_y, length_x);
     length_x = columns; length_y = rows;
     result = matrix_info(array, &length_x, &length_y, mx_info_min | mx_mod_last);
     printf("last min = %d (%d:%d);\n",result, length_y, length_x);
-    printf("\n12.89;\n");
+    printf("\n12.89, search max from left:up, min from right:down;\n");
     length_x = columns; length_y = rows;
     result = matrix_info(array, &length_x, &length_y, mx_info_max);
     printf("first max = %d (%d:%d);\n",result, length_y, length_x);
     length_x = columns; length_y = rows;
     result = matrix_info(array, &length_x, &length_y, mx_info_min | mx_mod_last);
     printf("last min = %d (%d:%d);\n",result, length_y, length_x);
-    printf("\n12.93;\n");
+    printf("\n12.93, search sum of max elements in every row, sum of min elements in every column;\n");
     max = min = array[0][0];
-    a1 = a2 = 0;
+    int max_idx = 0;
     for (i = 0; i < rows; ++i) {
         result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
         if (max < result) {
             max = result;
-            a1 = i;
+            max_idx = i;
         }
     }
-    printf("max = %d, row = %d\n", max, a1);
+    printf("max = %d, row = %d\n", max, max_idx);
     for (i = 0; i < columns; ++i) {
         result = matrix_info(array, &i, &rows, mx_info_sum | mx_mod_col);
         if (max < result) {
             max = result;
-            a1 = i;
+            max_idx = i;
         }
     }
-    printf("max = %d, col = %d\n\n", max, a1);
-    printf("12.94;\n");
-    for (i = 0; i < rows; ++i) {
-        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
-        if (result > max) {
-            max = result;
-            a1 = i;
-        }
-    }
-    printf("max = %d, row = %d;\n", max, a1);
-    for (i = 0; i < rows; ++i) {
-        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
-        if (result < min) {
-            min = result;
-            a1 = i;
-        }
-    }
-    printf("min = %d, row = %d;\n",min , a1);
-    printf("\n12.97;\n");
+    printf("max = %d, col = %d\n\n", max, max_idx);
+    printf("12.94, students in classes;\n");
+    rows = 3; columns = 5;
     matrix_print(array, columns, rows, 0, mx_prn_default);
-    for (i = 0; i < rows; ++i) {
+    for (i = 0, max_idx = 0, max = -1; i < rows; ++i) {
         result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
-        if (result >= max) {
+        if (result > max || max == -1) {
             max = result;
-            a1 = i;
+            max_idx = i;
         }
     }
-    printf("max = %d, row = %d;\n", max, a1);
-    for (i = 0; i < rows; ++i) {
+    printf("max = %d, row = %d;\n", max, max_idx);
+    for (i = 0, max_idx = 0, min = -1; i < rows; ++i) {
         result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
-        if (result <= min) {
+        if (result < min || min == -1) {
             min = result;
-            a1 = i;
+            max_idx = i;
         }
     }
-    printf("min = %d, row = %d;\n\n",min , a1);
+    printf("min = %d, row = %d;\n",min , max_idx);
+    printf("\n12.97, search first max row and last min column;\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    for (i = 0, max_idx = 0, max = -1; i < rows; ++i) {
+        result = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
+        if (result > max || max == -1) {
+            max = result;
+            max_idx = i;
+        }
+    }
+    printf("max = %d, row = %d;\n", max, max_idx);
+    for (i = 0, max_idx = 0, min = -1; i < columns; ++i) {
+        result = matrix_info(array, &i, &rows, mx_info_sum | mx_mod_col);
+        if (result <= min || min == -1) {
+            min = result;
+            max_idx = i;
+        }
+    }
+    printf("min = %d, column = %d;\n\n",min , max_idx);
+    rows = 5; columns = 5;
     printf("12.100 - 12.101;\n");
-    printf("Teams:\n");
+    printf("Teams in games:\n");
     int score[] = {0, 1, 3};
     for (i = 0; i < rows; ++i)
         for (j = 0; j < i; ++j) {
@@ -849,30 +885,35 @@ void chapter_12()
     }
     printf("Winner: score = %d, number = %d;\n", max, a1 + 1);
     printf("Loser: score = %d, number = %d;\n\n", min, a2 + 1);
-    printf("12.104, 12.108;\n");
+    printf("12.104, 12.108, max in pairs of rows;\n");
     max = 0, a1 = 0;
     matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
     matrix_print(array, columns, rows, 0, mx_prn_default);
-    for (i = 0; i < rows - 1; ++i) {
-        sum = 0;
-        for (j = 0; j < columns - 1; ++j)
-            sum += array[i][j] + array[i + 1][j + 1];
-        if (sum > max) {
-            max = sum;
-            a1 = i;
+    int sum_1 = 0, sum_2 = 0;
+    for (i = 0, max_idx = 0; i < rows - 1; ++i) {
+        length_x = i;
+        sum_1 = matrix_info(array, &columns, &length_x, mx_info_sum | mx_mod_row);
+        length_x++;
+        sum_2 = matrix_info(array, &columns, &length_x, mx_info_sum | mx_mod_row);
+        printf("sum_1 = %d, sum_2 = %d;\n", sum_1, sum_2);
+        if (sum_1 + sum_2 > max) {
+            max = sum_1 + sum_2;
+            max_idx = i;
         }
     }
-    printf("max sum = %d, rows = %d and %d;\n", max, a1, a1 + 1);
-    printf("\n12.103, 12.107;\n");
-    min = 0, a2 = 0;
-    for (i = 0; i < columns - 1; ++i) {
-        sum = 0;
-        for (j = 0; j < rows - 1; ++j)
-            sum += array[j][i] + array[j + 1][i + 1];
-        if (sum < max) {
-            min = sum;
-            a2 = i;
+    printf("max sum = %d, rows = %d and %d;\n", max, max_idx, max_idx + 1);
+    printf("\n12.103, 12.107, min in pairs of columns;\n");
+    sum_1 = 0, sum_2 = 0; min = columns * rand_max;
+    for (i = 0, max_idx = 0; i < columns - 1; ++i) {
+        length_y = i;
+        sum_1 = matrix_info(array, &length_y, &rows, mx_info_sum | mx_mod_col);
+        length_y++;
+        sum_2 = matrix_info(array, &length_y, &rows, mx_info_sum | mx_mod_col);
+        printf("sum_1 = %d, sum_2 = %d;\n", sum_1, sum_2);
+        if (sum_1 + sum_2 < min) {
+            min = sum_1 + sum_2;
+            max_idx = i;
         }
     }
-    printf("min sum = %d, rows = %d and %d;\n", min, a2, a2 + 1);
+    printf("min sum = %d, columns = %d and %d;\n", min, max_idx, max_idx + 1);
 }
