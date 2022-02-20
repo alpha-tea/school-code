@@ -110,10 +110,16 @@ int evklid(int a, int b)
 int length_number(int number)
 {
     int i = 0;
-    while (number > 0) {
+    /*
+    while (number > 0) {    //Для нуля и больше.
         number /= 10;
         ++i;
     }
+    */
+    do {
+        number /= 10;
+        ++i;
+    } while (number > 0);
     return i;
 }
 
