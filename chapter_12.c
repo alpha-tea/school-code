@@ -2,7 +2,7 @@
 #include "library.h"
 
 static const int matrix_act_mask = 0x1F;            // Константная маска до модификатора. Изменить, если поменяется назначение бит.
-static const int matrix_check_mask = 0xF000;       // Маска для модификатора проверки массива или элемента.
+static const int matrix_check_mask = 0xFF000;       // Маска для модификатора проверки массива или элемента.
 
 enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_column, mx_init_row,
                    mx_cr_val, mx_cr_rnd, mx_cr_ariphmetic, mx_cr_geometry,
@@ -10,9 +10,9 @@ enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_colu
                    mx_info_status, mx_info_sum, mx_info_multiply, mx_info_avr, mx_info_min, mx_info_max, mx_info_pairs, mx_info_idxs,
                    mx_prn_default = 0x20,  mx_prn_row = 0x40, mx_prn_column = 0x80, mx_prn_flipv = 0x100, mx_prn_fliph = 0x200, mx_prn_field = 0x400,
                    mx_chk_idxs = 0x800, mx_chk_equal = 0x1000, mx_chk_more = 0x2000, mx_chk_less = 0x4000,
-                   mx_chk_not_div = 0x8000, mx_chk_div = 0x10000, mx_chk_pairs = 0x20000,
-                   mx_mod_col = 0x40000, mx_mod_row = 0x80000, mx_mod_sq = 0x100000, mx_mod_last = 0x200000,
-                   mx_end = 0x400000
+                   mx_chk_not_div = 0x8000, mx_chk_div = 0x10000, mx_chk_pairs = 0x20000, mx_chk_dsc = 0x40000, mx_chk_asc = 0x80000,
+                   mx_mod_col = 0x100000, mx_mod_row = 0x200000, mx_mod_sq = 0x400000, mx_mod_last = 0x800000,
+                   mx_end = 0x1000000
                  };
 
 static char* matrix_type_name[] = { "matrix nope",
@@ -82,7 +82,7 @@ int matrix_print(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int 
             for (int mask = mx_prn_default; mask != mx_chk_idxs; mask <<= 1) {
                 switch (type & mask) {
                 case mx_prn_default:
-                    printf("%d ", data[i][j]);
+                    printf("%2d ", data[i][j]);
                     break;
                 case mx_prn_column:
                     if (j == parameter)
@@ -357,19 +357,78 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
 }
 
 int matrix_elements_copies(int data[OBJECTS_MAX][OBJECTS_MAX], int columns,  int rows, int counter)
-{   //Переделать.
+{   // функция определения наличия n копий хотя бы одного элемента в массиве
+    //возвращает кол-во элементов, счётчик копий которых задан в параметре.
+    if (columns < 0 || rows < 0 || rows >= OBJECTS_MAX || columns >= OBJECTS_MAX || counter < 1)
+        return -1;
+    int quantity = 0, result = 0, j = 0, copies = 0;
+    int uniq_elements[columns * rows];
+    for (int i = 0; i < rows; ++i)
+        for (int g = 0; g < columns; ++g) {
+            int element = data[i][g];
+            for (j = 0; j < quantity && element != uniq_elements[j]; ++j)
+                ;
+            if (j == quantity) {
+                copies = 0;
+                uniq_elements[quantity++] = element;
+                for (int k = i * g; k < rows * columns; ++k)
+                    if (element == data[k / columns][k % columns])
+                        ++copies;
+                if (copies == counter)
+                    result++;
+            }
+        }
+    return result;
+}
+int matrix_find_element(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows,
+                        int par, enum matrix_type chk)
+{
+    if (*columns < 0 || *rows < 0 || *rows >= OBJECTS_MAX || *columns >= OBJECTS_MAX)
+        return -1;
+    int last_col = *columns, last_row = *rows, check_type = 0, result = 0, start_column = 0, start_row = 0;
+    start_column = (chk & mx_mod_col) ? last_col++ : 0;
+    start_row = (chk & mx_mod_row) ? last_row++ : 0;
+    int first_last = (chk & mx_mod_last) ? 1 : 0;
+    for (int i = mx_chk_idxs; i <= mx_chk_pairs; i <<= 1)
+        check_type = (chk & i) ? i: check_type;
+    for (int i = start_row; i < last_row && (!result || first_last); ++i)
+        for (int j = start_column; j < last_col && (!result || first_last); ++j)
+            if (matrix_check_element(data, j, i, par, check_type)) {
+                *rows = i;
+                *columns = j;
+                result = 1;
+            }
+    return result;
+}
+
+int matrix_is_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
+                       int parameter, enum matrix_type check)
+{   //Функция определяет является ли матрица или её часть элементом последовательности
+    //с условием по параметру.
+    // Все элементы матрицы, строки или столбца должны удовлетворять условию проверки
+    //на убывание или возрастание.
     if (columns < 0 || rows < 0 || rows >= OBJECTS_MAX || columns >= OBJECTS_MAX)
         return -1;
-    int quantity = 0;
-    for (int i = 0; i < rows * columns; ++i) {
-        int element = data[i / columns][i % columns];
-        if (element == counter) {
-            printf("value on %d:%d;\n", i / columns , i % columns);
-            quantity++;
+    int prev = 0, last_col = columns, last_row = rows, check_type = 0, start_column = 0, start_row = 0;
+    start_column = (check & mx_mod_col) ? last_col++ : 0;
+    start_row = (check & mx_mod_row) ? last_row++ : 0;
+    for (int i = mx_chk_idxs; i <= mx_chk_asc; i <<= 1)
+        check_type = (check & i) ? i: check_type;
+    for (int i = start_row; i < last_row; ++i)
+        for (int j = start_column; j < last_col; ++j) {
+            if (i != start_row || j != start_column) {
+                if (check_type == mx_chk_asc || check_type == mx_chk_dsc) {
+                    if ((check_type == mx_chk_asc && data[i][j] <= prev) ||
+                            (check_type == mx_chk_dsc && data[i][j] >= prev))
+                        return 0;
+                } else if (!matrix_check_element(data, i, j, parameter, check_type))
+                    return 0;
+            }
+            prev = data[i][j];
         }
-    }
-    return quantity;
+    return 1;
 }
+
 void chapter_12()
 {
     printf("12.1 - 12.21:\n");
@@ -1130,7 +1189,7 @@ void chapter_12()
     for (i = 0; i < teams_counter; ++i)
         printf("  %d\t  %d\t  %d\n", i + 1, array[3][i] + 1, array[2][i]);
     printf("\n12.131, magic square;\n");
-    int square_size = 15; // square_size != 2;
+    int square_size = 5; // square_size != 2;
     int M = (square_size * (square_size * square_size + 1)) / 2;
     max = square_size * square_size; // max value in square
     printf("Square size = %dx%d;\n", square_size, square_size);
@@ -1191,19 +1250,199 @@ void chapter_12()
     else
         printf("No, this is not magic square, %d:%d:%d:%d;\n", i, j, sum_1, sum_2);
     printf("\n12.132 - 12.134, search for identical elements;\n");
-    columns = rows = 5;
+    columns = rows = 3;
     rand_max = 10;
     matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
     matrix_print(array, columns, rows, 0, mx_prn_default);
+    counter = 1;
+    printf("counter: %d;\n", counter);
+    result = matrix_elements_copies(array, columns, rows, counter);
+    printf("result = %d;\n", result);
+    number = array[0][columns - 1];
+    printf("\n12.135, find element in first row: %d\n", number);
+    length_x = 0;
+    length_y = columns;
+    matrix_find_element(array, &length_y, &length_x, number, mx_mod_row | mx_chk_equal);
+    printf("equal = %d:%d;\n\n", length_x,length_y);
+    number = array[rows - 1][0];
+    printf("12.137, find element in first column: %d\n", number);
+    length_x = rows;
+    length_y = 0;
+    matrix_find_element(array, &length_y, &length_x, number, mx_mod_col | mx_chk_equal);
+    printf("equal = %d:%d;\n\n", length_x,length_y);
+    printf("12.139, find element;\n");
+    length_x = rows; length_y = columns;
     number = 5;
-    printf("search: %d;\n", number);
-    result = matrix_elements_copies(array, columns, rows, number);
-    if (result > 1)
-        printf("This array has the same elements;\n\n");
-    else if (result == 1)
-        printf("There is only one such element in this array;\n\n");
+    result = matrix_find_element(array, &length_y, &length_x, number, mx_chk_equal);
+    if (result != -1)
+        printf("a) element equal %d = %d:%d;\n", number, length_x, length_y);
     else
-        printf("There are no such elements in this array;\n\n");
-    //Переделать функцию.
+        printf("a) element equal %d missing\n", number);
+    length_x = rows;
+    length_y = columns;
+    number = 5;
+    result = matrix_find_element(array, &length_y, &length_x, number, mx_chk_div);
+    if (result != -1)
+        printf("b) element divided by %d = %d:%d;\n", number, length_x, length_y);
+    else
+        printf("b) element divided by %d missing;\n", number);
+    printf("\n12.141, find sequence in matrix, with functions;\n");
+    columns = 2; rows = 2; rand_max = 3;
+    matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    result = matrix_is_sequence(array, columns, 0, 0, mx_chk_asc | mx_mod_row);
+    char* string[] = {"No","Yes"};
+    printf("is first row is ascending order: %s;\n", string[result]);
+    result = matrix_is_sequence(array, 0, rows, 0, mx_chk_dsc | mx_mod_col);
+    printf("is first column is descending order: %s;\n", string[result]);
+    columns = rows = 5;
+    rand_max = -10;
+    printf("\n");
+    matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    const int tasks_find_all = 10, tasks_find_rc = 4, tasks_find_seq = 8;
+    const char* tasks_find_name[] = {"\n12.142\na) first element divided by 7",
+                                     "b) last number more than 5",
+                                     "\n12.144\na) first positive number",
+                                     "b) first number div by 3",
+                                     "\n12.146\na) first negative elements in rows",
+                                     "b) last even element in row",
+                                     "\n12.148\na) find positive elements in rows",
+                                     "b) last elements divided by 3 in rows",
+                                     "c) elements in ascending order in rows",
+                                     "d) find equal elements 5"};
+    const int tasks_find_mod[] = {mx_chk_div, 7,
+                                  mx_chk_more | mx_mod_last, 5,
+                                  mx_chk_more, 0,
+                                  mx_chk_div, 3,
+                                  mx_chk_less | mx_mod_row, 0, rows,
+                                  mx_chk_div | mx_mod_row | mx_mod_last, 2, rows,
+                                  mx_chk_more | mx_mod_row, 0, rows,
+                                  mx_chk_div | mx_mod_row | mx_mod_last, 3, rows,
+                                  mx_chk_asc | mx_mod_row, 0, rows,
+                                  mx_chk_equal | mx_mod_row, 5, rows
+                                 };
+    for (i = 0; i < tasks_find_all; ++i) {
+        printf("%s: ", tasks_find_name[i]);
+        length_x = rows; length_y = columns;
+        if (i < tasks_find_rc) {
+            result = matrix_find_element(array, &length_y, &length_x,
+                                         tasks_find_mod[i * 2 + 1], tasks_find_mod[i * 2]);
+            printf("%d:%d;\n", length_x, length_y);
+        }
+        if (i >= tasks_find_rc) {
+            int rs = tasks_find_rc * 2 + (i - tasks_find_rc) * 3;
+            for (j = 0; j < tasks_find_mod[rs + 2]; ++j) {
+                length_x = rows; length_y = columns;
+                if (tasks_find_mod[rs] & mx_mod_row)
+                    length_x = j;
+                if (tasks_find_mod[rs] & mx_mod_col)
+                    length_y = j;
+                if (i != tasks_find_seq) {
+                    result = matrix_find_element(array, &length_y, &length_x,
+                                                 tasks_find_mod[rs + 1], tasks_find_mod[rs]);
+                    if (result)
+                        printf("%d[%d] ", array[length_x][length_y], length_x);
+                } else {
+                    result = matrix_is_sequence(array, length_y, length_x,
+                                                tasks_find_mod[rs + 1], tasks_find_mod[rs]);
+                    printf("%s[%d] ", string[result], length_x);
+                }
+            }
+            printf("\n");
+        }
+    }
+    columns = rows = 2;
+    rand_max = -10;
+    printf("\n");
+    matrix_create_sequence(array, columns, rows, rand_max, mx_cr_rnd);
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    printf("\n12.151, find first column where all elements:\n");
+    char* tasks_1[] = {"odd:",
+                       "less than 5:",
+                       "more than 5:",
+                       "div 3:"};
+    for (j = 0; j < 4; ++j) {
+        printf("%s ", tasks_1[j]);
+        for (i = 0; i < columns; ++i) {
+            length_x = rows;
+            length_y = i;
+            switch (j) {
+            case 0:
+                result = matrix_find_element(array, &length_y, &length_x, 2, mx_chk_div | mx_mod_col);
+                break;
+            case 1:
+                result = matrix_find_element(array, &length_y, &length_x, 5, mx_chk_less | mx_mod_col);
+                break;
+            case 2:
+                result = matrix_find_element(array, &length_y, &length_x, 5, mx_chk_more | mx_mod_col);
+                break;
+            case 3:
+                result = matrix_find_element(array, &length_y, &length_x, 3, mx_chk_not_div | mx_mod_col);
+                break;
+            }
+            if (!result)
+                printf("%d ", i);
+        }
+        if (i == columns)
+            printf("-");
+        printf("\n");
+    }
+    return;
+    printf("\n12.153, find column where:\n");
+    char* tasks_2[] = {"all elements equal 0:",
+                       "all elements more than 0 and less than 5:",
+                       "all elements even:",
+                       "elements quantity negative equal positive:",
+                       "there are equal elements:",
+                       "half of the values is the minimum:"};
+    int negative = 0, positive = 0, flag = 0;
+    length_x = rows;
+    length_y = columns;
+    min = matrix_info(array,&length_y,&length_x,mx_info_min);
+    for (i = 0; i < 6; ++i) {
+        printf("%s ", tasks_2[i]);
+        for (j = 0; j < columns; ++j, negative = 0, positive = 0, flag = 0, counter = 0)
+            for (k = 0; k < rows; ++k) {
+                if (i == 0) {
+                    if (array[k][j] != 0)
+                        break;
+                    if (k == rows - 1)
+                        printf("%d ", j);
+                } else if (i == 1) {
+                    if (array[k][j] < 0 || array[k][j] > 5)
+                        break;
+                    if (k == rows - 1)
+                        printf("%d ", j);
+                } else if (i == 2) {
+                    if (array[k][j] % 2 != 0)
+                        break;
+                    if (k == rows - 1)
+                        printf("%d ", j);
+                } else if (i == 3) {
+                    if (array[k][j] < 0)
+                        ++negative;
+                    if (array[k][j] > 0)
+                        ++positive;
+                    if (k == rows - 1 && negative == positive)
+                        printf("%d ", j);
+                } else if (i == 4) {
+                    int g = 0;
+                    for (g = 0; g < rows; ++g)
+                        if (g != k && array[g][j] == array[k][j])
+                            break;
+                    if (g != rows && flag == 0) {
+                        flag = 1;
+                        printf("%d ", j);
+                    }
+                } else {
+                    if (array[k][j] == array[length_x][length_y])
+                        ++counter;
+                    if (k == rows - 1 && counter == (rows / 2))
+                        printf("%d ", j);
+                }
+            }
+        printf("\n");
+    }
     return;
 }
