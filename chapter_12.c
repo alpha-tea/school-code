@@ -1,7 +1,7 @@
 ﻿#include "global.h"
 #include "library.h"
 
-static const int matrix_act_mask = 0x1F;            // Константная маска до модификатора. Изменить, если поменяется назначение бит.
+static const int matrix_action_mask = 0x1F;            // Константная маска до модификатора. Изменить, если поменяется назначение бит.
 static const int matrix_check_mask = 0xFF000;       // Маска для модификатора проверки массива или элемента.
 
 enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_column, mx_init_row,
@@ -201,7 +201,7 @@ int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enu
     int result = 0, counter = 0, square = 0, start_row = 0, start_column = 0, element = 0,
             first_last = 0, idx_col = 0, idx_row = 0, max = 0, min = 0, len_col = *columns,
             len_row = *rows, pair_mod = 0, pairs = 0;
-    result = ((type & matrix_act_mask) == mx_info_multiply) ? 1 : 0;
+    result = ((type & matrix_action_mask) == mx_info_multiply) ? 1 : 0;
     square = (type & mx_mod_sq) ? 1 : 0;
     start_column = (type & mx_mod_col) ? len_col++ : 0;
     start_row = (type & mx_mod_row) ? len_row++ : 0;
@@ -216,7 +216,7 @@ int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enu
                 element = data[i][j];
             else
                 element = data[i][j] * data[i][j];
-            switch (type & matrix_act_mask) {
+            switch (type & matrix_action_mask) {
             case mx_info_sum:
                 result += element;
                 break;
@@ -251,27 +251,27 @@ int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enu
                     ++pairs;
                 break;
             default:
-                printf("incorrect type of action %d;\n", type & matrix_act_mask);
+                printf("incorrect type of action %d;\n", type & matrix_action_mask);
                 return -1;
             }
         }
     if (counter)
         result /= counter;
-    if ((type & matrix_act_mask) == mx_info_max || (type & matrix_act_mask) == mx_info_min) {
+    if ((type & matrix_action_mask) == mx_info_max || (type & matrix_action_mask) == mx_info_min) {
         *columns = idx_col;
         *rows = idx_row;
-        if ((type & matrix_act_mask) == mx_info_max)
+        if ((type & matrix_action_mask) == mx_info_max)
             result = max;
         else
             result = min;
     }
-    if ((type & matrix_act_mask) == mx_info_pairs)
+    if ((type & matrix_action_mask) == mx_info_pairs)
         result = pairs;
     return result;
 }
 
 int matrix_check_element(int data[OBJECTS_MAX][OBJECTS_MAX], int column, int row, int parameter ,enum matrix_type check)
-{
+{   //если параметр проверки равен mx_nop, то вернуть 1.
     if (column < 0 || row < 0 || column >= OBJECTS_MAX || row >= OBJECTS_MAX) {
         printf("error check element: columns = %d, rows = %d, type = %d;\n", column, row, check);
         return -1;
@@ -319,7 +319,7 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
     }
     int result = 0, square = 0, start_row = 0, start_column = 0,
             element = 0, check_type = 0, par = *par_cnt; *par_cnt = 0;
-    result = ((check & matrix_act_mask) == mx_info_multiply) ? 1 : 0;
+    result = ((check & matrix_action_mask) == mx_info_multiply) ? 1 : 0;
     square = (check & mx_mod_sq) ? 1 : 0;
     start_column = (check & mx_mod_col) ? columns++ : 0;
     start_row = (check & mx_mod_row) ? rows++ : 0;
@@ -333,7 +333,7 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
                     element = data[i][j];
                 else
                     element = data[i][j] * data[i][j];
-                switch (check & matrix_act_mask) {
+                switch (check & matrix_action_mask) {
                 case mx_info_sum:
                     result += element;
                     break;
@@ -354,7 +354,7 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
                 ++*par_cnt;
             }
         }
-    if (*par_cnt && (check & matrix_act_mask) == mx_info_avr)
+    if (*par_cnt && (check & matrix_action_mask) == mx_info_avr)
         result /= *par_cnt;
     return result;
 }
@@ -439,6 +439,23 @@ int matrix_is_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows
 
 int matrix_update(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int values[], enum matrix_type type)
 {
+    // Функция обновления матрицы с учетом параметров проверки и модификаторов.
+    //Дополнительный массив парараметров.
+    // Смещения: +0 - параметр проверки, +1,2 - столбец и строка источника,
+    //+3,4 - столбец и строка назначения, +5 - параметры.
+    // Пример массива values: [0] = 2 - если проверка на четность, [1..2] = 0,1
+    //- первые столбец и вторая строка матрицы,
+    // [2..3] = 0, 3 - первый столбец и третья строка матрицы.
+    // [5] и далее: значения, которые используется для задания значений элемента
+    //или строки, столбца, если не указан источник.
+    // Если действие равно "переместить" элементы, то выполнить:
+    //переместить все четные элементы строки 1 в строку 3, остальные элементы оставить без изменений.
+    // По аналогии можно использовать координаты и строки и столбца или без них,
+    //тогда для всей матрицы.
+    // Индексы идут в порядке очереди и пропускаются, даже если их нет в действиях.
+    // Значения -1, означают, что параметры не заданы.
+    // Индексы удобней сделать через константы, например idx_par, idx_col_src, idx_row_dst и другие.
+
     //values[5] = {mx_chk_more | mx_mod_row | mx_upd_val, 1, -1, 5, -1, -1, [...]}; -
     //обновить значения матрицы в 5-й строке, все элементы больше 1-ы и заменить их на значения 7, 8, 9.
     //values[5] = {mx_upd_add | mx_mod_row | mx_chk_nop, -1, -1(column), 2(row - dest), -1(column), 4(row - src), [...]};
@@ -447,71 +464,82 @@ int matrix_update(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int
         printf("error mx_upd: columns = %d, rows = %d, type = %d;\n", columns, rows, type);
         return -1;
     }
-    int start_row = 0, start_column = 0, check_type = 0, check_upd = 0, counter = 0;
-    start_column = (values[0] & mx_mod_col) ? values[2]: 0;
-    columns = (values[0] & mx_mod_col) ? values[2] + 1: columns;
-    start_row = (values[0] & mx_mod_row) ? values[3]: 0;
-    rows = (values[0] & mx_mod_row) ? values[3] + 1: rows;
-    for (int i = mx_chk_idxs; i <= mx_chk_pairs; i <<= 1)
-        check_type = (values[0] & i) ? i: check_type;
-    for (int i = mx_upd_val; i <= mx_upd_roll; ++i)
-        check_upd = ((int)(values[0] & i) == i) ? i: check_upd;
-    //printf("%d:%d %d:%d", start_row, start_column, rows, columns);
-    for (int i = start_row; i < rows; ++i)
-        for (int j = start_column; j < columns; ++j) {
-            if (matrix_check_element(data, j, i, values[1], check_type))
-                switch (check_upd) {
+    const int idx_par = 0, idx_col_src = 1, idx_col_dst = 3, idx_row_src = 2, idx_row_dst = 4;
+    int size_cols = 0, size_rows = 0, check = type & matrix_check_mask,
+            action = type & matrix_action_mask;
+    int dir_h = 0, dir_v = 0;
+    if (action == mx_upd_val) {
+        size_cols = (type & mx_mod_col) ? 1 : values[idx_col_dst];
+        size_rows = (type & mx_mod_row) ? 1 : values[idx_row_dst];
+    } else if (action >= mx_upd_move && action < mx_upd_roll) {
+        size_cols = (values[idx_col_src] > values[idx_col_dst]) ? values[idx_col_src] : values[idx_col_dst];
+        size_rows = (values[idx_row_src] > values[idx_row_dst]) ? values[idx_row_src] : values[idx_row_dst];
+        size_cols = (type & mx_mod_col) ? 1: size_cols;
+        size_rows = (type & mx_mod_row) ? 1: size_rows;
+    } else if (action == mx_upd_roll) {
+        //Если используется вложенные циклы, то модификаторы размеров нужно изменить, мы используем функцию.
+        size_cols = abs(values[idx_col_dst] - values[idx_col_src]);
+        size_rows = abs(values[idx_row_dst] - values[idx_row_src]);
+    } else {
+        printf("type of update - incorrect;\n");
+        return -1;
+    }
+    if (action == mx_upd_roll && !(values[idx_col_src] == -1 || values[idx_col_dst] == -1
+                                   || values[idx_row_src] == -1 || values[idx_row_dst] == -1)) {
+        if (values[idx_col_dst] > values[idx_col_src])
+            dir_h = mx_roll_right;
+        else if (values[idx_col_dst] < values[idx_col_src])
+            dir_h = mx_roll_left;
+        else
+            dir_h = mx_nop;
+        if (values[idx_row_dst] > values[idx_row_src])
+            dir_v = mx_roll_down;
+        else if (values[idx_row_dst] < values[idx_row_src])
+            dir_v = mx_roll_up;
+        else
+            dir_v = mx_nop;
+    } else
+        return -1;
+    printf("size_rows/cols = %d:%d, roll_dir_vert = %d, roll_dir_hor = %d, action = %d;\n",
+           size_rows, size_cols, dir_v, dir_h, action);
+    for (int i = 0, idx_values = 5, src_i, src_j, dst_i, dst_j, element; i < size_rows && action != mx_upd_roll; ++i)
+        for (int j = 0; j < size_cols; ++j) {
+            src_i = values[idx_row_src] + i; src_j = values[idx_col_src] + j;
+            dst_i = values[idx_row_dst] + i; dst_j = values[idx_col_dst] + j;
+            if (matrix_check_element(data, src_j, src_i, values[idx_par], check)) {
+                if (values[idx_row_src] == -1 && values[idx_col_src] == -1)
+                    element = values[idx_values++];
+                else
+                    element = data[src_i][src_j];
+                switch (action) {
                 case mx_upd_val:
-                    data[i][j] = values[6 + counter++];
+                    data[dst_i][dst_j] = element;
                     break;
                 case mx_upd_move:
-                    if ((values[0] & mx_mod_col) && (values[0] & mx_mod_row))
-                        data[i][j] = data[values[5]][values[4]];
-                    else if (values[0] & mx_mod_row)
-                        data[i][j] = data[values[5]][j];
-                    else
-                        data[i][j] = data[i][values[4]];
+                    data[dst_i][dst_j] = element;
                     break;
                 case mx_upd_xchg:
-                    if ((values[0] & mx_mod_col) && (values[0] & mx_mod_row)) {
-                        int tmp = data[i][j];
-                        data[i][j] = data[values[5]][values[4]];
-                        data[values[5]][values[4]] = tmp;
-                    } else if (type & mx_mod_row) {
-                        int tmp = data[i][j];
-                        data[i][j] = data[values[5]][j];
-                        data[values[5]][j] = tmp;
-                    } else {
-                        int tmp = data[i][j];
-                        data[i][j] = data[i][values[4]];
-                        data[i][values[4]] = tmp;
-                    }
+                    data[src_i][src_j] = data[dst_i][dst_j];
+                    data[dst_i][dst_j] = element;
                     break;
                 case mx_upd_add:
-                    if ((values[0] & mx_mod_col) && (values[0] & mx_mod_row))
-                        data[i][j] += data[values[5]][values[4]];
-                    else if (values[0] & mx_mod_row)
-                        data[i][j] += data[values[5]][j];
-                    else
-                        data[i][j] += data[i][values[4]];
+                    data[dst_i][dst_j] += element;
                     break;
                 case mx_upd_mul:
-                    /*
-                    if (type & mx_mod_col)
-                        data[i][j] *= data[i][values[4]];
-                    else if (type & mx_mod_row)
-                        data[i][j] *= data[values[5]][j];
-                    else
-                        data[i][j] *= data[values[5]][values[4]];
+                    data[dst_i][dst_j] *= element;
                     break;
-                    */
-                    data[i][j] *= values[6];
                 case mx_upd_roll:
+                    printf("her code using without function");
                     break;
                 default:
-                    printf("error in type upd: columns = %d, rows = %d, type = %d;\n", columns, rows, check_upd);
+                    printf("error in type upd: columns = %d, rows = %d, type = %d;\n", columns, rows, action);
                 }
+            }
         }
+    if (action == mx_upd_roll && dir_v != mx_nop)
+        matrix_roll(data, columns, rows, size_rows, dir_v);
+    if (action == mx_upd_roll && dir_h != mx_nop)
+        matrix_roll(data, columns, rows, size_cols, dir_h);
     return 0;
 }
 /*
@@ -1588,7 +1616,7 @@ void chapter_12()
         }
     for (i = 0; i < 4; ++i)
         printf("%d ", square_sum[i]);
-    printf("\n\n12.191;\n");
+    printf("\n\n12.191;\n");            //Подписать top bottom left right;
     printf("source matrix:\n");
     matrix_print(array, square_size, square_size, 0, mx_prn_default);
     for (i = 0; i < ((square_size % 2 == 0) ? (square_size / 2 - 1) : (square_size / 2)); ++i)
@@ -1642,6 +1670,14 @@ void chapter_12()
         }
     printf("f)\n");
     matrix_print(array, square_size, square_size, 0, mx_prn_default);
+    int vals[OBJECTS_MAX] = {0, 0, 0, 0, 3, -1};
+    columns = rows = 3;
+    printf("source matrix:\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
+    printf("matrix_update:\n");
+    matrix_update(array, columns, rows, vals, mx_upd_roll);
+    printf("result matrix:\n");
+    matrix_print(array, columns, rows, 0, mx_prn_default);
     return;
     printf("\n12.193;\n");
     rows = columns = 5;
