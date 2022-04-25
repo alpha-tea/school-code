@@ -235,5 +235,5 @@ int uniq_gen_fast_symbols(char string[], int length);
 int bits_counter(int value);
 void bulls_and_cows();
 void hack_the_terminal(int length, int quantity, int attempts);
-
+void exam_8();
 #endif      // global.h

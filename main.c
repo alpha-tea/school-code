@@ -3,6 +3,8 @@
 
 #define STACK_MAX 64
 
+/*
+
 static unsigned char stack[STACK_MAX];
 static int sp;
 enum stack_type {stack_nop, stack_byte, stack_word, stack_dword};
@@ -108,6 +110,28 @@ int main()
         result = stack_pop(&data, &value);
         printf("sp = %d, type = %d, size = %d, value = %u;\n", sp, data.type, data.size, value);
     }
+    */
+
+
+int main()
+{
+    FILE * file = fopen("17_2.txt","r");
+    char string[256];
+    int array[10000], length = 0, max = 0, counter = 0;
+    while (fgets(string, 10, file) != NULL)
+        array[length++] = atoi(string);
+    for (int i = 0; i < length - 2; ++i) {
+        if ((array[i + 1] > 0 && (array[i + 1] % 10) == 9) &&
+                !(array[i] > 0 && (array[i] % 10) == 9) &&
+                !(array[i + 2] > 0 && (array[i + 2] % 10) == 9) ) {
+            ++counter;
+            if (array[i] + array[i + 1] + array[i + 2] > max)
+                max = array[i] + array[i + 1] + array[i + 2];
+        }
+    }
+    fclose(file);
+    printf("%d %d", counter, max);
+    //exam_17();
     return 0;
 }
 
