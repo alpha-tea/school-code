@@ -115,23 +115,31 @@ int main()
 
 int main()
 {
-    FILE * file = fopen("17_2.txt","r");
-    char string[256];
-    int array[10000], length = 0, max = 0, counter = 0;
-    while (fgets(string, 10, file) != NULL)
-        array[length++] = atoi(string);
-    for (int i = 0; i < length - 2; ++i) {
-        if ((array[i + 1] > 0 && (array[i + 1] % 10) == 9) &&
-                !(array[i] > 0 && (array[i] % 10) == 9) &&
-                !(array[i + 2] > 0 && (array[i + 2] % 10) == 9) ) {
+    /*
+    FILE * file = fopen("17.txt","r");
+    char string[256], c;
+    int array[10000], length = 0, str_len = 0, max = 0, counter = 0;
+    while ((c = fgetc(file)) != EOF) {
+        if (c != '\n')
+            string[str_len++] = c;
+        else {
+            string[str_len] = '\0';
+            array[length++] = atoi(string);
+            str_len = 0;
+        }
+    }
+    for (int i = 0; i < length - 1; ++i) {
+        if ((array[i] % 3 == 0 || array[i + 1] % 3 == 0)
+                && ((array[i] + array[i + 1]) % 5 == 0)) {
             ++counter;
-            if (array[i] + array[i + 1] + array[i + 2] > max)
-                max = array[i] + array[i + 1] + array[i + 2];
+            if (array[i] + array[i + 1] > max)
+                max = array[i] + array[i + 1];
         }
     }
     fclose(file);
     printf("%d %d", counter, max);
-    //exam_17();
+    */
+    exam_26();
     return 0;
 }
 
