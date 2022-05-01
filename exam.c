@@ -171,8 +171,8 @@ void exam_17()
 
 void exam_24()
 {
-//ABCDEF_CBABC_CBBBC_____CBCBC_____BCDBC_____CBEBC_CBEBC_CBFBC_CBFBC_B_CBDBC
-/*
+    //ABCDEF_CBABC_CBBBC_____CBCBC_____BCDBC_____CBEBC_CBEBC_CBFBC_CBFBC_B_CBDBC
+    /*
     Задание 24:
  Текстовый файл 24.txt содержит строку из заглавных букв A, B, C, D, E, F,
  всего не более чем из 106 символов.
@@ -294,6 +294,8 @@ void exam_25()
     }
 }
 
+#define ROWS_MAX 100000
+
 void exam_26()
 {
     /*
@@ -330,8 +332,8 @@ void exam_26()
         return;
     }
     char s[BUFF_SIZE];
-    int seats_data[BUFF_SIZE], total = 0, counter = 0,
-            max = -1, max_pos = -1, file_seats = 0, file_act = 0;
+    int seats_data[BUFF_SIZE], rows_data[ROWS_MAX], total = 0, counter = 0,
+            min = ROWS_MAX, min_row = -1, file_seats = 0, file_act = 0;
     if ((fgets(s, BUFF_SIZE, file)) == NULL) {
         printf("total seats error;\n");
         return;
@@ -341,28 +343,183 @@ void exam_26()
     printf("total seats = %d, seats data position = %d\n", total, file_seats);
     while ((fgets(s, BUFF_SIZE, file)) != NULL) {
         file_act = ftell(file);
-        s[strlen(s) - 1] = '\0';
+        s[strlen(s) - 1] = '\0';    // Необязательно
         printf("\nsource string: offset = %d '%s', ", file_act, s);
         char* s2 = strchr(s, ' ');
         *s2++ = '\0';
         int row = atoi(s), seat = atoi(s2);
         printf("row = '%s'(%d), seat = '%s'(%d);\n", s, row, s2, seat);
-        int row_size = 0;
-        seats_data[row_size++] = seat;
-        while ((fgets(s, BUFF_SIZE, file)) != NULL) {
-            s[strlen(s) - 1] = '\0';
-            s2 = strchr(s, ' ');
-            *s2++ = '\0';
-            int next_row = atoi(s), next_seat = atoi(s2);
-            printf("next row = '%s'(%d), next seat = '%s'(%d);\n", s, next_row, s2, next_seat);
-            if (next_row == row)
-                seats_data[row_size++] = next_seat;
-        }
-        printf("seats in row %d: ", row);
-        for (int i = 0; i < row_size; ++i)
-            printf("%d ", seats_data[i]);
+        int row_size = 0, is_loaded = 0;
+        for (int i = 0; i < counter; ++i)
+            if (rows_data[i] == row)
+                is_loaded = 1;
+        if (!is_loaded) {
+            rows_data[counter++] = row;
+            seats_data[row_size++] = seat;
+            while ((fgets(s, BUFF_SIZE, file)) != NULL) {
+                s[strlen(s) - 1] = '\0';
+                s2 = strchr(s, ' ');
+                *s2++ = '\0';
+                int next_row = atoi(s), next_seat = atoi(s2);
+                printf("next row = '%s'(%d), next seat = '%s'(%d);\n", s, next_row, s2, next_seat);
+                if (next_row == row)
+                    seats_data[row_size++] = next_seat;
+            }
+            printf("seats in row %d: ", row);
+            for (int i = 0; i < row_size; ++i)
+                printf("%d ", seats_data[i]);
+            printf("\nseats in row after sort:");
+            for (int i = 0; i < row_size; ++i)
+                for (int j = 0; j < row_size - i - 1; ++j)
+                    if (seats_data[j + 1] < seats_data[j]) {
+                        int t = seats_data[j];
+                        seats_data[j] = seats_data[j + 1];
+                        seats_data[j + 1] = t;
+                    }
+            for (int i = 0; i < row_size; ++i)
+                printf("%d ", seats_data[i]);
+            printf("\nsearch in pairs with min seats, ");
+            for (int i = 0; i < row_size - 1; ++i) {
+                if ((seats_data[i + 1] - seats_data[i] == 3) && (seats_data[i] < min)) {
+                    printf("min row is founded between %d and %d seats;\n",
+                           seats_data[i], seats_data[i + 1]);
+                    min = seats_data[i] + 1; //if ((seats_data[i] + 1) < min)
+                    min_row = row;
+                }
+            }
+            if (min_row != row)
+                printf("min is less then current row;\n");
+        } else
+            printf("row %d is already processed;\n", row);
         fseek(file, file_act, SEEK_SET);
     }
+    printf("\nmin seat is %d, row is %d and rows in buffer = %d;\n", min, min_row, counter);
+    printf("rows in buffer: ");
+    for (int i = 0; i < counter; ++i)
+        printf("%d ", rows_data[i]);
+    if (fclose(file))
+        printf("error: can't close file");
+}
+
+static int group_data[BUFF_SIZE], lcm_size[BUFF_SIZE], lcm_data[BUFF_SIZE][BUFF_SIZE];
+
+void exam_27()
+{
+    /*
+     Задание 27:
+    Набор данных состоит из групп натуральных чисел, каждая группа записана в отдельной строке.
+    В любой группе содержится не менее двух чисел.
+    Из каждой группы выбрали два числа и нашли их наименьшее общее краткое (НОК).
+    Затем все полученные таким образом значения НОК сложили. Определите наибольшую сумму,
+    кратную числу 5 или 7 (но не одновременно двум этим числам),
+    которая может быть получена таким образом.
+    Входные данные. Даны два входных файла (файл A и файл B),
+    каждый из которых содержит в первой строке количество чисел N (2 ≤ N ≤ 100000).
+    В каждой из следующих N строк файлов записан сначала размер группы K (N <= 10),
+    а затем – K натуральных чисел, не превышающих 500.
+
+    4 - количество групп чисел.
+    2 8 6 - группа из двух чисел (одна пара).
+    3 2 7 8 - группа из 3-х (три пары).
+    2 6 5 - группа из двух чисел (одна пара).
+    4 7 3 8 6 - группа из четырёх чисел (шесть пар).
+    1-я группа НОК = 24;
+    2-я группа НОК = 14, 8, 56;
+    3-я группа НОК = 30;
+    4-я группа НОК = 6, 21, 24, 24, 42, 56;
+    Сумма = 24 + 14 + 30 + 42 = 110 (оно делится на 5);
+    Комбинации: n * (n / 2) = 500 * 250 = 125000 * 100000 = 12.500.000.000 = 12.5 * 10^9 * 4 ~ 50Gb;
+    */
+    printf("Test 27. Variant 1:\n");
+    FILE*  file = fopen("27_2.txt", "r");
+    if (file == NULL) {
+        printf("error: file '27_1' not found;\n");
+        return;
+    }
+    char s[BUFF_SIZE];
+    int total = 0, counter = 0, group_size = 0, i = 0, j = 0, k = 0;
+    if ((fgets(s, BUFF_SIZE, file)) == NULL) {
+        printf("total seats error;\n");
+        return;
+    }
+    total = atoi(s);
+    printf("total groups = %d\n", total);
+    while ((fgets(s, BUFF_SIZE, file)) != NULL) { // сохраняем все НОК для последующего перебора.
+        char* s_next, *s_data;
+        s[strlen(s) - 1] = '\0';
+        s_next = strchr(s, ' ');
+        *s_next++ = '\0';
+        group_size = atoi(s);
+        printf("\n\ngroup data founded, size is '%s' and %d: ", s, group_size);
+        for (i = 0; s_next != NULL; s_next = s_data, ++i) {
+            s_data = strchr(s_next, ' ');
+            if (s_data != NULL)
+                *s_data++ = '\0';
+            group_data[i] = atoi(s_next);
+            printf("'%s'(%d) ", s_next, group_data[i]);
+        }
+        printf("\n All LCM in group %d; Pair n-m and (LCM): ", counter);
+        //Все числа в группе уникальны, если будут повторения, то подстаховаться.
+
+        int gcd, lcm, lcm_sum;
+        for (i = 0, lcm_size[counter] = 0; i < group_size - 1; ++i) {
+            for (j = i + 1; j < group_size; ++j) {
+                int a = group_data[i], b = group_data[j]; //Если что - функция.
+                while (a != 0 && b != 0)
+                    if (a > b)
+                        a %= b;
+                    else
+                        b %= a;
+                gcd = a + b;
+                lcm = abs(group_data[i] * group_data[j]) / gcd;
+                lcm_data[counter][lcm_size[counter]] = lcm;
+                ++lcm_size[counter];
+                printf("%d-%d(%d) ", group_data[i], group_data[j], lcm);
+            }
+        }
+        ++counter;
+    }
+
+
+    for (i = 0; i < counter; ++i)
+        for (j = 0; j < lcm_size[i]; ++j)
+            for (k = 0; k < lcm_size[i] - j - 1; ++k)
+                if (lcm_data[i][k] < lcm_data[i][k + 1]) {
+                    int t = lcm_data[i][k];
+                    lcm_data[i][k] = lcm_data[i][k + 1];
+                    lcm_data[i][k + 1] = t;
+                }
+    printf("\n\nAll LCM data(maybe) sorted: ");
+    for (i = 0; i < counter; ++i) {
+        printf("\n%d, size = %d: ", i , lcm_size[i]);
+        for (j = 0; j < lcm_size[i]; ++j)
+            printf("%d ", lcm_data[i][j]);
+    }
+
+    int sum_idx[BUFF_SIZE], idxs[BUFF_SIZE], sum = -1, sum_max = -1;
+    for (i = 0; i < BUFF_SIZE; ++i) {
+        sum_idx[i] = -1;
+        idxs[i] = 0;
+    }
+    printf("\n\nSearch max sum from LCM groups divided by 5 or 7 (not both);");
+    do {
+        printf("\nindexes and data to sum: ");
+        for (i = 0, sum = 0; i < counter; ++i) {
+            sum += lcm_data[i][idxs[i]];
+            printf("%d:%d(%d) ", idxs[i], lcm_data[i][idxs[i]], sum);
+        }
+        if ((sum % 5 == 0 || sum % 7 == 0) && !(sum % 5 == 0 && sum % 7 == 0)) {
+            printf("-Yes, sum is founded, ");
+            if (sum > sum_max) {
+                sum_max = sum;
+                printf("new max = %d;\n", sum_max);
+            } else
+                printf("but less than max %d;\n", sum_max);
+        }
+        i = 0;
+        while (i < counter && ++idxs[i] == lcm_size[i])
+            idxs[i++] = 0;
+    } while(i < counter);
     if (fclose(file))
         printf("error: can't close file");
 }

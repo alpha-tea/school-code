@@ -139,7 +139,7 @@ int main()
     fclose(file);
     printf("%d %d", counter, max);
     */
-    exam_26();
+    exam_27();
     return 0;
 }
 
