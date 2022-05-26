@@ -1,6 +1,277 @@
 ﻿#include "global.h"
 #include "library.h"
 
+/*
+#define STACK_MAX 64
+
+
+static unsigned char stack[STACK_MAX];
+static int sp;
+enum stack_type {stack_nop, stack_byte, stack_word, stack_dword};
+static const char* stack_type_name[] = {"no type", "byte", "word", "double word"};
+static const int stack_type_size[] = {0, sizeof(char), sizeof(short), sizeof(int)};
+
+struct stack_object {
+    enum stack_type type; // необязательно
+    int size;
+};
+
+void stack_init()
+{
+    sp = STACK_MAX;
+    for (int i = 0; i < STACK_MAX; ++i)
+        stack[i] = 0;
+}
+
+int stack_size()
+{
+    return  STACK_MAX - sp;
+}
+
+void stack_memory()
+{
+    printf("stack memory\n");
+    printf("offset:\tdata:\n");
+    for (int i = STACK_MAX - 1; i >= sp; --i)
+        printf("%d\t%3d\n", i, stack[i]);
+}
+
+int stack_push(struct stack_object* info, void* data)
+{
+    if ((info->type < stack_nop || info->type > stack_dword) ||
+            sp < (int)(info->size + sizeof(struct stack_object))) {
+        printf("data type error or stack full;\n");
+        return -1;
+    }
+    unsigned char* obj_ptr = (unsigned char*)(info);
+    unsigned char* data_ptr = (unsigned char*)(data);
+    printf("sp = %d, type = %s, size = %d;\n", sp, stack_type_name[info->type], info->size);
+    sp -= info->size;
+    for (int i = 0; i < info->size; ++i, ++sp, ++data_ptr) {
+        stack[sp] = *data_ptr;
+        printf("sp = %d, data = %d;\n", sp, *data_ptr);
+    }
+    sp -= sizeof(struct stack_object) + info->size;
+    for (int i = 0; i < (int)(sizeof(struct stack_object)); ++i, ++sp, ++obj_ptr) {
+        stack[sp] = *obj_ptr;
+        printf("info = %d;\n", *obj_ptr);
+    } // Можно через реинтепритацию типа.
+    sp -= sizeof(struct stack_object);
+    return 0;
+}
+
+int stack_pop(struct stack_object* info, void* data)
+{
+    if (sp == STACK_MAX) {
+        printf("stack is empty;\n");
+        return -1;
+    }
+    printf("%d", stack[sp]);
+    struct stack_object *object_ptr = (struct stack_object*)(&stack[sp]);
+    info->type = object_ptr->type;
+    info->size = object_ptr->size;
+    unsigned char* data_ptr = (unsigned char*)(data);
+    sp += sizeof(struct stack_object);
+    for (int i = 0; i < object_ptr->size; ++i, ++sp, ++data_ptr) {
+        *data_ptr = stack[sp];
+        printf("sp = %d, data = %d;\n", sp, *data_ptr);
+    }
+    return 0;
+}
+
+
+
+    printf("simple stack with data types(data size):\n");
+    for (enum stack_type t = stack_nop; t <= stack_dword; ++t)
+        printf("%s(%d);\n", stack_type_name[t], stack_type_size[t]);
+    printf("size of structure 'stack object' and offsets: bytes total = %u;\n",
+           sizeof (struct stack_object));
+    struct stack_object data;
+    printf("Type: offset = %lu, size = %u bytes;\n",
+           (unsigned long)(&data.type) - (unsigned long)(&data), sizeof(data.type));
+    printf("Size: offset = %lu, size = %u bytes;\n",
+           (unsigned long)(&data.size) - (unsigned long)(&data), sizeof(data.size));
+    stack_init();
+    //sp -= 5;
+    int result = 0;
+    unsigned int value;
+    unsigned int mask[] = {0, 0xFF, 0xFFFF, 0xFFFFFFFF};
+    do {
+        data.type = (rand() % 3) + 1;
+        data.size = stack_type_size[data.type];
+        value = rand() & mask[data.type];
+        printf("value push = %u;\n", value);
+        result = stack_push(&data, &value);
+        stack_memory();
+    } while (result != -1);
+    result = 0;
+    while (result != -1) {
+        value = 0;
+        result = stack_pop(&data, &value);
+        printf("sp = %d, type = %d, size = %d, value = %u;\n", sp, data.type, data.size, value);
+    }
+ */
+
+/*
+#define QUEUE_MAX 256
+
+unsigned char queue[QUEUE_MAX];
+int queue_size;
+
+struct queue_object {
+    short code;	// Случайный код.
+    char name;	// И его обозначение буквой.
+};
+
+void queue_init()
+{
+    printf("Initialization of queue, size = 0 and clear all data;\n");
+    for (int i = 0; i < QUEUE_MAX; ++i)
+        queue[i] = 0;
+    queue_size = 0;
+}
+
+void queue_print(int field, int is_all)
+{
+    printf("Print queue, size = %d;\n", queue_size);
+    printf("idx:\tdh:\tdl:\tcode:\tname:\n");
+    const int size = sizeof(struct queue_object), base = 10;
+    for (int i = 0; i < size * queue_size || (is_all && i < QUEUE_MAX); i += size) {
+        struct queue_object obj;
+        int dh = queue[i + sizeof(char)];
+        int dl = queue[i];
+        printf("%d\t%d\t%d\t", i, dh, dl);
+        obj.code = (dh << CHAR_BIT) + dl;
+        obj.name = queue[i + sizeof(short)];
+        char code[QUEUE_MAX];
+        code[field] = '\0';
+        for (int j = field - 1; j >= 0; --j) { // Or use while() or obj.code > 0;
+            code[j] = '0' + obj.code % base;
+            obj.code /= base;
+        }
+        printf("%s\t%c\n", code, obj.name);
+    }
+}
+
+int queue_first(struct queue_object* object)
+{
+    if (!queue_size) {
+        printf("Queue is empty;\nerror reading first element;\n");
+        return -1;
+    }
+    object->code = queue[0] + (queue[sizeof(char)] << CHAR_BIT);
+    object->name = queue[sizeof(short)];
+    printf("First element is %d code, name = '%c';\n", object->code, object->name);
+    return 0;
+}
+
+int queue_last(struct queue_object* object)
+{
+    if (!queue_size) {
+        printf("Queue is empty;\nerror reading last element;\n");
+        return -1;
+    }
+    int last = (queue_size - 1) * sizeof(struct queue_object);
+    object->code = queue[last] + (queue[last + sizeof(char)] << CHAR_BIT);
+    object->name = queue[last + sizeof(short)];
+    printf("Last element is %d code, name = '%c';\n", object->code, object->name);
+    return 0;
+}
+
+int queue_push(struct queue_object* object)
+{
+    if (queue_size == QUEUE_MAX / sizeof(struct queue_object)) {
+        printf("can't push new element, queue is full, size = %d;\n", queue_size);
+        return -1;
+    }
+    const int size = sizeof(struct queue_object);
+    for (int i = (queue_size + 1) * size; i >= size; --i)
+        queue[i] = queue[i - size];
+    unsigned char dh = object->code >> CHAR_BIT, dl = object->code & UCHAR_MAX;
+    queue[0] = dl;
+    queue[sizeof(char)] = dh;
+    queue[sizeof(short)] = object->name;
+    ++queue_size;
+    printf("Push new element to start queue, code = %d(dh = %d, dl = %d), "
+                "name = '%c', and new size is %d;\n", object->code, dh, dl, object->name, queue_size);
+    return 0;
+}
+
+int queue_pop(struct queue_object* object)
+{
+    if (!queue_size) {
+        printf("queue is empty, nothing to pop;\n");
+        return -1;
+    }
+    int last = --queue_size * sizeof(struct queue_object);
+    object->code = queue[last] + (queue[last + sizeof(char)] << CHAR_BIT);
+    object->name = queue[last + sizeof(short)];
+    printf("Pop last element from queue, code = %d, name = '%c' and new size = %d;\n",
+           object->code, object->name, queue_size);
+    return 0;
+}
+
+int queue_reverse(void) {
+    if (queue_size < 2) {
+        printf("Queue has less than 2 elements, size = %d;\n", queue_size);
+        return -1;
+    }
+    printf("Reverse elements in queue;\n");
+    struct queue_object obj;
+    const int size = sizeof(struct queue_object);
+    for (int i = 0; i < queue_size / 2; ++i) {
+        int idx_a = i * size;
+        int idx_b = (queue_size - i - 1) * size;
+        obj.code = queue[idx_a] + (queue[idx_a + sizeof(char)] << CHAR_BIT);
+        obj.name = queue[idx_a + sizeof(short)];
+        printf("Left element, code = %d, name = '%c' at index = %d;\n", obj.code, obj.name, idx_a);
+        obj.code = queue[idx_b] + (queue[idx_b + sizeof(char)] << CHAR_BIT);
+        obj.name = queue[idx_b + sizeof(short)];
+        printf("Right element, code = %d, name = '%c' at index = %d;\n", obj.code, obj.name, idx_b);
+        for (int j = 0; j < size; ++j)
+            queue[idx_b + j] = queue[idx_a + j];
+        queue[idx_a] = obj.code & UCHAR_MAX;
+        queue[idx_a + sizeof(char)] = obj.code >> CHAR_BIT;
+        queue[idx_a + sizeof(short)] = obj.name;
+    }
+    return 0;
+}
+
+int main()
+{
+    printf("Simple queue with struct;\n");
+    const int debug_elements = 5;
+    queue_init();
+    struct queue_object obj;
+    printf("Size of structure = %u, size of char = %u, size of short = %u,"
+            "bits in char = %u, uchar max = %u", sizeof(struct queue_object), sizeof(char), sizeof(short),
+           CHAR_BIT, UCHAR_MAX);
+    printf("\nname:\toffset:\t\tsize:\n");
+    printf("code:\t%p\t%u\n", NULL, sizeof(obj.code));
+    printf("name:\t%p\t%u\n", (void*)((void*)&obj.name - (void*)&obj), sizeof(obj.name));
+    for (int i = 0; i < debug_elements; ++i) {
+        obj.code = rand() % SHRT_MAX;
+        obj.name = 'A' + rand() % 26;
+        printf("\nadding element to queue, code = %d, name = '%c';\n", obj.code, obj.name);
+        queue_push(&obj);
+        queue_print(5, 0);
+    }
+    printf("\n");
+    queue_first(&obj);
+    printf("\n");
+    queue_last(&obj);
+    printf("\n");
+    for (int i = 0; i < debug_elements - 4; ++i) {
+        printf("Pop %d element from queue tail;\n", i);
+        queue_pop(&obj);
+    }
+    queue_print(5, 0);
+    printf("\n");
+    queue_reverse();
+    queue_print(5, 0);
+    return 0;
+}
+ */
 int chars_counter(char s[],  char c)
 {
     int index = 0, counter = 0;

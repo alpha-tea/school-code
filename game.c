@@ -261,3 +261,4 @@ void stalker_best_combination_of_artifacts()
                                                             }
 
 }
+

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
+#include <string.h>
 //#include <stdbool.h>
 #include <time.h>
 

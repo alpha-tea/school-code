@@ -792,7 +792,7 @@ void chapter_10()
     percent = (double)total_symb / (double)total_len * 100;
     printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
     printf("First symbol in all texts: %d\n", idx);
-    char commands[OBJECTS_MAX][STRING_MAX] = {"V0102"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
+    char commands[OBJECTS_MAX][STRING_MAX] = {"P06B80"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
     const int commands_size = 1;
     char screen[OBJECTS_MAX * OBJECTS_MAX];
     const int screen_size = 16;
@@ -956,6 +956,7 @@ void chapter_10()
         }
         printf("result commands string: '%s'",commands[k]);
     }
+    return;
     int a1 = 1, b1 = 2, c1 = 3 , d1 = 4;
     printf("\n10.38, exchange of values, a = %d, b = %d, c = %d, d = %d;\n", a1, b1, c1, d1);
     exchange_of_values(&a1,&b1);
