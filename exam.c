@@ -450,15 +450,15 @@ void exam_27()
         s_next = strchr(s, ' ');
         *s_next++ = '\0';
         group_size = atoi(s);
-        printf("\n\ngroup data founded, size is '%s' and %d: ", s, group_size);
+        //printf("\n\ngroup data founded, size is '%s' and %d: ", s, group_size);
         for (i = 0; s_next != NULL; s_next = s_data, ++i) {
             s_data = strchr(s_next, ' ');
             if (s_data != NULL)
                 *s_data++ = '\0';
             group_data[i] = atoi(s_next);
-            printf("'%s'(%d) ", s_next, group_data[i]);
+            //printf("'%s'(%d) ", s_next, group_data[i]);
         }
-        printf("\n All LCM in group %d; Pair n-m and (LCM): ", counter);
+        //printf("\n All LCM in group %d; Pair n-m and (LCM): ", counter);
         //Все числа в группе уникальны, если будут повторения, то подстаховаться.
 
         int gcd, lcm, lcm_sum;
@@ -491,9 +491,9 @@ void exam_27()
                 }
     printf("\n\nAll LCM data(maybe) sorted: ");
     for (i = 0; i < counter; ++i) {
-        printf("\n%d, size = %d: ", i , lcm_size[i]);
+        //printf("\n%d, size = %d: ", i , lcm_size[i]);
         for (j = 0; j < lcm_size[i]; ++j)
-            printf("%d ", lcm_data[i][j]);
+            ;//printf("%d ", lcm_data[i][j]);
     }
 
     int sum_idx[BUFF_SIZE], idxs[BUFF_SIZE], sum = -1, sum_max = -1;
@@ -506,15 +506,15 @@ void exam_27()
         printf("\nindexes and data to sum: ");
         for (i = 0, sum = 0; i < counter; ++i) {
             sum += lcm_data[i][idxs[i]];
-            printf("%d:%d(%d) ", idxs[i], lcm_data[i][idxs[i]], sum);
+            //printf("%d:%d(%d) ", idxs[i], lcm_data[i][idxs[i]], sum);
         }
         if ((sum % 5 == 0 || sum % 7 == 0) && !(sum % 5 == 0 && sum % 7 == 0)) {
             printf("-Yes, sum is founded, ");
             if (sum > sum_max) {
                 sum_max = sum;
-                printf("new max = %d;\n", sum_max);
+                ;//printf("new max = %d;\n", sum_max);
             } else
-                printf("but less than max %d;\n", sum_max);
+                ;//printf("but less than max %d;\n", sum_max);
         }
         i = 0;
         while (i < counter && ++idxs[i] == lcm_size[i])
@@ -523,6 +523,4 @@ void exam_27()
     if (fclose(file))
         printf("error: can't close file");
 }
-
-
 
