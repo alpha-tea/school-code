@@ -225,6 +225,21 @@ void chapter_11();
 
 // Функции и константы для одиннадцатой главы задачника.
 
+enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_column, mx_init_row,
+                   mx_cr_val, mx_cr_rnd, mx_cr_ariphmetic, mx_cr_geometry,
+                   mx_roll_left, mx_roll_right, mx_roll_up, mx_roll_down,
+                   mx_info_status, mx_info_sum, mx_info_multiply, mx_info_avr, mx_info_min, mx_info_max, mx_info_pairs, mx_info_idxs,
+                   mx_upd_val, mx_upd_move, mx_upd_xchg,  mx_upd_add, mx_upd_mul, mx_upd_roll,
+                   mx_prn_default = 0x20,  mx_prn_row = 0x40, mx_prn_column = 0x80, mx_prn_flipv = 0x100, mx_prn_fliph = 0x200, mx_prn_field = 0x400,
+                   mx_chk_idxs = 0x800, mx_chk_equal = 0x1000, mx_chk_more = 0x2000, mx_chk_less = 0x4000,
+                   mx_chk_not_div = 0x8000, mx_chk_div = 0x10000, mx_chk_pairs = 0x20000, mx_chk_dsc = 0x40000, mx_chk_asc = 0x80000,
+                   mx_mod_col = 0x100000, mx_mod_row = 0x200000, mx_mod_sq = 0x400000, mx_mod_last = 0x800000, mx_end = 0x1000000
+                 };
+
+int matrix_print(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int parameter, enum matrix_type type);
+int matrix_init(int data[OBJECTS_MAX][OBJECTS_MAX], int init[OBJECTS_MAX][OBJECTS_MAX],
+                int columns, int rows, int par, enum matrix_type type);
+
 void chapter_12();
 
 // Функции и константы для дополнительных задач.

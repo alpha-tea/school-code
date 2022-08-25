@@ -191,6 +191,75 @@ int stalker_evaluation_function(int properties[])
     return (int)(points);
 }
 
+int checking_nearby_paths(int size, int place[size][size], int x, int y)
+{
+    int sum = 0;
+    if (x < size - 1 && place[x + 1][y] == '*')
+        ++sum;
+    if (y < size - 1 && place[x][y + 1] == '*')
+        ++sum;
+    if (x > 0 && place[x - 1][y] == '*')
+        ++sum;
+    if (y > 0 && place[x][y - 1] == '*')
+        ++sum;
+    if (sum > 1)
+        return 0;
+    else
+        return 1;
+}
+
+void labyrinth_direction_create(int size, int place[size][size], int *x, int *y, int *branches_counter, char empty)
+{
+    int way = 0, flag = 0, result = 0;
+    int directions[][2] = { {-1, 0}, {0, +1}, {+1, 0}, {0, -1}};
+    while (flag == 0) {
+        way = rand() % 4;
+        int tmp_x = *x + directions[way][0], tmp_y = *y + directions[way][1];
+        if (tmp_x >= 0 && tmp_x < size && tmp_y >= 0 && tmp_y < size &&
+                place[tmp_x][tmp_y] == empty) {
+            result = checking_nearby_paths(size, place, tmp_x, tmp_y);
+            if (result) {
+                flag = 1;
+                *x = tmp_x;
+                *y = tmp_y;
+            }
+        }
+    }
+    place[*x][*y] = '*';
+    ++branches_counter;
+    if (!(rand() % 4)) {
+         labyrinth_direction_create(size, place, x, y, branches_counter, empty);
+        ++branches_counter;
+    }
+}
+
+void labyrinth_basic_create(int size, int place[size][size], int branches, char empty)
+{
+    int x = 0, y = 0, branches_counter = 0;
+    while (branches_counter < branches && x < size && y < size) {
+        labyrinth_direction_create(size, place, &x, &y, &branches_counter, empty);
+    }
+    ++branches_counter;
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y)
+            printf("%c", place[x][y]);
+        printf("\n");
+    }
+    return;
+}
+
+void labyrinth(int size, int branches)
+{
+    srand(time(NULL));
+    int place[size][size];
+    char empty = ' ';
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j)
+            place[i][j] = empty;
+    place[0][0] = '*';
+    labyrinth_basic_create(size, place, branches, empty);
+}
+
 void stalker_best_combination_of_artifacts()
 {
     const int artifacts_quantity = 15;
