@@ -76,7 +76,7 @@ int main()
         //printf("\n");
     }
     */
-    task_12();
+    task_14();
     return 0;
 }
 

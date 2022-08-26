@@ -837,6 +837,118 @@ void task_12()
     printf("result after replace: '%s', and sum of digits = %d;\n", digits, sum_digits);
 }
 
+void task_22()
+{
+    /*
+     Ниже на трёх языках программирования записан алгоритм.
+     Получив на вход число X, этот алгоритм печатает одно число.
+     Укажите наименьшее число Х, большее 80,
+     при вводе которого алгоритм печатает число 17.
+     */
+    printf("Task 22. Param X with source code result 17;\n");
+    int x = 80, y = 0, s = 0;
+    while (s != 17) {
+        y = ++x;
+        s = 0;
+        while (y > 0) {
+            s = s + y % 9;
+            y /= 3;
+        }
+        printf("param = %d, result = %d;\n", x, s);
+    }
+    printf("result = %d and x = %d;\n", s, x);
+}
+
+void print_words(unsigned short regs[], int words)
+{
+    for (int i = 0; i < words; ++i) {
+        printf("reg %d:\t", i);
+        for (unsigned short bits = sizeof(short) * CHAR_BIT - 1, mask = 0x8000; mask; --bits, mask >>= 0x01)
+            printf("%d", (regs[i] & mask) >> bits);
+        printf("\n");
+    }
+}
+
+void task_14()
+{
+    /*
+     Значение выражения (64^25 + 4^10) – (16^20 + 32^3)
+     записали в системе счисления с основанием 4.
+     В каком разряде четверичной записи числа при просмотре
+     справа налево впервые встречается цифра 2?
+     */
+    // Сложение и вычитание по степеням. Умножения и деления нету.
+    // 4 ^ 4 = 2 ^ (2 * 4) = 2 ^ 8 = 256.
+    // (8 ^ 2 + 4 ^ 2) - (16 ^ 1 + 20) =
+    // = (2^(3*2) + 2^(2*2)) - (2^4 + 2^4 + 2^2) =
+    // = (2^6 + 2^4) - (2^4 + 2^4 + 2^2).
+    // Максимальное значение 16 бит
+    unsigned short regs[4] = {512, 4096};
+    printf("Digits info in expr, 16 bits maximum: (8^2 + 4^2) - (16^1 + 20) = "
+           "(2^(3*2) + 2^(2*2)) - (2^4 + 2^4 + 2^2) = "
+           "(2^6 + 2^4) - (2^4 + 2^4 + 2^2).\n");
+    printf("Example R1 decimal %d, octal %o, R2 decimal %d, hex %x;\n",
+           regs[0], regs[0], regs[1], regs[1]);
+    printf("All digits from left to right, from high to low memory;\n");
+    printf("\nAdd 2^6 + 2^3;\n");
+    regs[0] = 0x01 << 0x06;
+    regs[1] = 0x01 << 0x03;
+    regs[2] = regs[0] + regs[1];
+    print_words(regs, 3);
+    printf("\nsub 2^1 from 72, counter of 1 (max of base) is diff in positions;\n");
+    regs[0] = regs[2];
+    regs[1] = 0x01 << 0x01;
+    regs[2] = regs[0] - regs[1];
+    print_words(regs, 3);
+    printf("\nMultiply digits in position to any number, 5 * 2^4, move left;\n");
+    regs[0] = 0x01 << 0x04;
+    regs[1] = 0x05;
+    regs[2] = regs[0] * regs[1];
+    print_words(regs, 3);
+    printf("\nDivide any number in position, 80 / 2^3, move right;\n");
+    regs[0] = 0x50;
+    regs[1] = 0x01 << 0x03;
+    regs[2] = regs[0] / regs[1];
+    print_words(regs, 3);
+    printf("\nCalculate expression: (2^4 + 2^4 + 2^2);\n");
+    regs[0] = 0x01 << 0x04;
+    regs[1] = regs[0];
+    regs[2] = 0x01 << 0x02;
+    regs[3] = regs[0] + regs[1] + regs[2];
+    print_words(regs, 4);
+    printf("\nCalculate expression: (2^6 + 2^4);\n");
+    regs[0] = 0x01 << 0x06;
+    regs[1] = 0x01 << 0x04;
+    regs[2] = regs[0] + regs[1];
+    print_words(regs, 3);
+    printf("\nCalculate expression: (2^6 + 2^4) - (2^4 + 2^4 + 2^2);\n");
+    regs[0] = regs[2];
+    regs[1] = regs[3];
+    regs[2] = regs[0] - regs[1];
+    regs[3] = 0;
+    print_words(regs, 3);
+    printf("Bits counter in result: ");
+    while(regs[2]) {
+        printf("%d", regs[2] & 0x01);
+        regs[3] += regs[2] & 0x01;
+        regs[2] >>= 0x01;
+    }
+    printf("\nTotal %d bits;\n", regs[3]);
+    printf("Simple method source expression: (64^25 + 4^10) – (16^20 + 32^3);\n");
+    const int base = 4;
+    printf("Expression using base: %d;\n", base);
+    printf("(4^(3*25) + 4^10) - (4^(2*20) + 4^7 + 4^7);\n");
+    // 32^3 = 1024 * 32 = 32768 = 16384 + 16384 = 4^7 + 4^7;
+    printf("powers to add 75, 10, powers to sub 40, 2 * 7;\n");
+    printf("digits 3, counter from 75 to 40 = 35. 0333..[35]");
+    printf("digits 3, counter from 10(10 less than 40 and 35) - 2 = 8. (0333[8]);\n");
+    printf("decriase digits from previous from 7 = 8 - 7 = 02333..[7];\n");
+    printf("Result 7 as sub;\n");
+    //1.000.000 - 10.000 = 990.000, powers 6 - 4
+    // 990.000 + 1.000 = 991.000 powers 5 + 3
+    // 991.000 - 100 = 990.900 = powers 3 - 2
+    // 990.900 - 100 = 990.800 = powers 3 - 2 (3 - n)
+}
 
 
 
