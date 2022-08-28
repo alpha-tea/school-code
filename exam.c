@@ -950,7 +950,82 @@ void task_14()
     // 990.900 - 100 = 990.800 = powers 3 - 2 (3 - n)
 }
 
-
+void task_15()
+{
+    /*
+     На числовой прямой даны два отрезка: P=[10,29] и Q=[13,18].
+     Укажите наибольшую возможную длину такого отрезка A, что формула
+     ((x ∈ A) → (x ∈ P)) ∨ (x ∈ Q)
+     тождественно истинна, то есть принимает значение 1 при любом значении переменной х.
+     */
+#define SEG_MAX 8
+    const int points = 4, infinity = -1;
+    int pts[SEG_MAX] = {10, 29, 33, 38}, segs[SEG_MAX], sizes[SEG_MAX], prev_seg = -1, ranges = 0;
+    printf("Expression: ((X from A) -> (X from P)) or (X from Q), where P=[%d:%d] and Q=[%d:%d],"
+        " A has max rage;\n", pts[0], pts[1], pts[2], pts[3]);
+    for (int i = 0; i < SEG_MAX; ++i) {
+        if (i < points)
+            segs[i] = pts[i];
+        else
+            segs[i] = 0;
+        sizes[i] = 0;
+    }
+    for (int i = 0; i < points; ++i)
+        for (int j = 0; j < points - 1; ++j)
+            if (segs[j] > segs[j + 1]) {
+                int tmp = segs[j];
+                segs[j] = segs[j + 1];
+                segs[j + 1] = tmp;
+            }
+    printf("Cheking values in all %d segments;\n", points + 1);
+    for (int i = 0, j = 0, size = 0; i < points + 1; ++i) {
+        if (i == 0) {
+            printf("Segment(-,%d]: ", segs[0]);
+            j = segs[i] - 1;
+            if (1 <= (j >= pts[0] && j <= pts[1]) || (j >= pts[2] && j <= pts[3]))
+                ++j; //С точки зрения математики возможен цикл.
+            size = infinity;
+        } else if (i < points) {
+            printf("Segment[%d,%d]: ", segs[i - 1], segs[i]);
+            for (j = segs[i - 1]; j < segs[i]; ++j) //Оптимизация!
+                if (!(1 <= (j >= pts[0] && j <= pts[1]) || (j >= pts[2] && j <= pts[3])))
+                    break;
+            size = segs[i] - segs[i - 1];
+        } else  {
+            printf("Segment:[%d,+): ", segs[i - 1]);
+            j = segs[i - 1] + 1;
+            if (1 <= (j >= pts[0] && j <= pts[1]) || (j >= pts[2] && j <= pts[3]))
+                --j;
+            size = infinity;
+        }
+        if (j == segs[i]) {
+            printf("Yes, expression is true and ");
+            if (i > 0 && size != infinity && ((i - 1) == prev_seg) && ranges > 0) {
+                // Правая точка предыдущего отрезка является левой текущего.
+                sizes[ranges - 1] += size;
+                prev_seg++;
+                printf("Previous segment all is true, update range, new size = %d;\n",
+                       sizes[ranges - 1]);
+            } else {
+                sizes[ranges] = size;
+                prev_seg = i;
+                ranges++;
+                printf("size is new range = %d, total ranges = %d;\n", size, ranges);
+            }
+        } else
+            printf("No, expression is false;\n");
+    }
+    printf("All ranges with sizes: ");
+    int max = 0, min = 100;
+    for (int i = 0; i < ranges; ++i) {
+        printf("%d ", sizes[i]);
+        if (sizes[i] > max)
+            max = sizes[i];
+        if (sizes[i] < min)
+            min = sizes[i];
+    }
+    printf("\nMax = %d and min = %d in ranges;\n", max, min);
+}
 
 
 
