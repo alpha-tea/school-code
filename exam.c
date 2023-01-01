@@ -1027,6 +1027,216 @@ void task_15()
     printf("\nMax = %d and min = %d in ranges;\n", max, min);
 }
 
+static int rec_depth = 0;
+
+int func_recur(int n)
+{
+    if (n < 0) {
+        printf("error: n(%d) less than 0;\n", n);
+        return -1;
+    }
+    printf("enter func with parameter %d and depth recur = %d;\n", n, rec_depth);
+    if (n == 0 || n == 1)
+        return 1;
+    ++rec_depth;
+    int result = 0;
+    if (n % 2 == 0)
+        result = func_recur(n - 1) - func_recur(n - 2) + 3 * n;
+    else
+        result = func_recur(n - 2) - func_recur(n - 3) + 2 * n;
+    --rec_depth;
+    printf("func returned %d, depth recur = %d;\n\n", result, rec_depth);
+    return result;
+}
+
+#define CACHE_MAX 3
+
+static int calls = 0, calls_max = 5;
+
+struct cache_pair
+{
+    int n;
+    int result;
+};
+
+struct call
+{
+    int n;      // Само значение параметра вызова
+    int left;   // Вызов функции слева
+    int right;  // Вызов функции справа
+    int add;    // Доп. параметр
+    int ret_idx;// Индекс возврата, требуется для многопоточности
+
+};
+
+void print_calls(struct call* addr, int n)
+{
+    printf("Stack in memory with values, size = %d, bytes = %d;\n", calls, calls * sizeof(struct call));
+    printf("addr:\t\tn:\tleft:\tright:\tadd:\tret_idx:\n");
+    while (n > 0) {
+        printf("%p\t%d\t%d\t%d\t%d\t%d\n",
+               (void*)addr, addr->n, addr->left, addr->right, addr->add, addr->ret_idx);
+        ++addr;
+        --n;
+    }
+}
+
+int push_call(struct call* addr, int n, int prev)
+{   //При однопотоке используется предыдущий вызов, при многопотоке параметр предыдущего произволен.
+    if (n < 2 || calls == calls_max || prev > calls) {
+        printf("error: n = %d is less than 2, or prev call = %d is more than total, or stack is full;\n",
+               n , prev);
+        return -1;
+    }
+    addr[calls].n = n;
+    addr[calls].ret_idx = prev;
+    if (n % 2 == 0) {
+        addr[calls].left = -1 * (n - 1);
+        addr[calls].right = -1 * (n - 2);
+        addr[calls].add = 3 * n;
+    } else {
+        addr[calls].left = -1 * (n - 2);
+        addr[calls].right = -1 * (n - 3);
+        addr[calls].add = 2 * n;
+    }
+    calls++;
+    return 0;
+}
+
+int pop_call(struct call* addr)
+{   //Вычисляем функцию если возможно, копируем результат в предыдущий первый отрицательный
+    //или возвращаем окончательный.
+    // Порядок исполнения имеет значение так как вычитание!
+    if (calls <= 0) {
+        printf("stack of calls is empty;\n");
+        return -1;
+    }
+    if (addr[calls - 1].left < -1 || addr[calls - 1].right < -1) {
+        printf("pop call incorrect for left %d or right %d values;\n",
+               addr[calls - 1].left, addr[calls - 1].right);
+        return 0; // результат функции всегда больше 0, или нужно ввести доп. флаг;
+    }
+    --calls;
+    if (addr[calls].left == 0 || addr[calls].left == -1)
+        addr[calls].left = 1;           // только для нашей функции т.к результат 0 или 1 невозможен.
+    if (addr[calls].right == 0 || addr[calls].right == -1)
+        addr[calls].right = 1;
+    int result = addr[calls].left - addr[calls].right + addr[calls].add;
+    if (calls == 0) {
+        printf("top of stack, last result is %d;\n", result);
+        return result;
+    }
+    int previous = addr[calls].ret_idx;
+    if (addr[previous].left < 0) {
+        printf("replace previous left = %d at index = %d with result = %d;\n",
+               addr[previous].left, previous, result);
+        addr[previous].left = result;
+    } else if (addr[previous].right < 0) {
+        printf("replace previous right = %d at index = %d with result = %d;\n",
+               addr[previous].right, previous, result);
+        addr[previous].right = result;
+    } else {
+        printf("error: no negative %d and %d right previous call;\n",
+               addr[previous].left, addr[previous].right);
+        return -1;
+    }
+    return result;
+}
+
+int cache_find(struct cache_pair* cache, int n)
+{       // Линейный поиск значения функции в кеше.
+    // Возвращаем значения всегда больше 0 или 0 если не нашли.
+    int i = 0;
+    while (i < CACHE_MAX && cache[i].n != n)
+        ++i;
+    if (i != CACHE_MAX)
+        return cache->result;
+    else
+        return 0;
+}
+
+void cache_update(struct cache_pair* cache, int n, int result)
+{       //Обновление кеша по всему размеру с простой очередью
+    //для простых значений и поиском уже имеющихся
+    if (cache_find(cache,n)) {
+        printf("cache is already has value = %d;\n", n);
+        return;
+    }
+    for (int i = CACHE_MAX - 1; i > 0; --i)
+        cache[i] = cache[i - 1];
+    printf("updating cache with new n = %d, result = %d", n , result);
+    cache[0].n = n;
+    cache[0].result = result;
+}
+
+void task_16()
+{
+    // Простая рекурсия или можно напрямую оба варианта.
+    printf("Recursive function with parameter(40).\n"
+               "F(0) = 1, F(1) = 1;\n"
+               "F(n) = F(n - 1) - F(n - 2) + 3 * n, if n > 1 and even;\n"
+               "F(n) = F(n - 2) - F(n - 3) + 2 * n, if n > 1 and odd.\n");
+    //printf("Result of F(6) = %d.\n", func_recur(6));
+    printf("\nresult of func without recur with dynamic memory;\n");
+    struct call* data = calloc(calls_max, sizeof(struct call));
+    struct cache_pair cache[CACHE_MAX];
+    for (int i = 0; i < CACHE_MAX; ++i) {
+        cache[i].n = 0;
+        cache[i].result = 0;
+    }
+
+    printf("addr of data in heap = %p, %u, struct = %u and data = %u bytes;\n",
+           data, sizeof(data), sizeof(struct call), sizeof(*data) * calls_max);
+    //print_calls(data, calls_max);
+    // Отрицательные значения с стеке слева и справа означают необходимость вычисления.
+    // Отрицательные результаты невозможны в нашей функции.
+    printf("Negative values using as call, positive as return result;\n");
+    int n = 11, result = 1, iters = 0, is_error = 0, is_cache = 1, cache_hits = 0;
+    if (n < 2) {
+        printf("nothing to calculate, result is 1 or doesn't exist;\n");
+        return;
+    }
+    printf("Partly recur until constants f(0) and f(1), pushs and pops;\n");
+    print_calls(data, calls_max);
+    push_call(data, n, 0);
+    while (calls && !is_error) {
+        printf("\n");
+        print_calls(data, calls_max);
+        if (data[calls - 1].left < -1) {        // или можно два значения одновременно
+            n = -1 * data[calls - 1].left;
+            printf("left call push to stack, n = %d;\n", n);
+            if (is_cache && (result = cache_find(cache, n))) {
+                printf("call founded in cache, result is %d, replace prev left value;\n", result);
+                data[calls - 1].left = result;
+                ++cache_hits;
+            } else
+                is_error = push_call(data, n, calls - 1);
+        } else if (data[calls - 1].right < -1) {
+            n = -1 * data[calls - 1].right;
+            printf("right call push to stack, n = %d;\n", n);
+            if (is_cache && (result = cache_find(cache, n))) {
+                printf("call founded in cache, result is %d, replace prev right value;\n", result);
+                data[calls - 1].right = result;
+                ++cache_hits;
+            } else
+                is_error = push_call(data, n, calls - 1);
+        }
+        print_calls(data, calls_max);
+        n = data[calls - 1].n;
+        result = pop_call(data);
+        if (result > 0) {
+            ++iters;
+            cache_update(cache, n, result);
+        } else if (result == -1)
+            is_error = 1;
+        printf("\ncache: ");
+        for (int i = 0; i < CACHE_MAX; ++i)
+            printf("%d ", cache[i].n);
+        printf("\n\n");
+    }
+    printf("Total calls = %d, cache hits = %d;\n", iters, cache_hits);
+    free(data);
+}
 
 
 
