@@ -1,14 +1,8 @@
-#include "global.h"
-#include "library.h"
-
+#include <stdio.h>
 
 int main()
 {
-    task_16();
+    chapter_4();
     return 0;
 }
-
-
-
-
 

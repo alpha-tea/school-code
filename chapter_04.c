@@ -788,20 +788,6 @@ lab_1:
     else
         printf("B.C., ");
     printf("month %d, day %d.\n", m_next, d_next);;
-    printf("4.141\n");
-    a1 = 12; // Номер 1-й квартиры
-    n = 7;  // Кол-во квартир
-    i = 0;
-    int summ = 0;
-    while (i < n) {
-        summ = summ + a1;
-        a1++;
-        ++i;
-    }
-    if (summ % 2 == 0)
-        printf("summ = %d; Yes!\n\n",summ);
-    else
-        printf("summ = %d; No!\n\n",summ);
     printf("4.135\n");
     a1 = 16;
     help1 = a1 % 6;
@@ -833,4 +819,11 @@ lab_1:
             n = k / 3;
     }
     printf("N[k] = N[%d] = %d\n\n",k,n);
+    printf("4.141\n");
+    a1 = 3; // Номер 1-й квартиры 3, 4, 5, 6, 7, 8 .. o o e e o o
+    n = 7;  // Кол-во квартир   2, 3, 4, 5, 6, 7 .. e o o e e o
+    if (((a1 % 2 == 1) && ((n - a1) % 4 >= 2)) || ((a1 % 2 == 0) && (n - a1 + 1) % 4 <= 1))
+        printf("sum of flats [%d:%d] is even\n", a1, n);
+    else
+        printf("sum of flats [%d:%d] is odd\n", a1, n);
 }
