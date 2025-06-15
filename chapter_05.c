@@ -1,5 +1,20 @@
-﻿#include "global.h"
-#include "library.h"
+﻿#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+/*
+ * Перечитать и проверить оформление и подписать название главы и число пи.
+ */
+
+double summary(int n);
+int value(int a, int n, int base);
+int sqrt_5_92();
+int cubing(int n);
+int squaring(int n);
+void invert_1(const char s[], int len);
+int group_values(int n,int g);
+double exponentiation(double a, unsigned int n);
+int multiply(int x, int y);
+int numerical_generation_int();
 
 int value(int a, int n, int base)
 {
@@ -119,7 +134,7 @@ int multiply(int x, int y)
 
 int numerical_generation_int()
 {
-    srand(time(NULL));
+    srand(0);
     int i = 1, a = 0, sum = 0;
     while (i <= 10) {
         a = rand() % 10;
@@ -289,7 +304,7 @@ void chapter_5()
     }
     printf("sum:\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n\n",sum,sum1,sum2,sum3,sum4);
     printf("5.39:summa posledovatelnosty\n");
-    srand(time(NULL));
+    srand(0);
     summ = 0;
     summ += numerical_generation_int();
     printf("Sum = %d\n\n",summ);
@@ -558,15 +573,16 @@ void chapter_5()
         v2 = v2 + (v2 * v4);
     }
     printf("\n5.74\n");
-    v1 = 10; v2 = 10; v3 = 0.5; v4 = M_PI / 6 * v1 * v1 * v1; sum = v4;
+
+    v1 = 10; v2 = 10; v3 = 0.5; v4 = acos(-1.0) / 6 * v1 * v1 * v1; sum = v4;
     n = 12;
     printf("Posledovatelnost: ");
     for (i = 1; i < n; ++i) {
         v2 += v1 + v3;
-        double v5 = M_PI / 6 * v2 * v2 * v2;
+        double v5 = acos(-1.0) / 6 * v2 * v2 * v2;
         sum += v5 - v4;
         v1 = v2;
-        v4 = M_PI / 6 * v1 * v1 * v1;
+        v4 = acos(-1.0) / 6 * v1 * v1 * v1;
         printf("%3.1f - %3.1f: %3.1f - %3.1f; ", v1, v4, v2, v5);
     }
     printf("\n\n5.75\n");
@@ -595,7 +611,7 @@ void chapter_5()
     }
     printf("\n5.78\n");
     double x1 = 2, x2 = -1, S_sin = 0;
-    if (x2 >= x1 && x1 >= 0 && x2 <= M_PI ) {
+    if (x2 >= x1 && x1 >= 0 && x2 <= acos(-1.0) ) {
         S_sin = cos(x1) - cos(x2);
         printf("Ploshyad arki sinusoidy = %.5f\n\n",S_sin);
     } else {

@@ -1,6 +1,9 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int prime_number(int number);
+int digital_root(int n);
+
 int digital_root(int n)
 {
     int a = 0, sum = 0;

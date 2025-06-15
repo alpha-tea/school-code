@@ -1,5 +1,18 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include "library.h"
+
+/*Подтянуть константы и оформить вывод игр, немного оптимизации.
+ */
+
+int uniq_gen_fast_alt_1(int number[], int start, int limit);
+int uniq_gen_fast_alt(int number[], int length, int limit);
+int uniq_gen_fast(int number[], int length, int limit);
+int uniq_gen_fast_symbols(char string[], int length);
+void bulls_and_cows();
+void hack_the_terminal(int length, int quantity, int attempts);
 
 int uniq_gen_fast_alt_1(int number[], int start, int limit)
 {
@@ -135,7 +148,7 @@ void bulls_and_cows()
     }
     printf("Hooray, you won!\nNumber of attempts = %d;\n\n",quantity);
 }
-
+/*
 void hack_the_terminal(int length, int quantity, int attempts)
 {
     if (length < 1 || quantity < 2 || length > 26) {
@@ -178,6 +191,7 @@ void hack_the_terminal(int length, int quantity, int attempts)
         printf("%d ", likeness_idx[i]);
     return;
 }
+*/
 
 int stalker_evaluation_function(int properties[])
 {

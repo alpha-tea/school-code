@@ -1,6 +1,11 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int string_size_special(char string[]);
+void string_reverse_special(char string[]);
+void to_binary(unsigned char byte, char string[]);
+void ScriptedEngeneer_1();
+
 int string_size_special(char string[]) // ООЧЕНЬ СПЕЦИАЛЬНАЯ ФУНКЦИЯ!!!
 {
     int c = 0;

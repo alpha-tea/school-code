@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(school-code LANGUAGES C)
 
-set(CMAKE_C_FLAGS "-Wall -Wextra")
+set(CMAKE_C_FLAGS "-Wall -Wextra -std=c11")
 
 #set(CMAKE_C_FLAGS "-Wall -Wextra -O0 -S -masm=intel")
 

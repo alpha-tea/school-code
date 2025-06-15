@@ -1,6 +1,51 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int ackermann(int m, int n);
+int symmetric_check_recur(char string[], int start, int end, int limit);
+int prime_check_recur(int number, int* num_ptr);
+void print_integer_recur(int number, int base);
+int reverse_number(int n, int result);
+int flip_number(int n);
+int find_max_recur(int numbers[], int length, int* idx, int max);
+int fibonacci_recur(int n);
+int arif_recur(int a1, int d, int n, int* sum);
+int sum_arith_progres(int d, int n, int a1);
+int value_arith_progres(int d, int n, int a1);
+int digital_root_recur(int number);
+int number_of_digits_recur(int number);
+int sum_of_digits_recur(int number);
+int expt (int base, int power);
+int exp_recur(int power, int base);
+int factorial_recur(int number);
+int is_command_correct(char command[], int idx, int pars, int src_size);
+void clear_screen(char* buffer, int size_x, int size_y, char fill);
+void output_screen(char* buffer, int size_x, int size_y);
+int pair_min(int a, int b);
+int pair_max(int a, int b);
+void exchange_of_values(int *a, int *b);
+char hex_to_char(int c);
+int char_to_hex(char c);
+double triangle_heron(double a, double b, double c);
+int check_even_or_odd(int mode, int value);
+double line_vertex(double vertex[]);
+int quadratic_equations(int a, int b , int c);
+double perimeter_isosceles_trapezoid(double bases_1, double bases_2, double height);
+double perimeter(double a, double b, double c);
+double hypotenuse(double a, double b);
+int sign(int number);
+double calc_exp_10_1(int numbers[], int is_sqrt[], int exp_size, int terms);
+double fraction_calculator_with_factorials(int numbers[], int is_factorial[]);
+int digits_in_num(int num, int start, int len, int* sum);
+int max_int_pair(int a, int b);
+int degree_check(int value, int base);
+int date_prev_day(int* day, int* month, int* year);
+int date_next_day(int* day, int* month, int* year);
+void print_date(int day, int month, int year, char* format);
+int days_in_month(int month, int year);
+int reduction_of_fractions(int numerator, int denominator, int debug);
+int evklid_many_numbers(int mass[], int size);
+
 int evklid_many_numbers(int mass[], int size)
 {
     int i = 0;

@@ -1,6 +1,14 @@
 ﻿#include "global.h"
 #include "library.h"
 
+int evklid_first_step(int a, int b);
+void number_of_degrees (int n);
+void fibonachi(int n);
+int arif_sequence(int n, int f, int s);
+int geom_seqence(int m, int g, int z);
+int natural_number(int n);
+int lcm (int a, int b);
+
 void number_of_degrees (int n)
 {
     int i,k,a = 1;

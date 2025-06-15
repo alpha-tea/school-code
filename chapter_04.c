@@ -1,4 +1,9 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <math.h>
+
+/*
+ * Перечитать и проверить оформление и подписать название главы.
+ */
 
 void chapter_4()
 {
@@ -114,7 +119,7 @@ lab_1:
     }
     printf("4.16\n");
     int s1 = 10, s2 = 5; //s1 - площадь круга, s - площадь круга
-    double pi = M_PI;
+    double pi = acos(-1.0);
     if ((s1 / pi) <= (sqrt(s2) / 2))
         printf("a)Yes, will fit!\n");
     else

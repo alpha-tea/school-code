@@ -1,4 +1,4 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
 #include "library.h"
 
 int string_char_find(char s[], char c, int direct, int debug)
@@ -96,7 +96,7 @@ int ideal_number(int a)
     return (a == sum);
 }
 
-int evklid(int a, int b)
+int evklid(int a, int b)  // Переименовать.
 {
     while (a != 0 && b != 0) {
         if (a > b)

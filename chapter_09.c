@@ -1,6 +1,35 @@
 ﻿#include "global.h"
 #include "library.h"
 
+void string_exchange(char** s1, char** s2);
+int string_find_sub(char s1[], char s2[]);
+void string_clear(char s[], int len);
+int string_concat(char src[], char dst[]);
+int string_palindrom(char c[]);
+int string_char_find(char s[], char c, int direct, int debug);
+int string_find_seq(char s[], char c, int start, int length);
+int num_radix(char src[], char dst[], int from, int to);
+void print_binary_byte(unsigned char byte);
+void print_binary_word(unsigned short int word);
+unsigned char shift_logical_right(unsigned char dst[], unsigned char counter);
+unsigned char add_byte(unsigned char dst[], unsigned char src[]);
+unsigned char not_gate(unsigned char bit_1);
+unsigned char and_gate(unsigned char bit_1, unsigned char bit_2);
+unsigned char or_gate(unsigned char bit_1, unsigned char bit_2);
+unsigned char xor_gate(unsigned char bit_1, unsigned char bit_2);
+unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2);
+int string_xchg_chars(char src[], int table[], int count);
+int string_delete(char src[], int start, int length);
+void string_rlc(char src[], int counter);
+void string_rrc(char src[], int counter);
+int int_to_string(char dst[], int num, int base);
+void string_reverse(char string[]);
+int string_is_symmetrical(char string[]);
+int string_checking_brackets(char src[]);
+char boolean_calculator(char src[]);
+int string_checking_brackets(char src[]);
+
+
 int string_length_brackets(char src[], int start)
 {
     int i = 0, counter = 1;

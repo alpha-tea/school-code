@@ -2,14 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <ctype.h>
 #include <float.h>
 #include <limits.h>
 #define IN 1 /* внутри слова */
 #define OUT 0 /* снаружи слова */
 #define MAXLINE 1000
 
+/*
+ * Проверить наличие заданий и функций.
+ */
+
 // Решение задач из книги "Язык программирования Си" (Деннис Ритчи, Брайан Керниган)
+
+
 
 int getline(char s[], int lim)
 {

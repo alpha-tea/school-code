@@ -1,4 +1,9 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <math.h>
+
+/*
+ * Перечитать и проверить оформление и подписать название главы.
+ */
 
 double kalk (int c1, int c2)
 {

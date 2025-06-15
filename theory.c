@@ -1,7 +1,12 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+
 #include "library.h"
 
-//Разбираем теорию С.Прато.
+/*
+ * Проверить и синхронизировать с видео по разбору глав.
+ */
+
+//Разбираем теорию С.Прата.
 #define DATA_SIZE 3
 void theory_10_1(int data[], int n)
 {
@@ -126,7 +131,7 @@ void theory_10(void)
     print_array_addr((void*)kub, 8, sizeof (char));
     theory_10_1((int[3]){1,2,3},3);
 }
-
+/*
 void theory_bonus()
 {
     static char a = 'a';
@@ -154,7 +159,7 @@ void theory_bonus()
         printf("%c",string[i]);
     }
 }
-
+*/
 
 
 

@@ -1,9 +1,15 @@
-﻿#include "global.h"
-#include "library.h"
+﻿//#include "library.h"
+
+//Это дополнительные задания на классические структуры данных, какие то главы по теории
+// и теоритический материал к экзамену.
+//Раскидать попозже.
 
 /*
 #define STACK_MAX 64
 
+
+void rotate_test();
+int bits_counter(int value);
 
 static unsigned char stack[STACK_MAX];
 static int sp;
@@ -291,7 +297,7 @@ int length(char s[])
     }
     return len;
 }
-
+/*
 void invert(char s[])
 {
     int len = length(s);
@@ -621,12 +627,13 @@ void additional()
            v_mode_name[gfx], scr_x, scr_y, aspect_x, aspect_y, font_x, font_y, colors, effective_x, effective_y,
            displ_x, displ_y, bit_per_color, point_per_byte,
            byte_per_point, buffer_size, font_size, palette_size);
-    /* red    - 0   00  110
+     red    - 0   00  110
      * blue   - 1   01  101
      * green  - 2   10  100
      * yellow - 3   11  0
      * bgry -
      * ygyy - 8 - 6
      * Реализовать простейшее сжатие.
-     */
+
 }
+*/
