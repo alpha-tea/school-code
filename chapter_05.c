@@ -1,20 +1,11 @@
 ﻿#include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-/*
- * Перечитать и проверить оформление и подписать название главы и число пи.
- */
+#include "library.h"
 
-double summary(int n);
-int value(int a, int n, int base);
-int sqrt_5_92();
-int cubing(int n);
-int squaring(int n);
-void invert_1(const char s[], int len);
-int group_values(int n,int g);
-double exponentiation(double a, unsigned int n);
-int multiply(int x, int y);
-int numerical_generation_int();
+/*
+ *  Глава 5. Оператор цикла с параметром.
+ */
 
 int value(int a, int n, int base)
 {
@@ -344,7 +335,7 @@ void chapter_5()
     printf("\n\n");
     printf("Sum of squares = %d\n\n",summ);
     printf("5.51\n");
-    srand(time(NULL));
+    srand(1);
     n = 3;
     sum = 0;
     for (i = 0; i < 3; ++i) {
@@ -355,7 +346,7 @@ void chapter_5()
     printf("SRED.ARIF = %.2f\n\n",sum / n);
     printf("5.54\n");
     n = 10;
-    srand(time(NULL));
+    srand(1);
     sum = 0;
     for (i = 0; i < n; ++i) {
         a = 1 + rand() % 5;
@@ -444,7 +435,7 @@ void chapter_5()
     }
     printf("\nTotal:\n%4d\t\t%4d\n\n",january / 31,march / 31);
     printf("5.63\n");
-    srand(time(NULL));
+    srand(1);
     summ = 0;
     for (i = 1; i <= 10;++i) {
         a = 1 + rand() % 7;
@@ -494,7 +485,7 @@ void chapter_5()
         p = p1;
     }
     printf("a)k = %d; k / p = %.f / %.f = %.3f\n", k1, k, p,k / p);
-    p = 1, p1 = 0;
+    p = 1;
     k = 1;
     n = 6;
     a = 7;

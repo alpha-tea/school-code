@@ -1,33 +1,13 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
 #include "library.h"
 
-void string_exchange(char** s1, char** s2);
-int string_find_sub(char s1[], char s2[]);
-void string_clear(char s[], int len);
-int string_concat(char src[], char dst[]);
-int string_palindrom(char c[]);
-int string_char_find(char s[], char c, int direct, int debug);
-int string_find_seq(char s[], char c, int start, int length);
-int num_radix(char src[], char dst[], int from, int to);
-void print_binary_byte(unsigned char byte);
-void print_binary_word(unsigned short int word);
-unsigned char shift_logical_right(unsigned char dst[], unsigned char counter);
-unsigned char add_byte(unsigned char dst[], unsigned char src[]);
-unsigned char not_gate(unsigned char bit_1);
-unsigned char and_gate(unsigned char bit_1, unsigned char bit_2);
-unsigned char or_gate(unsigned char bit_1, unsigned char bit_2);
-unsigned char xor_gate(unsigned char bit_1, unsigned char bit_2);
-unsigned char nand_gate(unsigned char bit_1, unsigned char bit_2);
-int string_xchg_chars(char src[], int table[], int count);
-int string_delete(char src[], int start, int length);
-void string_rlc(char src[], int counter);
-void string_rrc(char src[], int counter);
-int int_to_string(char dst[], int num, int base);
-void string_reverse(char string[]);
-int string_is_symmetrical(char string[]);
-int string_checking_brackets(char src[]);
-char boolean_calculator(char src[]);
-int string_checking_brackets(char src[]);
+#define STRING_MAX 256
+#define BYTE_NUMS 256
+
+/*
+ *  Глава 9. Строки символов.
+ */
 
 
 int string_length_brackets(char src[], int start)
@@ -57,6 +37,17 @@ int string_checking_brackets(char src[])
         return i;
     else
         return -1 * (i - 1);
+}
+
+int string_delete(char src[], int start, int length)
+{
+    int help = string_length(src), i;
+    if (start < 0 || start + length > help || length <= 0)
+        return -1;
+    for (i = start; i + length < help; ++i)
+        src[i] = src[i + length];
+    src[i] = '\0';
+    return 0;
 }
 
 char boolean_calculator(char src[])
@@ -145,39 +136,6 @@ int string_is_symmetrical(char string[])
     return (help >= len_1);
 }
 
-void string_reverse(char string[])
-{
-    int size = string_length(string);
-    for (int j = 0; j < size / 2; ++j) {
-        char c = string[j];
-        string[j] = string[size - 1 - j];
-        string[size - 1 - j] = c;
-    }
-}
-
-int int_to_string(char dst[], int num, int base)
-{
-    const int base_min = 2, base_max = 16;
-    char digits[] = "0123456789ABCDEF";
-    int i = 0;
-    if (base < base_min || base > base_max)
-        return -1;
-    if (num < 0) {
-        dst[i++] = '-';
-        num *= -1;
-    }
-    for (;num > 0; ++i) {
-        dst[i] = digits[num % base];
-        num /= base;
-    }
-    dst[i] = '\0';
-    if (dst[0] == '-')
-        string_reverse(&dst[1]);
-    else
-        string_reverse(dst);
-    return 0;
-}
-
 void string_rrc(char src[], int counter)
 {
     int help = string_length(src), j;
@@ -200,17 +158,6 @@ void string_rlc(char src[], int counter)
             src[j] = src[j + 1];
         src[help - 1] = help_2;
     }
-}
-
-int string_delete(char src[], int start, int length)
-{
-    int help = string_length(src), i;
-    if (start < 0 || start + length > help || length <= 0)
-        return -1;
-    for (i = start; i + length < help; ++i)
-        src[i] = src[i + length];
-    src[i] = '\0';
-    return 0;
 }
 
 int string_xchg_chars(char src[], int table[], int count)
@@ -293,12 +240,6 @@ unsigned char shift_logical_right(unsigned char dst[], unsigned char counter)
         dst[CHAR_BIT - 1] = 0x00;
     }
     return carry_flag;
-}
-
-void print_binary_byte(unsigned char byte)
-{
-    for (int i = CHAR_BIT - 1; i >= 0; --i)
-        printf("%d", (byte >> i) & 0x01);
 }
 
 void print_binary_word(unsigned short int word)
@@ -829,6 +770,7 @@ void chapter_9()
     print_binary_byte(a2);
     printf("\n\t--------\n");
     int mask = 0x01;
+    const int word_bits = 16;
     for (i = 0; i < CHAR_BIT; ++i, mask <<= 1) {
         unsigned char bit = a2 & mask;
         unsigned char carry_flag = 0x00;
@@ -841,7 +783,7 @@ void chapter_9()
             print_binary_byte(a1);
         } else
             print_binary_byte(0);
-        for (j = 0, mask_xor = 0x01; j < WORD_BITS; ++j, mask_xor <<= 1) {
+        for (j = 0, mask_xor = 0x01; j < word_bits; ++j, mask_xor <<= 1) {
             unsigned short int bit_a = add & mask_xor, bit_r = r & mask_xor;
             r = r ^ bit_a ^ (unsigned short int)(carry_flag << j);
             carry_flag = ((bit_a != 0 && bit_r != 0) || (carry_flag != 0 && (bit_a != 0 || bit_r != 0)));
@@ -1212,7 +1154,7 @@ void chapter_9()
     printf("9.103-107, replace chars in text with generators.\n");
     n = 4; // generators
     int b1 = 2, b2 = 10;
-    srand(time(NULL));
+    srand(1);
     char src_1[STRING_MAX];
     int tab_rep[STRING_MAX * 2];
     for (k = 0; k < n; ++k) {

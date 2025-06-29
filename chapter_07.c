@@ -1,12 +1,15 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "library.h"
 
-int string_size_special(char string[]);
-void string_reverse_special(char string[]);
-void to_binary(unsigned char byte, char string[]);
-void ScriptedEngeneer_1();
+#define SIZE 10
 
-int string_size_special(char string[]) // ООЧЕНЬ СПЕЦИАЛЬНАЯ ФУНКЦИЯ!!!
+/*
+ *  Глава 7. Сочетание оператора цикла и условного оператора.
+ */
+
+int string_size_special(char string[])
 {
     int c = 0;
     while (string[c] != '\0')
@@ -14,7 +17,7 @@ int string_size_special(char string[]) // ООЧЕНЬ СПЕЦИАЛЬНАЯ Ф
     return c;
 }
 
-void string_reverse_special(char string[])   // Специальная функция для ScriptedEngeneer(по особому заказу)
+void string_reverse_special(char string[])   // Специальная функция для ScriptedEngeneer
 {
     int size = string_size_special(string);
     for (int j = 0; j < size / 2; ++j) {
@@ -123,7 +126,7 @@ void chapter_7()
         }
     printf("\nsum = %d;\n\n",sum);
     printf("7.14(7.16)\n");
-    srand(time(NULL));
+    srand(0);
     double mass_d[8];
     double sum_d = 0;
     sum = 0;
@@ -156,7 +159,7 @@ void chapter_7()
     printf("b(a1 + A)) %d\n",c);
     printf("c(a1 - a2)) %d\n\n", help);
     printf("7.24, students in classes, sum of odd;\n");
-    srand(time(NULL));
+    srand(1);
     int student_mass[11];
     sum = 0;
     for (int i = 0; i < 11; ++i) {
@@ -167,7 +170,7 @@ void chapter_7()
     }
     printf("Sum of students: %d\n\n",sum);
     printf("7.27. Doubles less than 100;\n");
-    srand(time(NULL));
+    srand(1);
     a = 0;
     for (int i = 0; i < 8; ++i) {
         mass_d[i] = (double)(rand() % 1001) / (double)(1 + rand() % 8);
@@ -179,7 +182,7 @@ void chapter_7()
     printf("7.32. students and exams;\n");
     int undergrad_mass[15][2];
     help = 0;
-    srand(time(NULL));
+    srand(1);
     for (a = 0; a < 15; ++a) {
         undergrad_mass[a][0] = 1 + rand() % 5;
         undergrad_mass[a][1] = 1 + rand() % 5;
@@ -189,7 +192,7 @@ void chapter_7()
     }
     printf("Number of students who received 2: %d\n\n",help);
     printf("7.33 - 7.37. Sequence of digits;\n");
-    srand(time(NULL));
+    srand(1);
     help = 0;
     c = 0;
     int multiple_three = 0;
@@ -282,7 +285,7 @@ void chapter_7()
         printf("%d[%d] ",score_table[a],a);
     }
     printf("\nWin = %d;\nLose = %d;\nDraw = %d;\n\n",b,c,help);
-    srand(time(NULL));
+    srand(1);
     n = 8;
     c = 5;
     a = 10;
@@ -314,7 +317,7 @@ void chapter_7()
     printf("\n7.44. More than n) %d;\n",sum / help);
     printf("7.46. Which are multiples of n) %d, sum = %d, quantity = %d\n\n",sum1 / help1, sum1, help1);
     printf("7.51.Find the number of the last negative number, help = %d;\n",help);
-    srand(time(NULL));
+    srand(1);
     b = 0;
     int i = 0;
     int a1 = 0, b1 = 0;
@@ -340,7 +343,7 @@ void chapter_7()
     }
     printf("\nNumber of the last negative number: %d\n\n",b);
     printf("7.52, 7.54, Finding the minimum and maximum value\n");
-    srand(time(NULL));
+    srand(1);
     n = 10;
     t = 0;
     help1 = 0;
@@ -651,7 +654,7 @@ void chapter_7()
     else
         printf("\nNo, product(%d) > n(%d)",product,n);
     /*
-    srand(time(NULL));
+    srand(1);
     int a = 1, mass[CHAR_BIT] = {0, 0, 0, 0, 0, 0, 0, 0};
     int i = CHAR_BIT - 1;
     printf("a = %d;\n",a);

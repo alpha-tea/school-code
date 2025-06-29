@@ -1,54 +1,16 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
 #include "library.h"
 
+#define OBJ_MAX 256
+
+/*
+ *  Глава 11. Одномерные массивы.
+ */
+
 // Сократить названия.
-
-enum array_inf_val;
-enum array_check_type;
-enum array_action_type;
-enum array_xchg_type;
-enum array_print_mode;
-
-int array_modify_element(int data[], int offset, enum array_action_type type, int parameter, int limit);
-int array_check_element(int data[], int offset, int parameter, enum array_check_type type, int limit);
-int array_information(int data[], int size, enum array_inf_val ret);
-void array_print(int data[], int limit, int mode);
-int array_scan_element(int data[], int offset, int size, int parameter, enum array_check_type type);
-int array_modify_action(int data[], int size, int parameter, enum array_action_type type);
-int array_create_input(int data[], int init[], int direct, int isInput, int limit);
-int is_Fibonacci(int n);
-int array_create_sequence(int data[], int first, int last, int par, int flags, int limit);
-int is_digit(char c);
-int array_update_commands(int data[], char commands[], int limit);
-int array_sum_elements(int data[], int size, int parameter, enum array_check_type type);
-int array_chk_counter(int data[], int size, int parameter, enum array_check_type type);
-int array_chk_counter(int data[], int size, int parameter, enum array_check_type type);
-int array_unique_elements(int data[], int size, int unique_data[]);
-int array_copy_elements(int data[], int size, int copies_data[]);
-int array_min_max(int data[], int size, int type, int step, int* idx);
-int array_xchg_elements(int data[], int size, int idx_a, int idx_b);
-int array_xchg_range(int data[], int size, int idx_size_flags[]);
-int array_delete_element(int data[], int size, int index);
-int array_delete_all(int data[], int size, int parameter, enum array_check_type type);
-int array_delete_equal(int data[], int size);
-int array_insert_element(int data[], int size, int element, int index);
-int array_insert_all(int data[], int size, int element, int parameter, enum array_check_type type);
-int digits_add(int add_a[], int add_b[], int result[], int size);
-int digits_sub(int sub_a[], int sub_b[], int result[], int size);
-int digits_mul(int factor_a[], int factor_b[], int result[], int size);
-int digits_mul_alt(int factor_a[], int factor_b[], int result[], int size);
-int digits_extend_size(int data[], int size);
-int digits_half_size(int data[], int size);
-int digits_div(int div_a[], int div_b[], int result[], int size);
-int array_add(int data_a[], int data_b[], int data_r[], int size);
-int array_sub(int data_a[], int data_b[], int data_r[], int size);
-int array_mul(int data_a[], int data_b[], int data_r[], int size);
-int array_div(int data_a[], int data_b[], int data_r[], int size);
-int array_is_descending(int data[], int size);
-int array_is_ascending(int data[], int size);
-int array_is_equal(int data[], int size);
-int array_find_if(int data[], int result[], int par, int size, enum array_check_type type);
-int array_comparison(int data_1[], int data_2[], int data_result[], int par, enum array_check_type type, int length);
 
 enum array_inf_val {inf_info, inf_addr, inf_mem_size, inf_elements, inf_positiv, inf_negativ,
                     inf_zeros, inf_evens, inf_odds, inf_avarage_a, inf_avarage_g, inf_prim,
@@ -353,7 +315,8 @@ int array_create_sequence(int data[], int first, int last, int par, int flags, i
         if (is_Fibonacci(first)) {
             if (!is_Fibonacci(last))
                 printf("warning: last element is not fibonacci;\n");
-            for (int i = 0, f1 = 0, f2 = 1, f3 = 1; elements < limit && f3 != last; ++i) {
+            int f1 = 0, f2 = 1, f3 = 1;
+            while (elements < limit && f3 != last) {
                 f3 = f1 + f2;
                 if (f3 >= first)
                     data[elements++] = f3;
@@ -820,7 +783,7 @@ int digits_half_size(int data[], int size)
 int digits_div(int div_a[], int div_b[], int result[], int size)
 {       //Деление первого числа на второе и возврат реальный размер результата
     int i = 0, r = 0, res_size = 0, pos = 0, div_size = 1;
-    int mult[OBJECTS_MAX], subtr[OBJECTS_MAX], diff[OBJECTS_MAX], div[OBJECTS_MAX];
+    int mult[OBJ_MAX], subtr[OBJ_MAX], diff[OBJ_MAX], div[OBJ_MAX];
     printf("div a:\t");
     array_print(div_a,size,prt_element);
     printf("\ndiv b:\t");
@@ -830,7 +793,7 @@ int digits_div(int div_a[], int div_b[], int result[], int size)
         mult[i] = subtr[i] = diff[i] = div[i] = 0;
     while (pos < size && div_size <= size) {
         for (i = 0; i < size - 1; ++i)
-            div[i] = div[i + 1];
+            div[i] = div[i + 1];                    // исправить
         div[size - 1] = div_a[pos + div_size - 1];
         printf("divided: ");
         array_print(div, size, prt_element);
@@ -969,7 +932,7 @@ int array_find_if(int data[], int result[], int par, int size, enum array_check_
         return -1;
     int i = 0, counter = 0;
     for (i = 0; i < size; ++i)
-        if (array_check_element(data,i,par,type,OBJECTS_MAX))
+        if (array_check_element(data,i,par,type,OBJ_MAX))
             result[counter++] = data[i];
     return counter;
 }
@@ -992,9 +955,9 @@ void chapter_11()
     printf("11.1 - 11.2, moving data across arrays;\n");
     int i = 0;
     int length = 10, random_max = 10;
-    int data[OBJECTS_MAX];
-    int init[OBJECTS_MAX];
-    srand(time(NULL));
+    int data[OBJ_MAX];
+    int init[OBJ_MAX];
+    srand(1);
     for (i = 0; i < length; ++i)
         init[i] = rand() % random_max;
     printf("source elements: ");
@@ -1063,7 +1026,7 @@ void chapter_11()
         printf("result = %d", result);
     }
     printf("\n\n");
-    srand(time(NULL));
+    srand(1);
     parameter = 5, type = 1, length = 10, random_max = 20;
     printf("11.17 - 11.18, changing all elements of the array to a parameter = %d, type = %d;\n", parameter, type);
     for (i = 0; i < length; ++i)
@@ -1090,13 +1053,13 @@ void chapter_11()
     array_information(info_array, quantity, result);
     printf("\n11.21, determine the total rainfall for January;\n");
     quantity = 5; // Кол-во дней.
-    array_create_sequence(data,0,quantity - 1,10,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,10,1,OBJ_MAX);
     int summ = array_information(data,quantity,inf_sum);
     array_print(data,quantity,prt_element | prt_indexes);
     printf("Total: %d mm, elements = %d;\n\n", summ, quantity);
     printf("11.23, determine the total resistance of the circuit when connected in series;\n");
     quantity = 5; //Кол-во элементов.
-    array_create_sequence(data,0,quantity - 1,10,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,10,1,OBJ_MAX);
     summ = array_information(data,quantity,inf_sum);
     array_print(data,quantity,prt_element | prt_indexes);
     printf("Total: %d Om, elements = %d;\n\n", summ, quantity);
@@ -1121,7 +1084,7 @@ void chapter_11()
         }
     printf("\n11.29, is it true that the sum of the array elements is an even number and that the sum of the squares of the array elements is a three-digit number;\n");
     int min = 99, max = 999;
-    array_create_sequence(data,0,quantity - 1,10,0x01,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,10,0x01,OBJ_MAX);
     array_print(data,quantity,prt_element | prt_indexes);
     result = array_information(data,quantity,inf_sum);
     if (result % 2 == 0)
@@ -1135,7 +1098,7 @@ void chapter_11()
         printf("b) No, sum of power 2 isn't three-digits (%d);\n", summ);
     printf("\n11.31, is it true that the total number of books in the library there is a three-digit number.;\n");
     quantity = 10;
-    array_create_sequence(data,0,quantity - 1,20,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,20,1,OBJ_MAX);
     array_print(data,quantity,prt_element | prt_indexes);
     summ = array_information(data,quantity,inf_sum);
     min = 99, max = 999;
@@ -1145,7 +1108,7 @@ void chapter_11()
         printf("\nNo (%d);\n", summ);
     printf("\n11.33, determine if the athlete has advanced to the nextstage of the competition.;\n");
     quantity = 10;
-    array_create_sequence(data,0,quantity - 1,20,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,20,1,OBJ_MAX);
     array_print(data,quantity,prt_element | prt_indexes);
     summ = array_information(data,quantity,inf_sum);
     if (summ > min)
@@ -1155,7 +1118,7 @@ void chapter_11()
     printf("\n11.35, find out which type of program the athlete showed the best result.;\n");
     quantity = 18;
     int scores[3], k = 0, programm_size = 6;
-    array_create_sequence(data,0,quantity - 1,10,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,10,1,OBJ_MAX);
     printf("elements:\n");
     for (i = 0, j = 0, k = 0; i < quantity; ++i) {
         if ((i + 1) % programm_size == 0) {
@@ -1171,35 +1134,35 @@ void chapter_11()
     printf("max score idx = %d, sum = %d;\n\n",result, scores[result]);
     printf("11.36 - 11.39, checking elements for conditions;\n");
     quantity = 10; max = 100;
-    array_create_sequence(data,0,quantity - 1,max * 2,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,max * 2,1,OBJ_MAX);
     printf("element: less than %d: n %% 10 == 0: three-digits: idx %% 3 == 0:\n", max);
     char sign[] = "-+";
     for (i = 0; i < quantity; ++i) {
         printf("%d\t\t",data[i]);
-        result = array_check_element(data,i,max,chk_less,OBJECTS_MAX);
+        result = array_check_element(data,i,max,chk_less,OBJ_MAX);
         printf("%c\t    ", sign[result]);
-        result = array_check_element(data,i,10,chk_div,OBJECTS_MAX);
+        result = array_check_element(data,i,10,chk_div,OBJ_MAX);
         printf("%c\t\t    ", sign[result]);
-        result = (array_check_element(data,i,1000,chk_less,OBJECTS_MAX)
-                  && array_check_element(data,i,99,chk_more,OBJECTS_MAX));
+        result = (array_check_element(data,i,1000,chk_less,OBJ_MAX)
+                  && array_check_element(data,i,99,chk_more,OBJ_MAX));
         printf("%c\t\t", sign[result]);;
-        result = array_check_element(data,i,3,chk_div,OBJECTS_MAX);
+        result = array_check_element(data,i,3,chk_div,OBJ_MAX);
         printf("%c\n", sign[result]);
     }
     printf("\n11.41 - 11.45, print first even and then odd elements;\n");
     quantity = 10; max = 10;
-    array_create_sequence(data,0,quantity - 1,max,1,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,max,1,OBJ_MAX);
     printf("source values: ");
     array_print(data,quantity,prt_element);
     printf("\nelement:\teven-odd:\tis zero:\teven idx:\todd idx:\n");
     for (i = 0; i < quantity; ++i) {
         printf("%d\t\t",data[i]);
-        result = array_check_element(data,i,2,chk_parity,OBJECTS_MAX);
+        result = array_check_element(data,i,2,chk_parity,OBJ_MAX);
         if (result)
             printf("even\t\t");
         else
             printf("odd\t\t");
-        result = array_check_element(data,i,0,chk_equal,OBJECTS_MAX);
+        result = array_check_element(data,i,0,chk_equal,OBJ_MAX);
         printf("%c\t",sign[result]);
         if (i % 2 == 0)
             printf("\t%d[%d]", data[i],i);
@@ -1245,7 +1208,7 @@ void chapter_11()
     printf("\n\n11.55, calculation of the sum of elements matching the condition;\n");
     quantity = 10;
     int a = 3, b = 5;
-    array_create_sequence(data,0,quantity - 1,10,0b00000001,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity - 1,10,0b00000001,OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     result = array_sum_elements(data,quantity,0,chk_idx_odd);
     printf("\nsum of odd elements: %d;\n", result);
@@ -1255,13 +1218,13 @@ void chapter_11()
     printf("sum of array elements that are multiples of a(%d) or b(%d): %d;\n", a, b, result);
     printf("\n11.57, find the total amount of precipitation on even days in February\n");
     quantity = 10;
-    array_create_sequence(data, 0, quantity - 1, 10, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, quantity - 1, 10, 0b00000001, OBJ_MAX);
     result = array_sum_elements(data, quantity, 0, chk_idx_even);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("sum of precipitation: %d;\n\n", result);
     printf("11.59, quotient of dividing the sum of positive elements by the modulus of the sum of negative elements;\n");
     quantity = 10; random_max = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_sum_elements(data,quantity,0,chk_more);
     b = array_sum_elements(data,quantity,0,chk_less);
@@ -1271,8 +1234,8 @@ void chapter_11()
         printf("\n(%d) / (%d) = error;\n\n", a,abs(b));
     printf("\n11.61, Is it true that more precipitation fell on even numbers than on odd numbers?\n");
     quantity = 10;
-    srand(time(NULL));
-    array_create_sequence(data, 0, quantity - 1, random_max, 0b00000001, OBJECTS_MAX);
+    srand(1);
+    array_create_sequence(data, 0, quantity - 1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_sum_elements(data,quantity,0,chk_idx_even);
     b = array_sum_elements(data,quantity,0,chk_idx_odd);
@@ -1283,13 +1246,13 @@ void chapter_11()
     else
         printf("precipitation on even days is the same as on odd days: %d:%d;\n\n", a, b);
     printf("11.63 - 11.75;\nsource array: ");
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     result = array_chk_counter(data,quantity,-1,chk_more);
     printf("\n11.63) counter of non-negative elements = %d;", result);
     result = array_chk_counter(data,quantity,0,chk_less);
     printf("\n11.66) counter of negative students scores = %d;", result);
-    int data_extra[OBJECTS_MAX];
+    int data_extra[OBJ_MAX];
     a = 2; b = 7; result = 0;
     for (i = 0; i < quantity; ++i)
         if (data[i] >= a && data[i] <= b)
@@ -1305,7 +1268,7 @@ void chapter_11()
     printf("11.78, counter of elements more than near = %d;\n", result);
     printf("\n11.80 - 11.97;\nsource array: ");
     random_max = 10; quantity = 16;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     result = array_chk_counter(data,quantity,0,chk_equal);
     printf("\n11.81) is no rain in 5 days(%d) - ", result);
@@ -1316,7 +1279,7 @@ void chapter_11()
     result = array_sum_elements(data,quantity,0,chk_more);
     printf("11.84) average of rains in month = %.2f;\n", (double)result / (double)quantity);
     random_max = 20; quantity = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     for (i = 0; i < quantity; ++i)
         if (data[i] < 0)
             data[i] -= 150;
@@ -1336,7 +1299,7 @@ void chapter_11()
     printf("quantity = %d, sum = %d;\n", counter, result);
     printf("11.93 - 11.96, prices for goods: ");
     random_max = 20; quantity = 10;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     result = array_sum_elements(data,quantity,-1,chk_more);
     result /= quantity;
@@ -1361,7 +1324,7 @@ void chapter_11()
     printf("max in summs = %d[%d:%d];\n\n", max, idx, idx + 5);
     printf("11.100-11.102, search unique elements and copies;\n");
     random_max = 5; quantity = 3;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\ncopies: ");
     a = array_copy_elements(data,quantity,data_extra);
@@ -1379,7 +1342,7 @@ void chapter_11()
         printf("\n11.100 - no, no uniq elements;\n");
     printf("\n11.103*, Changes of signin array: ");
     random_max = 10; quantity = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 1, counter = 0; i < quantity; ++i) {
         if ((data[i] < 0 && data[i - 1] > 0) || (data[i] > 0 && data[i - 1] < 0))
@@ -1412,7 +1375,7 @@ void chapter_11()
            counter, result, max, b);
     printf("11.107, search max and min;\nsource array: ");
     random_max = 10; quantity = 5;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     int *ptr_max = &random_max, *ptr_min = &quantity;
     max = array_min_max(data,quantity,1,1,ptr_max);
@@ -1432,7 +1395,7 @@ void chapter_11()
     printf("\ndiff = %d;\n\n", max - min);
     printf("11.114, athlete assessment;\n");
     random_max = 10; quantity = 10;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     min = array_min_max(data,quantity,0,1,&min_idx);
     max = array_min_max(data,quantity,1,1,&max_idx);
@@ -1450,7 +1413,7 @@ void chapter_11()
     printf("last max: %d(%d)\n\n",max,max_idx);
     printf("11.123, how many coldest days;\n");
     random_max = 5; quantity = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     min = array_min_max(data,quantity,0,1,&min_idx);
     result = array_chk_counter(data,quantity,min,chk_equal);
@@ -1486,9 +1449,9 @@ void chapter_11()
         printf("\nMin (%d)(%d);\n\n",max_idx, min_idx);
     printf("11.132, 11.138, 11.140 - 11.141, finding some highest and lowest values;\n");
     random_max = 20; quantity = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
-    int idxs_max[OBJECTS_MAX], idxs_min[OBJECTS_MAX], data_max[OBJECTS_MAX], data_min[OBJECTS_MAX];
+    int idxs_max[OBJ_MAX], idxs_min[OBJ_MAX], data_max[OBJ_MAX], data_min[OBJ_MAX];
     counter = 5;
     for (i = 0; i < counter; ++i) {
         data_max[i] = -random_max;
@@ -1555,7 +1518,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.144, exchange elements;\nsource array: ");
     random_max = 20; quantity = 10;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = 2; b = 7; array_min_max(data,quantity,1,1,&result);
     array_xchg_elements(data,quantity,a,b);
@@ -1614,7 +1577,7 @@ void chapter_11()
     array_print(data, quantity - 2, prt_element | prt_indexes);
     printf("\n\n11.153, delete first negative and first even elements;\n");
     random_max = 20; quantity = 10; a = -1; b = -1;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_scan_element(data,0,quantity,0,chk_less);
     if (a != -1)
@@ -1627,7 +1590,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.156, delete elements;\n");
     quantity = 20;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     quantity -= array_delete_all(data,quantity,0,chk_less);
     printf("\na, negative: ");
@@ -1644,7 +1607,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.157, delete elements;\n");
     quantity = 10;
-    array_create_sequence(data, 1, 1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 1, 1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 1; i < quantity; i += 2)
         if (array_check_element(data,i,2,chk_div,quantity))
@@ -1658,7 +1621,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.158, delete equal elements;\n");
     random_max = 10; quantity = 30;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = array_delete_equal(data,quantity);
     printf("\nnew size = %d|",a);
@@ -1667,7 +1630,7 @@ void chapter_11()
     random_max = 20; quantity = 10;
     a = rand() % random_max;
     b = rand() % quantity;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     array_insert_element(data,quantity,a,b);
     printf("\nresult(idx = %d, num = %d): ",b,a);
@@ -1694,7 +1657,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.164, insert elements before multiples of a and after all negative elements;\n");
     quantity = 10;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % quantity + 1;
     b = rand() % random_max;
@@ -1704,7 +1667,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.167, insert the number and after the number where there is a digit 5;\n");
     a = rand() % random_max;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity; ++i) {
         result = number_to_digits(data[i],data_extra,2);
@@ -1718,7 +1681,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.168, insert the number n between numbers with the same sign;\n");
     a = rand() % random_max;
-    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, -1, -1, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity - 1; ++i)
         if (abs(data[i]) / data[i] == abs(data[i + 1]) / data[i + 1])
@@ -1726,7 +1689,7 @@ void chapter_11()
     printf("a = %d\n",a);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.170, rearrange the first element in place of k;\n");
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % quantity;
     b = data[0];
@@ -1763,7 +1726,7 @@ void chapter_11()
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.182, print all elements in array except first and last zero;\n");
     quantity = 10;
-    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJECTS_MAX);
+    array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n");
     for (i = 0; data[i] != 0 && i < quantity; ++i)
@@ -1772,7 +1735,7 @@ void chapter_11()
         printf("%d ", data[i]);
     printf("\n\n11,183, ascending array with numbers: ");
     quantity = 16;
-    array_create_sequence(data, 0, 48, 3, 0b00000010, OBJECTS_MAX);
+    array_create_sequence(data, 0, 48, 3, 0b00000010, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     a = rand() % 48;
     printf("\na) elements less than %d:\n", a);
@@ -1832,11 +1795,11 @@ void chapter_11()
         ;
     printf("\nquantity: %d\n\n", i);
     const int d_size = 4;
-    int number_1[OBJECTS_MAX] = {9,9,9,9};
-    int number_2[OBJECTS_MAX] = {9,9,9,9};
-    int number_3[OBJECTS_MAX] = {0,0,0,0};
+    int number_1[OBJ_MAX] = {9,9,9,9};
+    int number_2[OBJ_MAX] = {9,9,9,9};
+    int number_3[OBJ_MAX] = {0,0,0,0};
     printf("11.189, digital calculator for arrays(add, sub, multiply, division)\n");
-    for (i = 0; i < OBJECTS_MAX; ++i)
+    for (i = 0; i < OBJ_MAX; ++i)
         if (i >= d_size)
             number_1[i] = number_2[i] = number_3[i] = 0;
     /*
@@ -1883,11 +1846,12 @@ void chapter_11()
         unsigned int number = 1;
         for (j = 0; j < 25; ++j)
             number <<= 1;
+        printf("%u;\n", number);
         //print_binary_dword(number);
     }
     printf("\nMethod #2: factorization of size int, 2^100 = 2^25 * 2^25 * 2^25 * 2^25(in dec);\n");
     int data_nums[] = {5,2,3,1 << 25}; // 128 bits total.
-    char hex_num[OBJECTS_MAX];
+    char hex_num[OBJ_MAX];
     hex_num[16] = '\0';     //Вывод в 16-ой системе счисления.
     for (i = 0; i < 4; ++i) {
         int_to_string(&hex_num[i * 4],data_nums[i],16);
@@ -1906,16 +1870,16 @@ void chapter_11()
     printf("\n");
     array_print(array_result,128,prt_element);
     printf("\nmethod #4: using arrays:\n");
-    int num_a[OBJECTS_MAX];
-    int num_b[OBJECTS_MAX];
-    int num_r[OBJECTS_MAX];
-    int num_s[OBJECTS_MAX]; // слогаемое при умножении на num_r.
+    int num_a[OBJ_MAX];
+    int num_b[OBJ_MAX];
+    int num_r[OBJ_MAX];
+    int num_s[OBJ_MAX]; // слогаемое при умножении на num_r.
     int n_digits = 32, carry = 0, g = 0;
     num_a[n_digits - 1] = 1;
     num_a[n_digits - 2] = 0;
     num_b[n_digits - 1] = 2;    //a + b = a + 1 + 1... + b times
     num_b[n_digits - 2] = 3;    //a * b = a + a... + b times
-    for (i = 0; i < OBJECTS_MAX; ++i) { // a ^ b = a * a * a... * b times
+    for (i = 0; i < OBJ_MAX; ++i) { // a ^ b = a * a * a... * b times
         if (i < n_digits - 2)
             num_a[i] = num_b[i] = 0;
         num_r[i] = num_s[i] = 0;
@@ -1928,7 +1892,7 @@ void chapter_11()
     printf("\n");
     array_print(num_s,n_digits,prt_element);
     printf("\n");
-    time_t t1 = time(NULL);
+    time_t t1 = 1;
     for (i = 0; i < 1; ++i) { //main cycle.
         for (j = n_digits - 1, carry = 0; j >= 0; --j) {
             for (k = n_digits - 1; k >= 0 || carry > 0; --k) {
@@ -1948,7 +1912,7 @@ void chapter_11()
             num_r[g] = 0;
         }
     }
-    time_t t2 = time(NULL);
+    time_t t2 = 1;
     array_print(num_a,n_digits,prt_element);
     printf("\n%s", asctime(gmtime(&t1)));
     printf("\n%s", asctime(gmtime(&t2)));
@@ -1960,7 +1924,7 @@ void chapter_11()
         printf("%d ",i);
     printf("\n\n11.210 - 11.212, func fir check sequence;\n");
     quantity = 15;
-    array_create_sequence(data,0,quantity,1,0b00000010,OBJECTS_MAX);
+    array_create_sequence(data,0,quantity,1,0b00000010,OBJ_MAX);
     data[quantity] = 1;
     array_print(data,quantity,prt_element); //Переофромить в виде одной функции array_order();
     printf("\nis ascending:\t%d\n", array_is_ascending(data,quantity));
@@ -1968,7 +1932,7 @@ void chapter_11()
     printf("is equals:\t%d\n", array_is_equal(data,quantity));
     //many arrays
     printf("\n11.214, costs of goods in first and second months;\n");
-    int data_1[OBJECTS_MAX] = {1,2,3,4,5}, data_2[OBJECTS_MAX] = {5,4,3,2,1}, data_result[OBJECTS_MAX];
+    int data_1[OBJ_MAX] = {1,2,3,4,5}, data_2[OBJ_MAX] = {5,4,3,2,1}, data_result[OBJ_MAX];
     printf("1)");
     array_print(data_1,5,prt_element);
     printf("\n2)");
@@ -1977,7 +1941,7 @@ void chapter_11()
     printf("\nresult: ");
     array_print(data_result,5,prt_element);
     printf("\n\n11.217, total harvest from areas;\n");
-    int areas[OBJECTS_MAX] = {1,2,3,4,5}, yield[OBJECTS_MAX] = {6,3,8,4,0}, harvest[OBJECTS_MAX];
+    int areas[OBJ_MAX] = {1,2,3,4,5}, yield[OBJ_MAX] = {6,3,8,4,0}, harvest[OBJ_MAX];
     printf("1)");
     array_print(areas,5,prt_element);
     printf("\n2)");
@@ -2057,8 +2021,8 @@ void chapter_11()
     }
     printf("Min size = %d;\n\n", min);
     printf("11.235, copying array elements in different order;\nsource: \n");
-    int mass_1[OBJECTS_MAX] = {0,1,2,3,4};
-    int mass_2[OBJECTS_MAX];
+    int mass_1[OBJ_MAX] = {0,1,2,3,4};
+    int mass_2[OBJ_MAX];
     quantity = 5;
     array_print(mass_1,quantity,prt_element);
     array_create_input(mass_2,mass_1,1,0,quantity);
@@ -2100,7 +2064,7 @@ void chapter_11()
     array_print(mass_2,j,prt_element);
     printf("\n\n11.245, first negative then positive;\nsource: \n");
     quantity = 10;
-    srand(time(NULL));
+    srand(1);
     array_create_sequence(data,-1,-1,random_max,0b00000001,quantity);
     array_print(data,10,prt_element);
     printf("\n");

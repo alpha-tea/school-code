@@ -2,7 +2,7 @@
 #include <math.h>
 
 /*
- * Перечитать и проверить оформление и подписать название главы.
+ *  Глава 4. Условный оператор.
  */
 
 void chapter_4()
@@ -226,10 +226,10 @@ lab_1:
     y = 3;
     if ((((x > a1) && (y > b1)) ||
          ((x > b1) && (y > a1))) ||
-            ((y > c1) && (x > a1)) ||
-            ((y > a1) && (x > c1)) ||
-            ((y > c1) && (x > b1)) ||
-            ((y > b1) && (x > c1)))
+        ((y > c1) && (x > a1)) ||
+        ((y > a1) && (x > c1)) ||
+        ((y > c1) && (x > b1)) ||
+        ((y > b1) && (x > c1)))
         printf("Yes, will fit!\n\n");
     else
         printf("No, it does not fit!\n\n");
@@ -241,28 +241,28 @@ lab_1:
     help3 = a1 / 100 % 10;
     help4 = a1 / 10 % 10;
     if ((help1 == 2) ||
-            (help1 == 7) ||
-            (help2 == 2) ||
-            (help2 == 7) ||
-            (help3 == 2) ||
-            (help3 == 7) ||
-            (help4 == 2) ||
-            (help4 == 7))
+        (help1 == 7) ||
+        (help2 == 2) ||
+        (help2 == 7) ||
+        (help3 == 2) ||
+        (help3 == 7) ||
+        (help4 == 2) ||
+        (help4 == 7))
         printf("%d;\na)Included!\n\n",a1);
     else
         printf("%d;\na)Not included!\n\n",a1);
     if ((help1 == 3) ||
-            (help1 == 6) ||
-            (help1 == 9) ||
-            (help2 == 3) ||
-            (help2 == 6) ||
-            (help2 == 9) ||
-            (help3 == 3) ||
-            (help3 == 6) ||
-            (help3 == 9) ||
-            (help4 == 3) ||
-            (help4 == 6) ||
-            (help4 == 9))
+        (help1 == 6) ||
+        (help1 == 9) ||
+        (help2 == 3) ||
+        (help2 == 6) ||
+        (help2 == 9) ||
+        (help3 == 3) ||
+        (help3 == 6) ||
+        (help3 == 9) ||
+        (help4 == 3) ||
+        (help4 == 6) ||
+        (help4 == 9))
         printf("%d;\nb)Included!\n\n",a1);
     else
         printf("%d;\nb)Not included!\n\n",a1);
@@ -636,9 +636,9 @@ lab_1:
     c1 = 2;
     d1 = 7;
     if (a1 <= 8 && a1 >=1 &&
-            b1 <= 8 && b1 >=1 &&
-            c1 <= 8 && c1 >=1 &&
-            d1 <= 8 && d1 >=1) {
+        b1 <= 8 && b1 >=1 &&
+        c1 <= 8 && c1 >=1 &&
+        d1 <= 8 && d1 >=1) {
         //a
         if (c1 == a1 || d1 == b1)
             printf("a)ladya ugrozhaet peshke!\n");
@@ -673,13 +673,13 @@ lab_1:
     c = 8;
     if ((c < b + a) && (a < b + c) && (b < c + a)) {
         if (pow(c,2) == pow(a,2) + pow(b,2) ||
-                pow(b,2) == pow(a,2) + pow(c,2) ||
-                pow(a,2) == pow(c,2) + pow(b,2))
+            pow(b,2) == pow(a,2) + pow(c,2) ||
+            pow(a,2) == pow(c,2) + pow(b,2))
             printf("Pryamoygolniy treugolynk!\n\n");
         else
             if (pow(c,2) < pow(a,2) + pow(b,2) &&
-                    pow(b,2) < pow(a,2) + pow(c,2) &&
-                    pow(a,2) < pow(c,2) + pow(b,2))
+                pow(b,2) < pow(a,2) + pow(c,2) &&
+                pow(a,2) < pow(c,2) + pow(b,2))
                 printf("Ostrougolniy treugolynk!\n\n");
             else
                 printf("Tupoygolniy treugolnyk!\n\n");

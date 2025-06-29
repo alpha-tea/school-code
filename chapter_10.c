@@ -1,50 +1,16 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "library.h"
 
-int ackermann(int m, int n);
-int symmetric_check_recur(char string[], int start, int end, int limit);
-int prime_check_recur(int number, int* num_ptr);
-void print_integer_recur(int number, int base);
-int reverse_number(int n, int result);
-int flip_number(int n);
-int find_max_recur(int numbers[], int length, int* idx, int max);
-int fibonacci_recur(int n);
-int arif_recur(int a1, int d, int n, int* sum);
-int sum_arith_progres(int d, int n, int a1);
-int value_arith_progres(int d, int n, int a1);
-int digital_root_recur(int number);
-int number_of_digits_recur(int number);
-int sum_of_digits_recur(int number);
-int expt (int base, int power);
-int exp_recur(int power, int base);
-int factorial_recur(int number);
-int is_command_correct(char command[], int idx, int pars, int src_size);
-void clear_screen(char* buffer, int size_x, int size_y, char fill);
-void output_screen(char* buffer, int size_x, int size_y);
-int pair_min(int a, int b);
-int pair_max(int a, int b);
-void exchange_of_values(int *a, int *b);
-char hex_to_char(int c);
-int char_to_hex(char c);
-double triangle_heron(double a, double b, double c);
-int check_even_or_odd(int mode, int value);
-double line_vertex(double vertex[]);
-int quadratic_equations(int a, int b , int c);
-double perimeter_isosceles_trapezoid(double bases_1, double bases_2, double height);
-double perimeter(double a, double b, double c);
-double hypotenuse(double a, double b);
-int sign(int number);
-double calc_exp_10_1(int numbers[], int is_sqrt[], int exp_size, int terms);
-double fraction_calculator_with_factorials(int numbers[], int is_factorial[]);
-int digits_in_num(int num, int start, int len, int* sum);
-int max_int_pair(int a, int b);
-int degree_check(int value, int base);
-int date_prev_day(int* day, int* month, int* year);
-int date_next_day(int* day, int* month, int* year);
-void print_date(int day, int month, int year, char* format);
-int days_in_month(int month, int year);
-int reduction_of_fractions(int numerator, int denominator, int debug);
-int evklid_many_numbers(int mass[], int size);
+#define SEQUENCE_LENGTH 11
+#define NUMBERS_QUANTITY 6
+#define OBJ_MAX 256
+#define STRING_MAX 256
+
+/*
+ *  Глава 10. Функции и процедуры.
+ */
 
 int evklid_many_numbers(int mass[], int size)
 {
@@ -353,15 +319,6 @@ double triangle_heron(double a, double b, double c)
     return sqrt(half_per * (half_per - a) * (half_per - b) * (half_per - c));
 }
 
-int char_to_hex(char c)
-{
-    if (c >= '0' && c <= '9')
-        return c - '0';
-    else if (c >= 'A' && c <= 'F')
-        return c - 'A' + 10;
-    return -1;
-}
-
 char hex_to_char(int c)
 {
     if (c >= 0 && c <= 9)
@@ -369,13 +326,6 @@ char hex_to_char(int c)
     else if (c >= 10 && c <= 15)
         return c - 10 + 'A';
     return -1;
-}
-
-void exchange_of_values(int *a, int *b)
-{
-    *a -= *b;
-    *b += *a;
-    *a = *b - *a;
 }
 
 int pair_max(int a, int b)
@@ -420,7 +370,7 @@ void clear_screen(char* buffer, int size_x, int size_y, char fill)
 
 int is_command_correct(char command[], int idx, int pars, int src_size)
 {
-    if (pars >= OBJECTS_MAX || pars < 0 || src_size < 0 || src_size > OBJECTS_MAX)
+    if (pars >= OBJ_MAX || pars < 0 || src_size < 0 || src_size > OBJ_MAX)
         return 0;
     for (int i = 1; i <= pars; ++i)
         if (char_to_hex(command[idx + i]) == -1)
@@ -522,17 +472,6 @@ int fibonacci_recur(int n)
     return fibonacci_recur(n - 1) + fibonacci_recur(n - 2);
 }
 
-int find_max_recur(int numbers[], int length, int* idx, int max)
-{
-    if (length < 0)                             // Реализовать функцию только с адресной арифметикой.
-        return max;
-    if (numbers[length] > max) {
-        max = numbers[length];
-        *idx = length;
-    }
-    return find_max_recur(numbers,--length,idx,max);
-}
-
 int flip_number(int n)
 {
     const int base = 10;
@@ -610,7 +549,7 @@ void chapter_10()
     const int variants = 4, exp_size = 12;
     printf("10.1, calculate X, all variants.\n");
     //int data_1[exp_size * variants], is_sqrt[exp_size * variants];
-    srand(time(NULL));
+    srand(1);
     for (i = 0; i < variants; ++i) {
         for (j = 0; j < exp_size; ++j) {;
             //data_1[i * exp_size + j] = 1 + rand() % 100;
@@ -766,7 +705,7 @@ void chapter_10()
     } else
         printf("error in parameters and of lucky numbers;\n");
     printf("\nTotal: %d;\n\n",counter);                                              // Убрать
-    int data_int[OBJECTS_MAX] = {123456, 415362, 516243, 243651, 654321};
+    int data_int[OBJ_MAX] = {123456, 415362, 516243, 243651, 654321};
     int data_size = 5;
     printf("10.22, find max number in vector\n");
     printf("numbers: ");
@@ -837,9 +776,9 @@ void chapter_10()
     percent = (double)total_symb / (double)total_len * 100;
     printf("total symbols: %d; total length: %d, percent = %.2f;\n", total_symb, total_len, percent);
     printf("First symbol in all texts: %d\n", idx);
-    char commands[OBJECTS_MAX][STRING_MAX] = {"P06B80"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
+    char commands[OBJ_MAX][STRING_MAX] = {"P06B80"};  //C422CC22C822C652CA52;P00DP34DPF0DPFFDP0FD;P00RFFP22R66PD2RA6P2DR6APDDRAA;P77B80P77B8FP77B05P77B09P77BF5P77BF9
     const int commands_size = 1;
-    char screen[OBJECTS_MAX * OBJECTS_MAX];
+    char screen[OBJ_MAX * OBJ_MAX];
     const int screen_size = 16;
     char paper = '.';
     char ink = 'O';

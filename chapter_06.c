@@ -1,13 +1,13 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #include "library.h"
 
-int evklid_first_step(int a, int b);
-void number_of_degrees (int n);
-void fibonachi(int n);
-int arif_sequence(int n, int f, int s);
-int geom_seqence(int m, int g, int z);
-int natural_number(int n);
-int lcm (int a, int b);
+#define ARRAY_SIZE 15
+
+/*
+ *  Глава 6. Операторы цикла с условием.
+ */
 
 void number_of_degrees (int n)
 {
@@ -45,8 +45,10 @@ void fibonachi (int n)
 int arif_sequence (int n, int f, int s)
 {
     printf("Sequence: ");
-    for (int i = 0; f < n; ++i, f += s)
+    while(f < n) {
         printf("%d ",f);
+        f += s;
+    }
     printf("\n");
     return f;
 }
@@ -54,8 +56,10 @@ int arif_sequence (int n, int f, int s)
 int geom_seqence (int m, int g, int z)
 {
     printf("Sequence: ");
-    for (int i = 0; g < m; ++i, g *= z)
+    while (g < m) {
+        g *= z;
         printf("%d ",g);
+    }
     printf("\n");
     return g;
 }
@@ -162,7 +166,7 @@ void chapter_6()
     printf("\n6.20.posledowatelnost y(n), eps = %.2f\n",eps);
     double double_x = 5;
     double prev_y = 0.5 * (double_x / -1), y = 0.5 * (prev_y + (double_x / (prev_y - 1)));
-    for (int i = 1; fabs(y * y - prev_y * prev_y) >= eps;++i) {
+    while (fabs(y * y - prev_y * prev_y) >= eps) {
         prev_y = y;
         y = 0.5 * (prev_y + (double_x / (prev_y - 1)));
         double delta = fabs(y * y - prev_y * prev_y);
@@ -455,7 +459,7 @@ void chapter_6()
     }
     printf("%.2f:%d\n\n",mass2[x],x + 1);
     printf("6.60\n");
-    srand(time(NULL));
+    srand(1);
     n = 0;
     int i;
     printf("Sequence: ");
@@ -468,7 +472,7 @@ void chapter_6()
     else
         printf("\nThere is no number in the sequence that ends in 7\n\n");
     printf("6.63\n");
-    srand(time(NULL));
+    srand(1);
     n = 0;
     k = 0;
     printf("Appraisals: ");
@@ -483,7 +487,7 @@ void chapter_6()
     else
         printf("\nNo twos!\n\n");
     printf("6.66\n");
-    srand(time(NULL));
+    srand(1);
     n = 0;
     k = 1;
     x1 = 0;
@@ -508,7 +512,7 @@ void chapter_6()
     printf("6.69\n");
     k = 0;
     printf("Sequence: ");
-    srand(time(NULL));
+    srand(1);
     int mass3[ARRAY_SIZE];
     x = 1 + rand() % ARRAY_SIZE;
     for (int i = 0; i < ARRAY_SIZE; ++i)
@@ -717,7 +721,7 @@ void chapter_6()
     printf("6.91, n = %d\n",n);
     natural_number(n);
     printf("6.93\n");
-    srand(time(NULL));
+    srand(1);
     int precipitation[31];
     precipitation[0] = 0;
     printf("Sequance: %d ", precipitation[0]);

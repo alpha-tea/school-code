@@ -4,51 +4,7 @@
 
 #include "library.h"
 
-/*Подтянуть константы и оформить вывод игр, немного оптимизации.
- */
-
-int uniq_gen_fast_alt_1(int number[], int start, int limit);
-int uniq_gen_fast_alt(int number[], int length, int limit);
-int uniq_gen_fast(int number[], int length, int limit);
-int uniq_gen_fast_symbols(char string[], int length);
-void bulls_and_cows();
-void hack_the_terminal(int length, int quantity, int attempts);
-
-int uniq_gen_fast_alt_1(int number[], int start, int limit)
-{
-    const int num_max = limit;
-    if (limit < 1)
-        return -1;
-    for (int i = 0; i < limit; ++i)
-        number[i] = start + i;
-    int tmp = 0, idx_1 = 0 , idx_2 = 0;
-    for (int i = 0; i < limit * limit; ++i) {
-        idx_1 = rand() % num_max;
-        idx_2 = rand() % num_max;
-        tmp = number[idx_1];
-        number[idx_1] = number[idx_2];
-        number[idx_2] = tmp;
-    }
-    return 0;
-}
-
-int uniq_gen_fast_alt(int number[], int length, int limit)
-{
-    const int num_max = limit;
-    if (length < 1 || length > num_max)
-        return -1;
-    for (int i = 0; i < limit; ++i)
-        number[i] = i;
-    int tmp = 0, idx_1 = 0 , idx_2 = 0;
-    for (int i = 0; i < length * length; ++i) {
-        idx_1 = rand() % num_max;
-        idx_2 = rand() % num_max;
-        tmp = number[idx_1];
-        number[idx_1] = number[idx_2];
-        number[idx_2] = tmp;
-    }
-    return 0;
-}
+#define OBJ_MAX 256
 
 int uniq_gen_fast(int number[], int length, int limit)
 {
@@ -148,7 +104,7 @@ void bulls_and_cows()
     }
     printf("Hooray, you won!\nNumber of attempts = %d;\n\n",quantity);
 }
-/*
+
 void hack_the_terminal(int length, int quantity, int attempts)
 {
     if (length < 1 || quantity < 2 || length > 26) {
@@ -156,7 +112,7 @@ void hack_the_terminal(int length, int quantity, int attempts)
         return;
     }
     srand(time(NULL));
-    int likeness_idx[OBJECTS_MAX];
+    int likeness_idx[OBJ_MAX];
     int likeness = 0, div = 0, rem = 0;
     printf("length = %d, quantity = %d;\n", length, quantity);
     if (quantity > length) {
@@ -191,7 +147,7 @@ void hack_the_terminal(int length, int quantity, int attempts)
         printf("%d ", likeness_idx[i]);
     return;
 }
-*/
+
 
 int stalker_evaluation_function(int properties[])
 {
@@ -288,8 +244,10 @@ void stalker_best_combination_of_artifacts()
      {5,0,0,-100,0,0,0,0,0,0,0,0,0,0},{5,5,0,0,40,0,-5,0,-5,0,0,0,0,0},{0,-3,2,0,0,0,0,0,0,0,0,0,0,0}};
     int artifacts_counter[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int properties[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+/*
     char* properties_name[14] = {"Вывод радиации","Радиация","Пулестойкость","Кровотечение","Здоровье","Выносливость",
                                  "Разрыв", "Взрыв","Удар","Электрошок","Ожог","Химический ожог","Телепатия","Сытость"};
+*/
     int i = 0, j = 0, k = 0, tmp = 0, properties_max;
     int a_c[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int a_p[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -345,3 +303,7 @@ void stalker_best_combination_of_artifacts()
 
 }
 
+void games()
+{
+    bulls_and_cows();
+}

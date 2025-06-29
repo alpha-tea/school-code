@@ -341,6 +341,7 @@ void exam_26()
             min = ROWS_MAX, min_row = -1, file_seats = 0, file_act = 0;
     if ((fgets(s, BUFF_SIZE, file)) == NULL) {
         printf("total seats error;\n");
+        fclose(file);
         return;
     }
     total = atoi(s);
@@ -445,6 +446,7 @@ void exam_27()
     int total = 0, counter = 0, group_size = 0, i = 0, j = 0, k = 0;
     if ((fgets(s, BUFF_SIZE, file)) == NULL) {
         printf("total seats error;\n");
+        fclose(file);
         return;
     }
     total = atoi(s);
@@ -466,7 +468,7 @@ void exam_27()
         //printf("\n All LCM in group %d; Pair n-m and (LCM): ", counter);
         //Все числа в группе уникальны, если будут повторения, то подстаховаться.
 
-        int gcd, lcm, lcm_sum;
+        int gcd, lcm;
         for (i = 0, lcm_size[counter] = 0; i < group_size - 1; ++i) {
             for (j = i + 1; j < group_size; ++j) {
                 int a = group_data[i], b = group_data[j]; //Если что - функция.
@@ -501,11 +503,9 @@ void exam_27()
             ;//printf("%d ", lcm_data[i][j]);
     }
 
-    int sum_idx[BUFF_SIZE], idxs[BUFF_SIZE], sum = -1, sum_max = -1;
-    for (i = 0; i < BUFF_SIZE; ++i) {
-        sum_idx[i] = -1;
+    int idxs[BUFF_SIZE], sum = -1, sum_max = -1;
+    for (i = 0; i < BUFF_SIZE; ++i)
         idxs[i] = 0;
-    }
     printf("\n\nSearch max sum from LCM groups divided by 5 or 7 (not both);");
     do {
         printf("\nindexes and data to sum: ");
@@ -519,7 +519,7 @@ void exam_27()
                 sum_max = sum;
                 ;//printf("new max = %d;\n", sum_max);
             } else
-                ;//printf("but less than max %d;\n", sum_max);
+                printf("but less than max %d;\n", sum_max);
         }
         i = 0;
         while (i < counter && ++idxs[i] == lcm_size[i])
@@ -675,7 +675,6 @@ void task_5()
             mask <<= 0x01;
         }
         printf("n = %d, bits = %d, mask = %X hex\n", n, bits, mask);
-        r = 15;
         m = n;
         if (m % 2 != 0) {
             m <<= 0x01;

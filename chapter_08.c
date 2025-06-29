@@ -1,8 +1,12 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "library.h"
 
-int prime_number(int number);
-int digital_root(int n);
+/*
+ *  Глава 8. Вложенные циклы.
+ */
+
 
 int digital_root(int n)
 {
@@ -63,7 +67,7 @@ void chapter_8()
     }
     int n = 5, a = 3;
     printf("\n8.9, scores of students:, exams = %d, students = %d;\n",a,n);
-    srand(time(NULL));
+    srand(1);
     printf("\t1\t2\t3, - lessons:\n\n");
     for (i = 0; i < n; ++i) {
         printf("%d)\t",i);

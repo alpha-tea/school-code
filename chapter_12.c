@@ -1,16 +1,26 @@
-﻿#include "global.h"
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
 #include "library.h"
+
+#define OBJ_MAX 256
+
+/*
+ *  Глава 12. Двумерные массивы.
+ */
 
 static const int matrix_action_mask = 0x1F;            // Константная маска до модификатора. Изменить, если поменяется назначение бит.
 static const int matrix_check_mask = 0xFF000;       // Маска для модификатора проверки массива или элемента.
 
+/*
 static char* matrix_type_name[] = { "matrix nope",
                                     "initialization zeros", "initialization input", "initialization from source data",
                                     "initialization only columns from source", "initialization only rows from source",
                                     "create value", "create random", "create ariphmetic", "create geometric",
                                     "roll left", "roll right", "roll up", "roll down"
                                   };
-
+*/
 enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_column, mx_init_row,
                    mx_cr_val, mx_cr_rnd, mx_cr_ariphmetic, mx_cr_geometry,
                    mx_roll_left, mx_roll_right, mx_roll_up, mx_roll_down,
@@ -22,14 +32,14 @@ enum matrix_type { mx_nop, mx_init_par, mx_init_input, mx_init_all, mx_init_colu
                    mx_mod_col = 0x100000, mx_mod_row = 0x200000, mx_mod_sq = 0x400000, mx_mod_last = 0x800000, mx_end = 0x1000000
                  };
 
-int matrix_print(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int parameter, enum matrix_type type);
-int matrix_init(int data[OBJECTS_MAX][OBJECTS_MAX], int init[OBJECTS_MAX][OBJECTS_MAX],
+int matrix_print(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int parameter, enum matrix_type type);
+int matrix_init(int data[OBJ_MAX][OBJ_MAX], int init[OBJ_MAX][OBJ_MAX],
                 int columns, int rows, int par, enum matrix_type type);
 
-int matrix_init(int data[OBJECTS_MAX][OBJECTS_MAX], int init[OBJECTS_MAX][OBJECTS_MAX],
+int matrix_init(int data[OBJ_MAX][OBJ_MAX], int init[OBJ_MAX][OBJ_MAX],
                 int columns, int rows, int par, enum matrix_type type)
 {
-    if (type < mx_init_par || type > mx_init_row || columns >= OBJECTS_MAX || rows >= OBJECTS_MAX ||
+    if (type < mx_init_par || type > mx_init_row || columns >= OBJ_MAX || rows >= OBJ_MAX ||
             columns < 1 || rows < 1) {
         printf("error in array size, rows = %d, columns = %d or initialization type = %d incorrect;\n",
                rows, columns, type);
@@ -61,9 +71,9 @@ int matrix_init(int data[OBJECTS_MAX][OBJECTS_MAX], int init[OBJECTS_MAX][OBJECT
     return 0;
 }
 
-int matrix_print(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int parameter, enum matrix_type type)
+int matrix_print(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int parameter, enum matrix_type type)
 {
-    if (type < mx_prn_default || columns > OBJECTS_MAX || rows > OBJECTS_MAX) {
+    if (type < mx_prn_default || columns > OBJ_MAX || rows > OBJ_MAX) {
         printf("error in print matrix type;\n");
         return -1;
     }
@@ -110,9 +120,9 @@ int matrix_print(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int 
     return 0;
 }
 
-int matrix_create_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int parameter, enum matrix_type type)
+int matrix_create_sequence(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int parameter, enum matrix_type type)
 {
-    if (type < mx_cr_val || type > mx_cr_geometry || columns >= OBJECTS_MAX || rows >= OBJECTS_MAX ||
+    if (type < mx_cr_val || type > mx_cr_geometry || columns >= OBJ_MAX || rows >= OBJ_MAX ||
             columns < 1 || rows < 1 || (type == mx_cr_rnd && parameter == 0)) {
         printf("error in array size, rows = %d, columns = %d, par = %d or sequence type = %d incorrect;\n",
                rows, columns, parameter, type);
@@ -145,9 +155,9 @@ int matrix_create_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int 
     return 0;
 }
 
-int matrix_roll(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int counter, enum matrix_type type)
+int matrix_roll(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int counter, enum matrix_type type)
 {
-    if (type < mx_roll_left || type > mx_roll_down || columns >= OBJECTS_MAX || rows >= OBJECTS_MAX ||
+    if (type < mx_roll_left || type > mx_roll_down || columns >= OBJ_MAX || rows >= OBJ_MAX ||
             columns < 1 || rows < 1) {
         printf("error in array size, rows = %d, columns = %d or rolling type = %d incorrect;\n",
                rows, columns, type);
@@ -195,9 +205,9 @@ int matrix_roll(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int c
 }
 
 
-int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enum matrix_type type)
+int matrix_info(int data[OBJ_MAX][OBJ_MAX], int* columns, int* rows, enum matrix_type type)
 {
-    if (*columns < 0 || *rows < 0 || *columns > OBJECTS_MAX || *rows > OBJECTS_MAX ||
+    if (*columns < 0 || *rows < 0 || *columns > OBJ_MAX || *rows > OBJ_MAX ||
             type < mx_info_status || type >= mx_end) {
         printf("error: columns = %d, rows = %d, type = %d;\n", *columns, *rows, type);
         return -1;
@@ -274,9 +284,9 @@ int matrix_info(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows, enu
     return result;
 }
 
-int matrix_check_element(int data[OBJECTS_MAX][OBJECTS_MAX], int column, int row, int parameter ,enum matrix_type check)
+int matrix_check_element(int data[OBJ_MAX][OBJ_MAX], int column, int row, int parameter ,enum matrix_type check)
 {   //если параметр проверки равен mx_nop, то вернуть 1.
-    if (column < 0 || row < 0 || column >= OBJECTS_MAX || row >= OBJECTS_MAX) {
+    if (column < 0 || row < 0 || column >= OBJ_MAX || row >= OBJ_MAX) {
         printf("error check element: columns = %d, rows = %d, type = %d;\n", column, row, check);
         return -1;
     }
@@ -301,9 +311,9 @@ int matrix_check_element(int data[OBJECTS_MAX][OBJECTS_MAX], int column, int row
             return (data[row][column] == data[row - 1][column]);
         if (parameter == 1 && column != 0)
             return (data[row][column] == data[row][column - 1]);
-        if (parameter == 2 && row < OBJECTS_MAX - 1)
+        if (parameter == 2 && row < OBJ_MAX - 1)
             return (data[row][column] == data[row + 1][column]);
-        if (parameter == 3 && column < OBJECTS_MAX - 1) {
+        if (parameter == 3 && column < OBJ_MAX - 1) {
             return (data[row][column] == data[row][column + 1]);
         }
         return 0;
@@ -314,9 +324,9 @@ int matrix_check_element(int data[OBJECTS_MAX][OBJECTS_MAX], int column, int row
     return -1;
 }
 
-int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int* par_cnt, enum matrix_type check)
+int matrix_check_info(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int* par_cnt, enum matrix_type check)
 {   // параметр сначала используется как параметр, а потом как счётчик, вернуть.
-    if (columns < 0 || rows < 0 || columns > OBJECTS_MAX || rows > OBJECTS_MAX ||
+    if (columns < 0 || rows < 0 || columns > OBJ_MAX || rows > OBJ_MAX ||
             check < mx_info_status || check >= mx_end) {
         printf("error: columns = %d, rows = %d, type = %d;\n", columns, rows, check);
         return -1;
@@ -363,11 +373,11 @@ int matrix_check_info(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
     return result;
 }
 
-int matrix_elements_copies(int data[OBJECTS_MAX][OBJECTS_MAX], int columns,  int rows, int counter,
+int matrix_elements_copies(int data[OBJ_MAX][OBJ_MAX], int columns,  int rows, int counter,
                            enum matrix_type mode)
 {   // функция определения наличия n копий хотя бы одного элемента в массиве
     //возвращает кол-во элементов, счётчик копий которых задан в параметре.
-    if (columns < 0 || rows < 0 || rows >= OBJECTS_MAX || columns >= OBJECTS_MAX || counter < 1)
+    if (columns < 0 || rows < 0 || rows >= OBJ_MAX || columns >= OBJ_MAX || counter < 1)
         return -1;
     int quantity = 0, result = 0, j = 0, copies = 0;
     int uniq_elements[columns * rows];
@@ -390,10 +400,10 @@ int matrix_elements_copies(int data[OBJECTS_MAX][OBJECTS_MAX], int columns,  int
         }
     return result;
 }
-int matrix_find_element(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* rows,
+int matrix_find_element(int data[OBJ_MAX][OBJ_MAX], int* columns, int* rows,
                         int par, enum matrix_type chk)
 {
-    if (*columns < 0 || *rows < 0 || *rows >= OBJECTS_MAX || *columns >= OBJECTS_MAX)
+    if (*columns < 0 || *rows < 0 || *rows >= OBJ_MAX || *columns >= OBJ_MAX)
         return -1;
     int last_col = *columns, last_row = *rows, check_type = 0, result = 0, start_column = 0, start_row = 0;
     start_column = (chk & mx_mod_col) ? last_col++ : 0;
@@ -411,13 +421,13 @@ int matrix_find_element(int data[OBJECTS_MAX][OBJECTS_MAX], int* columns, int* r
     return result;
 }
 
-int matrix_is_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows,
+int matrix_is_sequence(int data[OBJ_MAX][OBJ_MAX], int columns, int rows,
                        int parameter, enum matrix_type check)
 {   //Функция определяет является ли матрица или её часть элементом последовательности
     //с условием по параметру.
     // Все элементы матрицы, строки или столбца должны удовлетворять условию проверки
     //на убывание или возрастание.
-    if (columns < 0 || rows < 0 || rows >= OBJECTS_MAX || columns >= OBJECTS_MAX)
+    if (columns < 0 || rows < 0 || rows >= OBJ_MAX || columns >= OBJ_MAX)
         return -1;
     int prev = 0, last_col = columns, last_row = rows, check_type = 0, start_column = 0, start_row = 0;
     start_column = (check & mx_mod_col) ? last_col++ : 0;
@@ -441,7 +451,7 @@ int matrix_is_sequence(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows
     return 1;
 }
 
-int matrix_update(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int values[], enum matrix_type type)
+int matrix_update(int data[OBJ_MAX][OBJ_MAX], int columns, int rows, int values[], enum matrix_type type)
 {
     // Функция обновления матрицы с учетом параметров проверки и модификаторов.
     //Дополнительный массив парараметров.
@@ -464,7 +474,7 @@ int matrix_update(int data[OBJECTS_MAX][OBJECTS_MAX], int columns, int rows, int
     //обновить значения матрицы в 5-й строке, все элементы больше 1-ы и заменить их на значения 7, 8, 9.
     //values[5] = {mx_upd_add | mx_mod_row | mx_chk_nop, -1, -1(column), 2(row - dest), -1(column), 4(row - src), [...]};
     //Прибавить все элементы 4-й строки к элементам второй строки, все столбцы
-    if (columns < 0 || rows < 0 || columns > OBJECTS_MAX || rows > OBJECTS_MAX) {
+    if (columns < 0 || rows < 0 || columns > OBJ_MAX || rows > OBJ_MAX) {
         printf("error mx_upd: columns = %d, rows = %d, type = %d;\n", columns, rows, type);
         return -1;
     }
@@ -554,8 +564,8 @@ void chapter_12()
 {
     printf("12.1 - 12.21:\n");
     srand(time(NULL));
-    int array[OBJECTS_MAX][OBJECTS_MAX];
-    matrix_init(array,array,OBJECTS_MAX - 1,OBJECTS_MAX - 1, 1,mx_init_par);
+    int array[OBJ_MAX][OBJ_MAX];
+    matrix_init(array,array,OBJ_MAX - 1,OBJ_MAX - 1, 1,mx_init_par);
     int x1 = rand() % 5, y1 = rand() % 5, x2 = rand() % 5,
             y2 = rand() % 5, value1 = 2 + rand() % 8, value2 = 2 + rand() % 8,
             length_x = 5, length_y = 5, tmp = 0;
@@ -633,9 +643,9 @@ void chapter_12()
     char* dir_name[] = { "north", "east", "south", "west" };
     const int directions = 4;
     int data_dir[4][2] = { {0, -1}, {+1, 0}, {0, +1}, {-1, 0} };
-    columns = 1, rows = 7, j = 0, k = 0;
+    columns = 1, rows = 7, j = 0;
     int number = 1, next_row = 0, next_column = 0, move_dir = 1, trail_size = 0, move_size = 0;
-    int data_trail[OBJECTS_MAX][2];
+    int data_trail[OBJ_MAX][2];
     matrix_init(array,array,columns,rows,0,mx_init_par);
     while (array[next_row][next_column] == 0 && next_column >= 0 && next_row >= 0 &&
            next_column < columns && next_row < rows) {
@@ -769,7 +779,7 @@ void chapter_12()
     printf("12.59;\n");
     a1 = 0;
     matrix_print(array, columns, rows, 0, mx_prn_default);
-    result = matrix_check_info(array, columns, rows, &a1 ,mx_chk_equal | mx_info_sum);
+    matrix_check_info(array, columns, rows, &a1 ,mx_chk_equal | mx_info_sum);
     printf("equal 0 = %d;\n\n",a1);
     printf("12.61;\n");
     matrix_print(array, columns, rows, 0, mx_prn_default);
@@ -899,7 +909,7 @@ void chapter_12()
     printf("\nb, counter of all positive elements:\n");
     for (i = 0; i < columns; ++i) {
         a1 = -1;
-        result = matrix_check_info(array, i, rows, &a1, mx_info_sum | mx_chk_more | mx_mod_col);
+        matrix_check_info(array, i, rows, &a1, mx_info_sum | mx_chk_more | mx_mod_col);
         printf("column #%d = %d;\n", i, a1);
     }
     printf("\nc, counter elements divided 2 or 3:\n");
@@ -914,13 +924,13 @@ void chapter_12()
     matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
     matrix_print(array, columns, rows, 0, mx_prn_default);
     printf("a, pairs and sum of each row;\n");
-    for (i = 0, result = 0, sum = 0; i < rows; ++i) {
+    for (i = 0, result = 0; i < rows; ++i) {
         result += matrix_info(array, &columns, &i, mx_info_pairs | mx_mod_row);
         sum = matrix_info(array, &columns, &i, mx_info_sum | mx_mod_row);
         printf("%d: pairs = %d, rows = %d;\n", i, result, sum);
     }
     printf("b, pairs and sum of each column;\n");
-    for (j = 0, result = 0, sum = 0; j < columns; ++j) {
+    for (j = 0, result = 0; j < columns; ++j) {
         result += matrix_info(array, &j, &rows, mx_info_pairs | mx_mod_col);
         sum = matrix_info(array, &j, &rows, mx_info_sum | mx_mod_col);
         printf("%d: pairs = %d, column = %d;\n", j, result, sum);
@@ -953,7 +963,7 @@ void chapter_12()
     }
     printf("counter = %d", counter);
     printf("\nThird variant(Using big extra array):\n");
-    int copies_array[OBJECTS_MAX], copies = 0, element = 0; //Если много, то отвал
+    int copies_array[OBJ_MAX], copies = 0, element = 0; //Если много, то отвал
     matrix_create_sequence(array,columns,rows,rand_max,mx_cr_rnd);
     //matrix_print(array, columns, rows, 0, mx_prn_default);
     for (i = 0, counter = 0; i < rows * columns; ++i) {
@@ -1112,7 +1122,7 @@ void chapter_12()
     }
     printf("max sum = %d, rows = %d and %d;\n", max, max_idx, max_idx + 1);
     printf("\n12.103, 12.107, min in pairs of columns;\n");
-    sum_1 = 0, sum_2 = 0; min = columns * rand_max;
+    min = columns * rand_max;
     for (i = 0, max_idx = 0; i < columns - 1; ++i) {
         length_y = i;
         sum_1 = matrix_info(array, &length_y, &rows, mx_info_sum | mx_mod_col);
@@ -1247,7 +1257,6 @@ void chapter_12()
     }
     int quantity = 0, is_lose = 0, win = 0, lose = 0, total = 0;
     for (i = 0, result = 0, idx = 0, max = 0; i < teams_counter; ++i) {
-        counter = 0;
         is_lose = 0;
         win = 0;
         lose = 0;
@@ -1447,7 +1456,7 @@ void chapter_12()
         printf("%s: ", tasks_find_name[i]);
         length_x = rows; length_y = columns;
         if (i < tasks_find_rc) {
-            result = matrix_find_element(array, &length_y, &length_x,
+            matrix_find_element(array, &length_y, &length_x,
                                          tasks_find_mod[i * 2 + 1], tasks_find_mod[i * 2]);
             printf("%d:%d;\n", length_x, length_y);
         }
@@ -1569,7 +1578,7 @@ void chapter_12()
         printf("\n");
     }
     srand(time(NULL));
-    int array_square[OBJECTS_MAX][OBJECTS_MAX] = {{1,0,0,0},{0,0,0,0},{0,0,1,0},{0,0,0,1}};
+    int array_square[OBJ_MAX][OBJ_MAX] = {{1,0,0,0},{0,0,0,0},{0,0,1,0},{0,0,0,1}};
     printf("\n12.188, is matrix symmetric on main diagonal;\n");
     rows = 4;
     int is_symmetric = 0;
@@ -1674,7 +1683,7 @@ void chapter_12()
         }
     printf("f)\n");
     matrix_print(array, square_size, square_size, 0, mx_prn_default);
-    int vals[OBJECTS_MAX] = {0, 0, 0, 0, 3, -1};
+    int vals[OBJ_MAX] = {0, 0, 0, 0, 3, -1};
     columns = rows = 3;
     printf("source matrix:\n");
     matrix_print(array, columns, rows, 0, mx_prn_default);
@@ -1718,7 +1727,6 @@ void chapter_12()
     printf("\n12.204;\n");
     length_x = length_y = rows;
     matrix_info(array, &length_x, &length_y, mx_info_min);
-    printf("");
     matrix_update(array, columns, rows, (int[]){mx_upd_xchg | mx_nop | mx_mod_col | mx_mod_row,
                                                 -1, columns - 1, rows - 1, length_x, length_y}, 0);
     matrix_print(array, columns, rows, 0, mx_prn_default);

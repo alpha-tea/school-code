@@ -1,5 +1,8 @@
 ﻿#include <stdio.h>
+#include <stdlib.h>
 #include "library.h"
+
+#undef SIZE
 
 int string_char_find(char s[], char c, int direct, int debug)
 {
@@ -189,4 +192,106 @@ int number_to_digits(int number, int data[], int size)
         data[counter - i - 1] = tmp;
     }
     return counter;
+}
+
+int find_max_recur(int numbers[], int length, int* idx, int max)
+{
+    if (length < 0)                             // Реализовать функцию только с адресной арифметикой.
+        return max;
+    if (numbers[length] > max) {
+        max = numbers[length];
+        *idx = length;
+    }
+    return find_max_recur(numbers,--length,idx,max);
+}
+
+int char_to_hex(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    else if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    return -1;
+}
+
+int uniq_gen_fast_alt(int number[], int length, int limit)
+{
+    const int num_max = limit;
+    if (length < 1 || length > num_max)
+        return -1;
+    for (int i = 0; i < limit; ++i)
+        number[i] = i;
+    int tmp = 0, idx_1 = 0 , idx_2 = 0;
+    for (int i = 0; i < length * length; ++i) {
+        idx_1 = rand() % num_max;
+        idx_2 = rand() % num_max;
+        tmp = number[idx_1];
+        number[idx_1] = number[idx_2];
+        number[idx_2] = tmp;
+    }
+    return 0;
+}
+
+void string_reverse(char string[])
+{
+    int size = string_length(string);
+    for (int j = 0; j < size / 2; ++j) {
+        char c = string[j];
+        string[j] = string[size - 1 - j];
+        string[size - 1 - j] = c;
+    }
+}
+
+int int_to_string(char dst[], int num, int base)
+{
+    const int base_min = 2, base_max = 16;
+    char digits[] = "0123456789ABCDEF";
+    int i = 0;
+    if (base < base_min || base > base_max)
+        return -1;
+    if (num < 0) {
+        dst[i++] = '-';
+        num *= -1;
+    }
+    for (;num > 0; ++i) {
+        dst[i] = digits[num % base];
+        num /= base;
+    }
+    dst[i] = '\0';
+    if (dst[0] == '-')
+        string_reverse(&dst[1]);
+    else
+        string_reverse(dst);
+    return 0;
+}
+
+int uniq_gen_fast_alt_1(int number[], int start, int limit)
+{
+    const int num_max = limit;
+    if (limit < 1)
+        return -1;
+    for (int i = 0; i < limit; ++i)
+        number[i] = start + i;
+    int tmp = 0, idx_1 = 0 , idx_2 = 0;
+    for (int i = 0; i < limit * limit; ++i) {
+        idx_1 = rand() % num_max;
+        idx_2 = rand() % num_max;
+        tmp = number[idx_1];
+        number[idx_1] = number[idx_2];
+        number[idx_2] = tmp;
+    }
+    return 0;
+}
+
+void print_binary_byte(unsigned char byte)
+{
+    for (int i = CHAR_BIT - 1; i >= 0; --i)
+        printf("%d", (byte >> i) & 0x01);
+}
+
+void exchange_of_values(int *a, int *b)
+{
+    *a -= *b;
+    *b += *a;
+    *a = *b - *a;
 }
