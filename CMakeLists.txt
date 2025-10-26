@@ -20,6 +20,7 @@ add_executable(school-code
   chapter_10.c
   chapter_11.c
   chapter_12.c
+  chapter_16.c
   theory.c
   library.c
   games.c

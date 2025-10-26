@@ -16,6 +16,7 @@ void games();   // Игры.
 
 int main ()
 {
-    games();
+    chapter_12();
     return 0;
 }
+
