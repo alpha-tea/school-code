@@ -32,13 +32,11 @@ struct Matrix {
 };
 
 //Статичные переменные для всей главы.
-static unsigned int random_word = 10; // Максимальное значение для случайных чисел
-static unsigned int random_char = 'Z'- 'A';
 static int arithmetic_step = 1;       // Шаг арифметической прогрессии
 static double geometric_ratio = 2.0;  // Знаменатель геометрической прогрессии
 static unsigned int memory = MEM_MAX;
 static char flags_info[DATA_MAX], actions_info[DATA_MAX];
-static char* matrix_flags_name[] = { "nope_ok", "error", "char", "word",
+static char* flags_names[] = { "nope_ok", "error", "char", "word",
     "column", "row", "horizontal", "vertical", "all", "random", "input",
     "equal", "less", "more"
 };
@@ -50,7 +48,18 @@ static char* matrix_flags_name[] = { "nope_ok", "error", "char", "word",
     "roll left", "roll right", "roll up", "roll down"
  */
 
-static const unsigned int types_sizes[] = {sizeof(char), sizeof(short)};
+static const char char_first = 'A';
+static const char char_last = 'Z';
+static const short word_first = 0;
+static const short word_last = 100;
+
+static char* types_names[] = {
+    "undefined", "char", "word"
+};
+
+static const unsigned short types_all = sizeof(types_names) / sizeof(char*);
+static const unsigned short flags_all = sizeof(flags_names) / sizeof(char*);
+static const unsigned int types_sizes[] = {0, sizeof(char), sizeof(short)};
 
 static char* matrix_actions_name[] = {
     "nop", "init zeros", "init input",
@@ -59,41 +68,68 @@ static char* matrix_actions_name[] = {
     "create geometric"
 };
 
-static char* types_names[] = {
-    "char", "word"
-};
+char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type);
+
+unsigned int type_index(enum mx_flags type)
+{// Вспомогательная функция для получения индекса типа
+    ;
+}
 
 unsigned int is_types(enum mx_flags types)
 {// Вспомогательная функция для проверки количества типов данных.
     return ((types & mx_char) != 0) + ((types & mx_word) != 0);
 }
 
-char* type_name(enum mx_flags type)
-{// Для удобства. Возврат названия типа данных,                 функцию переделать
-    return types_names[((type & (mx_char | mx_word)) >> 0x02)];
+enum mx_flags is_type_ok(void* data, enum mx_flags type)
+{
+    if (data == NULL || is_types(type) != 1)
+        return mx_error;
+    switch (type & (mx_char | mx_word)) {
+    case mx_char: {
+        char value = *((char*)data);
+        return (value >= char_first && value <= char_last) ? mx_ok : mx_error;
+    }
+    case mx_word: {
+        short value = *((short*)data);
+        return (value >= word_first && value <= word_last) ? mx_ok : mx_error;
+    }
+    default:
+        return mx_error;
+    }
+}
+
+const char* type_name(enum mx_flags type)
+{
+    for (unsigned int i = 1, flag = mx_char; i < types_all; ++i, flag <<= 1)
+        if (type & flag)
+            return types_names[i];
+    return types_names[0];
 }
 
 unsigned int type_size(enum mx_flags type)
-{// Для удобства. Возврат размера типа данных.
-    return types_sizes[((type & (mx_char | mx_word)) >> 0x02)];
+{
+    for (unsigned int i = 1, flag = mx_char; i < types_all; ++i, flag <<= 1)
+        if (type & flag)
+            return types_sizes[i];
+    return types_sizes[0];
 }
 
 char* type_text(char* text, void* data, enum mx_flags type)
-{//Вспомогательная функция текстового представления типа, тескт как есть или цифры со знаком.
+{
     if (text == NULL || is_types(type) != 1) {
-        printf("\nWarning type to text, some arguments maybe incorrect;\n");
+        printf("\nWarning type to text: incorrect arguments\n");
         return text;
     }
     memset(text, 0, DATA_MAX);
     switch (type & (mx_char | mx_word)) {
-    case (mx_char):
+    case mx_char:                                           // Интервал
         text[0] = (data != NULL) ? *((char*)data) : ' ';
         break;
-    case (mx_word):
+    case mx_word:
         sprintf_s(text, DATA_MAX, "%+hd", (data != NULL) ? *(short*)data : 0);
         break;
     default:
-        printf("\nWarning type to text, some arguments maybe incorrect;\n");
+        strcpy_s(text, DATA_MAX, "undefined");
     }
     return text;
 }
@@ -106,22 +142,20 @@ enum mx_flags type_compare(void* left, void* right, enum mx_flags type)
         return mx_error;
     }
     switch (type & (mx_char | mx_word)) {
-    case mx_char: {
+    case mx_char:
         if (*((char*)left) > *((char*)right))
             return mx_more;
         else if (*((char*)left) < *((char*)right))
             return mx_less;
         else
             return mx_equal;
-    }
-    case mx_word: {
+    case mx_word:
         if (*((short*)left) > *((short*)right))
             return mx_more;
         else if (*((short*)left) < *((short*)right))
             return mx_less;
         else
             return mx_equal;
-    }
     default:
         printf("\nWarning type to text, some arguments maybe incorrect;\n");
         return mx_error;
@@ -149,18 +183,51 @@ enum mx_flags type_assign(void* left, void* right, enum mx_flags type)
     return mx_ok;
 }
 
-enum mx_flags type_add(void* left, void* right, enum mx_flags type)
-{// Сложение элементов с учётом типа.
-    if (left == NULL || right == NULL || is_types(type) != 1)
+enum mx_flags type_neg(void* left, enum mx_flags type)
+{   // вспомогательная функция построение дополнения до двух для объекта для заданного типа
+    if (left == NULL || is_types(type) != 1 || is_type_ok(left, type) != mx_ok) {
+        printf("\nWarning type neg: left (%p) or types (%s) incorrect arguments\n",
+                left, flags_text(type, act_nop, 0));
         return mx_error;
+    }
     switch (type & (mx_char | mx_word)) {
-    case mx_char:
-        *((char*)left) += *((char*)right);
+    case mx_char:                               // на завтра
+        *((char*)left) = -(*((char*)left));
         break;
     case mx_word:
+        if (*((short*)left) < 0 && *((short*)left) == SHRT_MIN)
+            printf("\nWarning type neg: word (%hd) is out of range(%hd %hd);\n",
+                   *((short*)left), SHRT_MIN, SHRT_MAX);
+        *((short*)left) = -(*((short*)left));
+        break;
+    default:
+        printf("\nWarning type neg: type of data is undefined;\n");
+        return mx_error;
+    }
+    return mx_ok;
+}
+
+enum mx_flags type_add(void* left, void* right, enum mx_flags type)
+{// Сложение элементов с учётом типа.
+    if (left == NULL || right == NULL || is_types(type) != 1
+        || is_type_ok(left, type) != mx_ok || is_type_ok(right, type) != mx_ok) {
+        printf("\nError type add: left (%p) right(%p) or type(%s) is incorrect;\n",
+               left, right, flags_text(type, act_nop, 0));
+        return mx_error;
+    }
+    switch (type & (mx_char | mx_word)) {
+    case mx_char:
+        *((char*)left) += (*((char*)right) - char_first);
+        if (*((char*)left) < char_first || *((char*)left) > char_last) {
+            *((char*)left) = ((*((char*)left) - char_first) % (char_last - char_first + 1));
+            *((char*)left) += (*((char*)left) >= 0) ? char_first : char_last;
+        }
+        break;
+    case mx_word:                                           // возможно предупреждение
         *((short*)left) += *((short*)right);
         break;
     default:
+        printf("\ntype add warning: type is undefined;\n");
         return mx_error;
     }
     return mx_ok;
@@ -179,6 +246,36 @@ enum mx_flags is_correct(struct Matrix* obj)
     return mx_ok;
 }
 
+enum mx_flags type_mul(void* left, void* right, enum mx_flags type)
+{
+    if (left == NULL || right == NULL || is_types(type) != 1
+        || is_type_ok(left, type) != mx_ok || is_type_ok(right, type) != mx_ok) {
+        printf("\nError type mul: left (%p) right(%p) or type(%s) is incorrect;\n",
+               left, right, flags_text(type, act_nop, 0));
+        return mx_error;
+    }
+    switch (type & (mx_char | mx_word)) {
+    case mx_char:                                           // подумать над пределами
+        *((char*)left) = (*((char*)left) - char_first) * (*((char*)right) - char_first) + char_first;
+        if (*((char*)left) < char_first || *((char*)left) > char_last) {
+            *((char*)left) = ((*((char*)left) - char_first) % (char_last - char_first + 1));
+            *((char*)left) += (*((char*)left) >= 0) ? char_first : char_last;
+        }
+        break;
+    case mx_word:
+        if ((*((short*)left) == SHRT_MIN && *((short*)right) == -1) ||
+            (*((short*)left) == -1 && *((short*)right) == SHRT_MIN))
+            printf("\nWarning type mul: left or right may be out of range(%hd %hd);\n",
+                   SHRT_MIN, SHRT_MAX);
+        *((short*)left) += *((short*)right);
+        break;
+    default:
+        printf("\ntype mul warning: type is undefined;\n");
+        return mx_error;
+    }
+    return mx_ok;
+}
+
 unsigned int size(struct Matrix* obj)
 {//Вычисляем количество элементов в матрице (rows * columns)
     if (is_correct(obj) != mx_ok)
@@ -186,13 +283,23 @@ unsigned int size(struct Matrix* obj)
     return (unsigned int)(obj->rows * obj->columns);
 }
 
-char* info_text(enum mx_flags state, enum mx_actions action, unsigned int type)
+void* linear(struct Matrix* obj, unsigned int row, unsigned int col)
+{// Возвращает линейный адрес смещения в байтах от старта матрицы до заданных строки и столбца.
+    if (is_correct(obj) != mx_ok || size(obj) == 0 || row >= obj->rows || col >= obj->columns) {
+        printf("\nLinear warning: linear offset (%p) size (%hu) rows (%hu) columns (%hu);\n",
+               obj, size(obj), row, col);
+        return NULL;
+    }
+    return &(((char*)obj->matrix)[(row * obj->columns + col) * type_size(obj->flags)]);
+}
+
+char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type)
 {//Возвращает в виде текстовой строки все флаги, без доп символов, в статичную переменную.  type, 0 - флаги, иначе actions
     char* info = (type == 0) ? flags_info : actions_info;
     info[0] = '\0';
     // Определяем параметры в зависимости от типа
     unsigned int* value = (type == 0) ? (unsigned int*)&state: (unsigned int*)&action;
-    char** names = (type == 0) ? matrix_flags_name : matrix_actions_name;
+    char** names = (type == 0) ? flags_names : matrix_actions_name;
     if (*value != mx_nop && *value != act_nop) {
         for (unsigned int flag_bit = 1, flag_idx = 1; flag_bit != 0; flag_idx++, flag_bit <<= 1) {
             if (*value & flag_bit) {
@@ -256,7 +363,7 @@ void info(struct Matrix* obj, unsigned short row, unsigned short col, enum mx_fl
             printf("\ngeometric:%.2f", geometric_mean);
     }
     printf(" [");
-    printf("%s", info_text(obj->flags, 0, 0));
+    printf("%s", flags_text(obj->flags, 0, 0));
     printf("]");
 }
 
@@ -271,7 +378,7 @@ enum mx_flags create(struct Matrix* obj, unsigned int rows, unsigned int columns
     if (is_correct(obj) != mx_ok || obj->data_size > 0 || rows > MAX_ROWS || columns > MAX_COLUMNS
         || rows == 0 || columns == 0 || is_types(type) != 1) {
         printf("\nerror create matrix: [%p] with flags '%s' or sizes(%u,%u) are incorrect\n",
-               obj, info_text(obj->flags, act_nop, 0), rows, columns);
+               obj, flags_text(obj->flags, act_nop, 0), rows, columns);
         return mx_error;
     }
     unsigned int req_mem = rows * columns * type_size(type);
@@ -290,7 +397,7 @@ enum mx_flags create(struct Matrix* obj, unsigned int rows, unsigned int columns
         exit(1);
     }
     printf("\nCreating matrix: [%p] sizes(%u,%u) - ok, initial value(%s) and flags (%s);\n",
-           obj, rows, columns, init_text, info_text(type, act_nop, 0));
+           obj, rows, columns, init_text, flags_text(type, act_nop, 0));
     obj->rows = rows; obj->columns = columns; obj->data_size = req_mem;
     obj->flags = type & (mx_char | mx_word);
     for (unsigned int i = 0; i < rows * columns; ++i) {
@@ -301,14 +408,14 @@ enum mx_flags create(struct Matrix* obj, unsigned int rows, unsigned int columns
         switch (type & (mx_char | mx_word)) {
         case mx_char:
             if (type & mx_rand)
-                init_char = 'A' + rand() % random_char;
+                init_char = char_first + rand() % (char_last - char_first + 1);
             else if (type & mx_input)
                 init_char = init_text[0];
             ((char*)obj->matrix)[i] = init_char;
             break;
         case mx_word:
             if (type & mx_rand)
-                init_word = rand() % random_word;
+                init_word = word_first + rand() % (word_last - word_first + 1);
             else if (type & mx_input)
                 init_word = init_text[0];
             ((short*)obj->matrix)[i] = init_word;
@@ -343,7 +450,7 @@ enum mx_flags mx_copy(struct Matrix* dst, struct Matrix* src,
     unsigned int rows_new = row_last - row_first + 1, cols_new = col_last - col_first + 1;
     printf("\nMatrix copy from [%p] to [%p], size %u, copying area: [%u,%u]-[%u,%u] (%ux%u), flags '%s'\n",
            src, dst, size(src), row_first, col_first, row_last, col_last, rows_new, cols_new,
-           info_text(src->flags, act_nop, 0));
+           flags_text(src->flags, act_nop, 0));
     enum mx_flags type = src->flags & (mx_char | mx_word);
     if ((create(dst, rows_new, cols_new, NULL, type)) != mx_ok) {
         printf("error copy: failed to create destination matrix\n");
@@ -416,7 +523,7 @@ void print(struct Matrix* obj, unsigned int row, unsigned int column, enum mx_fl
                row, column, obj->rows, obj->columns);
         return;
     }
-    printf("Printing matrix %dx%d with style [%s]\n", obj->rows, obj->columns, info_text(style, 0, 0));
+    printf("Printing matrix %dx%d with style [%s]\n", obj->rows, obj->columns, flags_text(style, 0, 0));
     unsigned int start_row = 0, end_row = obj->rows;
     unsigned int start_col = 0, end_col = obj->columns;
     start_row = (style & mx_row) ? row : start_row;
@@ -425,8 +532,9 @@ void print(struct Matrix* obj, unsigned int row, unsigned int column, enum mx_fl
     end_col = (style & mx_column) ? column + 1 : end_col;
     for (unsigned int i = start_row; i < end_row; i++) {
         for (unsigned int j = start_col; j < end_col; j++) {
+            void* lin = linear(obj, i, j);
             if (obj->flags & mx_char)
-                printf("%c ", ((char*)obj->matrix)[i * obj->columns + j]);
+                printf("%c ", *((char*)lin));
             else if (obj->flags & mx_word)
                 printf("%hu ", ((short*)obj->matrix)[i * obj->columns + j]);
         }
@@ -517,10 +625,10 @@ enum mx_flags compact(struct Matrix* obj)
 
 enum mx_flags operator(struct Matrix* dst, struct Matrix* src, enum mx_actions action)
 {// Исходная матрица должна сохраниться
-    printf("\nMatrix operator: %s\n", info_text(0, action, 1));
+    printf("\nMatrix operator: %s\n", flags_text(0, action, 1));
     if (is_correct(dst) != mx_ok) {
-        printf("error: Invalid destination matrix\n");
-        return is_correct(dst);
+    printf("error: Invalid destination matrix\n");
+    return is_correct(dst);
     }
 if (action != act_neg && is_correct(src) != mx_ok) {
     printf("error: Invalid source matrix\n");
@@ -686,7 +794,7 @@ enum mx_flags check_array_order(void* array, unsigned int count, enum mx_flags d
 
 enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
 {   // Определение упорядоченности матрицы/строки/столбца
-    printf("\nMatrix order check: %s\n", info_text(type, 0, 0));
+    printf("\nMatrix order check: %s\n", flags_text(type, 0, 0));
     if (is_correct(obj) != mx_ok) {
         printf("error: Invalid matrix\n");
         return is_correct(obj);
@@ -713,7 +821,7 @@ enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
             }
         }
         if (result != mx_nop) {
-            printf("Rows are ordered: %s\n", info_text(result, 0, 0));
+            printf("Rows are ordered: %s\n", flags_text(result, 0, 0));
             return result;
         }
     }
@@ -746,7 +854,7 @@ enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
         }
         free(column_data);
         if (result != mx_nop) {
-            printf("Columns are ordered: %s\n", info_text(result, 0, 0));
+            printf("Columns are ordered: %s\n", flags_text(result, 0, 0));
             return result;
         }
     }
@@ -754,7 +862,7 @@ enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
         printf("Checking entire matrix as linear array\n");
         result = check_array_order(obj->matrix, obj->rows * obj->columns, data_type);
         if (result != mx_nop) {
-            printf("Matrix is ordered: %s\n", info_text(result, 0, 0));
+            printf("Matrix is ordered: %s\n", flags_text(result, 0, 0));
             return result;
         }
     }
@@ -788,7 +896,7 @@ void chapter_12()
 
     //printf("type size char %u, word %u;\n", type_size(mx_char), type_size(mx_word));
     //return;
-    //printf("(%s)", info_text(mx_row | mx_err_mem | mx_ok, act_nop, 0));
+    //printf("(%s)", flags_text(mx_row | mx_err_mem | mx_ok, act_nop, 0));
     //short data[1][2] = {{1,2}};
     //short (*ptr)[][2] = &data;
     //printf("%hd\n", (*ptr)[0][1]);
@@ -801,11 +909,50 @@ void chapter_12()
     // - в функции печати вывести полную матрицу, строку, столбец и отдельный элемент;
     // - ну и может что-то еще придумаем... :)
 
+    printf("Function:\tLeft:\tRight:\tFlags:\tResult:\t\tComment:\n");
+    printf("----------------------------------------------------------------------------\n");
+
+    char data_text[DATA_MAX] = {'D', 'E', 'Y'}, text[DATA_MAX];
+    short data_short[DATA_MAX] = {1, 2, 3, 4, 5};
+
+    printf("is_types\t-\t-\t%s\t%u\t\tTypes counter in flags\n",
+           flags_text(mx_char, 0, 0), is_types(mx_char));
+    printf("is_type_ok\t%c\t-\t%s\t", data_text[0], flags_text(mx_char, 0, 0));
+    printf("%s\t\tData in valid range\n", flags_text(is_type_ok(&data_text[0], mx_char), 0, 0));
+    printf("type_name\t-\t-\t%s\t%s\t\tGet type name\n",
+           flags_text(mx_word, 0, 0), type_name(mx_word));
+    printf("type_size\t-\t-\t%s\t%u\t\tGet type size\n",
+           flags_text(mx_char, 0, 0), type_size(mx_char));
+    printf("type_text\t%c\t-\t%s\t%s\t\tConvert to text\n",
+           data_text[0], flags_text(mx_char, 0, 0),
+           type_text(text, &data_text[0], mx_char));
+    printf("type_compare\t%c\t%c\t%s\t", data_text[0], data_text[1], flags_text(mx_char, 0, 0));
+    printf("%s\t\tCompare values\n",
+            flags_text(type_compare(&data_text[0], &data_text[1], mx_char), 0, 0));
+    printf("type_assign\t%hd\t%hd\t%s\t", data_short[0], data_short[1], flags_text(mx_word, 0, 0));
+    type_assign(&data_short[0], &data_short[1], mx_word);
+    printf("%hd\t\tAssign value\n", data_short[0]);
+    printf("type_neg\t%hd\t-\t%s\t", data_short[0], flags_text(mx_word, 0, 0));
+    type_neg(&data_short[0], mx_word);
+    printf("%hd\t\tNegate value\n", data_short[0]);
+    printf("type_add\t%c\t%c\t%s\t", data_text[1], data_text[2], flags_text(mx_char, 0, 0));
+    type_add(&data_text[1], &data_text[2], mx_char);
+    printf("%c\t\tAdd values\n", data_text[1]);
+    printf("type_mul\t%c\t%c\t%s\t", data_text[0], data_text[1], flags_text(mx_char, 0, 0));
+    type_mul(&data_text[0], &data_text[1], mx_char);
+    printf("%c\t\tMultiply values\n", data_text[0]);
+    printf("----------------------------------------------------------------------------\n");
+    printf("Character range: '%c' to '%c'\n", char_first, char_last);
+    printf("Word range: %hd to %hd\n", word_first, word_last);
+    printf("\n=== MATRIX POINTERS STATUS ===\n");
+    printf("Matrix A: %p (rows: %u, columns: %u)\n", ptr_a, ptr_a->rows, ptr_a->columns);
+    printf("Matrix B: %p (rows: %u, columns: %u)\n", ptr_b, ptr_b->rows, ptr_b->columns);
+    printf("Matrix C: %p (rows: %u, columns: %u)\n", ptr_c, ptr_c->rows, ptr_c->columns);
+    printf("All matrices are initialized but not allocated yet.\n");
     // 1. Тест создания матрицы с неверными размерами
     printf("\n=== Test 1: Invalid matrix creation ===\n");
     enum mx_flags result = create(ptr_a, 0, 5, NULL, mx_char);  // Нулевые строки
-    printf("Create 0x5 matrix: %s\n", info_text(result, 0, 0));
-
+    printf("Create 0x5 matrix: %s\n", flags_text(result, 0, 0));
     // 2. Создание матрицы A (3x4, тип char, случайные значения)
     printf("\n\n=== Test 2: Valid matrix creation ===\n");
     result = create(ptr_a, 3, 4, NULL, mx_char | mx_rand);
@@ -813,10 +960,11 @@ void chapter_12()
         printf("Failed to create Matrix A\n");
         return;
     } else
-        printf("create return result: '%s' and matrix has %u elements;\n", info_text(result, act_nop, 0), size(ptr_a));
+        printf("create return result: '%s' and matrix has %u elements;\n", flags_text(result, act_nop, 0), size(ptr_a));
     print(ptr_a, 0, 0, mx_all);
     //print(ptr_a, 0, 0, mx_row);
-    //print(ptr_a, 0, 0, mx_column);                                  // Проверить
+    //print(ptr_a, 0, 0, mx_column);     // Проверить
+    return;
     // 3. Создание матрицы B (2x2, тип short, нули)
     printf("\n\n=== Test 3: Second matrix creation ===\n");
     short data = 10;
@@ -841,7 +989,7 @@ void chapter_12()
     move(&ptr_b, &ptr_c);
     destroy(ptr_c);
     move(&ptr_c, &ptr_b);
-    printf("Move B to C: %s\n", info_text(result, 0, 0));
+    printf("Move B to C: %s\n", flags_text(result, 0, 0));
     printf("Matrix B:\n");
     print(ptr_b, 0, 0, mx_all);
     printf("Matrix C:\n");
@@ -855,7 +1003,7 @@ void chapter_12()
         print(ptr_c, 0, 0, mx_all);
 
         result = move(&ptr_b, &ptr_c);
-        printf("Second move C to B: %s\n", info_text(result, 0, 0));
+        printf("Second move C to B: %s\n", flags_text(result, 0, 0));
     }
 
     // 8. Расширенная печать
@@ -907,7 +1055,7 @@ void chapter_12()
         printf("Before compaction:\n");
         print(ptr_d, 0, 0, mx_all);
         result = compact(ptr_d);
-        printf("Compaction result: %s\n", info_text(result, 0, 0));
+        printf("Compaction result: %s\n", flags_text(result, 0, 0));
         printf("After compaction:\n");
         print(ptr_d, 0, 0, mx_all);
         destroy(ptr_d);
