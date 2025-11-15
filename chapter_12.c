@@ -1,5 +1,4 @@
-﻿#include <math.h>
-#include <stddef.h>
+﻿#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,21 +8,23 @@
 #define MEM_MAX 1500
 #define MAX_ROWS 12
 #define MAX_COLUMNS 12
+#define MAX_SIZE 12
 /*
  *  Глава 12. матрицы произвольных размерностей и базовые алгоритмы интерпритации данных.
  */
 
-enum mx_flags { mx_nop = 0x00, mx_ok = 0x00, mx_error = 0x01, mx_char = 0x02, mx_word = 0x04, mx_column = 0x08, mx_row = 0x10,
-                mx_horiz = 0x20, mx_vert = 0x40, mx_all = 0x80, mx_rand = 0x100, mx_input = 0x200, mx_equal = 0x400,
-                mx_less = 0x800, mx_more = 0x1000, mx_even = 0x2000, mx_odd = 0x4000
+enum mx_flags { mx_nop = 0x00, mx_ok = 0x00, mx_error = 0x01, mx_char = 0x02, mx_word = 0x04, mx_column = 0x08,
+                mx_row = 0x10, mx_horiz = 0x20, mx_vert = 0x40, mx_all = 0x80, mx_rand = 0x100, mx_input = 0x200,
+                mx_equal = 0x400, mx_less = 0x800, mx_more = 0x1000, mx_even = 0x2000, mx_odd = 0x4000
 };
 
 enum mx_actions {
-    act_nop = 0x00, act_create = 0x01, act_copy = 0x02, act_move = 0x04, act_destroy = 0x08, act_assign = 0x10, act_neg = 0x20,
-    act_add = 0x40, act_mul = 0x80, act_xchg = 0x100, act_pow = 0x200, act_value = 0x400, act_rand = 0x800, act_roll = 0x1000,
-    act_min = 0x2000, act_max = 0x4000, act_uniq = 0x8000, act_create_ariphmetic = 0x10000, act_create_geometric = 0x20000,
-    act_end = 0x40000
+    act_nop = 0x00, act_create = 0x01, act_copy = 0x02, act_move = 0x04, act_destroy = 0x08, act_assign = 0x10,
+    act_neg = 0x20, act_add = 0x40, act_mul = 0x80, act_xchg = 0x100, act_seq = 0x200, act_rand = 0x400,
+    act_roll = 0x800, act_min = 0x1000, act_max = 0x2000, act_uniq = 0x4000, act_data = 0x8000
 };
+
+// act data использовать данные
 
 struct Matrix {
     void* matrix;
@@ -38,20 +39,13 @@ static unsigned int memory = MEM_MAX;
 static char flags_info[DATA_MAX], actions_info[DATA_MAX];
 static char* flags_names[] = { "nope_ok", "error", "char", "word",
     "column", "row", "horizontal", "vertical", "all", "random", "input",
-    "equal", "less", "more"
+    "equal", "less", "more", "even", "odd"
 };
-
-/*
-    "initialization zeros", "initialization input", "initialization from source data",
-    "initialization only columns from source", "initialization only rows from source",
-    "create value", "create random", "create ariphmetic", "create geometric",
-    "roll left", "roll right", "roll up", "roll down"
- */
 
 static const char char_first = 'A';
 static const char char_last = 'Z';
-static const short word_first = SHRT_MIN;
-static const short word_last = SHRT_MAX;
+static const short word_first = 1;
+static const short word_last = 9;
 
 static char* types_names[] = {
     "undefined", "char", "word"
@@ -62,10 +56,10 @@ static const unsigned short flags_all = sizeof(flags_names) / sizeof(char*);
 static const unsigned int types_sizes[] = {0, sizeof(char), sizeof(short)};
 
 static char* matrix_actions_name[] = {
-    "nop", "init zeros", "init input",
-    "init from source", "init columns", "init rows",
-    "create value", "create random", "create ariphmetic",
-    "create geometric"
+    "nop", "create", "copy", "move", "destroy",
+    "assign", "neg", "add", "mul", "xchg",
+    "seq", "rand", "roll", "min", "max",
+    "uniq", "data"
 };
 
 char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type);
@@ -178,6 +172,33 @@ enum mx_flags type_assign(void* left, void* right, enum mx_flags type)
         break;
     default:
         printf("\nWarning type to assign types, some arguments maybe incorrect;\n");
+        return mx_error;
+    }
+    return mx_ok;
+}
+
+enum mx_flags type_xchg(void* left, void* right, enum mx_flags type)
+{  // Обмен содержимого одного типа.
+    if (left == NULL || right == NULL || is_types(type) != 1) {
+        printf("\nWarning type xchg, some arguments maybe incorrect (left: %p, right: %p, type: %s);\n",
+               left, right, flags_text(type, act_nop, 0));
+        return mx_error;
+    }
+    switch (type & (mx_char | mx_word)) {
+    case mx_char: {
+        *((char*)left) ^= *((char*)right);
+        *((char*)right) ^= *((char*)left);
+        *((char*)left) ^= *((char*)right);
+        break;
+    }
+    case mx_word: {
+        short temp = *((short*)left);
+        *((short*)left) = *((short*)right);
+        *((short*)right) = temp;
+        break;
+    }
+    default:
+        printf("\nWarning type xchg: type of data is undefined;\n");
         return mx_error;
     }
     return mx_ok;
@@ -556,75 +577,57 @@ int is_element_zero(struct Matrix* obj, unsigned int index) {           // уб�
     return 1;
 }
 
-enum mx_flags compact(struct Matrix* obj)
+enum mx_flags compact(struct Matrix* obj, void* data)
 {// Сжатие или уплотнение матрицы. Удаляются полнстью нулевые стоки или столбцы.
-    printf("\nMatrix compact (final version)\n");
-    if (is_correct(obj) != mx_ok || size(obj) == 0) {
-        printf("error: invalid or empty matrix for compaction\n");
-        return is_correct(obj) | mx_error;
+    printf("\nMatrix compact (refactored version)\n");
+    if (is_correct(obj) != mx_ok || size(obj) == 0 || data == NULL) {
+        printf("error compact: matrix(%p) empty or no object(%p);\n", obj, data);
+        return mx_error;
     }
-    int rows_to_keep[MAX_ROWS];
-    int cols_to_keep[MAX_COLUMNS];
-    for (int i = 0; i < MAX_ROWS; ++i)
-        rows_to_keep[i] = 0;
-    for (int i = 0; i < MAX_COLUMNS; ++i)
-        cols_to_keep[i] = 0;
-    for (unsigned int i = 0; i < obj->rows; i++) {
-        for (unsigned int j = 0; j < obj->columns; j++) {
-            unsigned int index = i * obj->columns + j;
-            int is_zero;
-            if (obj->flags & mx_char)
-                is_zero = ((char*)obj->matrix)[index] == ' ';
-            else if (obj->flags & mx_word)
-                is_zero = ((short*)obj->matrix)[index] == 0;
-            else
-                is_zero = 1;
-            if (!is_zero) {
-                rows_to_keep[i] = 1;
-                cols_to_keep[j] = 1;
-            }
-        }
-    }
-    unsigned int new_rows = 0, new_cols = 0;
+    unsigned int keep_r[MAX_SIZE],  keep_c[MAX_SIZE], new_rows = 0, new_cols = 0;
+    for (unsigned int i = 0; i < MAX_SIZE; ++i)
+        keep_r[i] = keep_c[i] = 0;                      // или memset
     for (unsigned int i = 0; i < obj->rows; i++)
-        if (rows_to_keep[i]) new_rows++;
+        for (unsigned int j = 0; j < obj->columns; j++)
+            if (type_compare(linear(obj, i, j), data, obj->flags) != mx_equal)
+                keep_r[i] = keep_c[j] = 1;
+    char txt[DATA_MAX];
+    printf("Compacting matrix(%p), data(%s) from %ux%u to %ux%u, rows:", obj, type_text(txt, data, obj->flags),
+           obj->rows, obj->columns, new_rows, new_cols);
+    for (unsigned int i = 0; i < obj->rows; i++)
+        if (keep_r[i])
+            new_rows++;
+        else
+            printf(" %u", i);
+    printf("; columns:");
     for (unsigned int j = 0; j < obj->columns; j++)
-        if (cols_to_keep[j]) new_cols++;
+        if (keep_c[j])
+            new_cols++;
+        else
+            printf(" %u", j);
     if (new_rows == 0 || new_cols == 0) {
-        printf("Matrix is effectively empty, destroying.\n");
+        printf("; matrix is effectively empty after compaction, destroying.\n");
         return destroy(obj);
     }
     if (new_rows == obj->rows && new_cols == obj->columns) {
-        printf("No empty rows or columns found. Compaction not needed.\n");
+        printf("; no empty rows or columns found. Compact not needed.\n");
         return mx_ok;
     }
-    printf("Compacting matrix from %dx%d to %dx%d\n", obj->rows, obj->columns, new_rows, new_cols);
-    struct Matrix temp = { NULL, 0, 0, 0, mx_nop };
-    enum mx_flags type_flag = (obj->flags & mx_char) ? mx_char : mx_word;
-    enum mx_flags result = create(&temp, new_rows, new_cols, NULL, type_flag);
-    if (result != mx_ok) {
-        printf("error: failed to create temporary matrix for compaction\n");
-        return result;
+    struct Matrix temp = { NULL, 0, 0, 0, mx_nop }, *ptr_temp = &temp;
+    printf("\n");
+    if (create(&temp, new_rows, new_cols, NULL, obj->flags) != mx_ok)
+        return mx_error;
+    for (unsigned int i = 0, k = 0, j, l; i < obj->rows; i++) {
+        if (!keep_r[i])
+            continue;
+        for (j = 0, l = 0; j < obj->columns; j++)
+            if (keep_c[j])
+                type_assign(linear(&temp, k, l++), linear(obj, i, j), obj->flags);
+        k++;
     }
-    unsigned int element_size = (type_flag == mx_char) ? sizeof(char) : sizeof(short);
-    unsigned int current_idx = 0;
-    for (unsigned int i = 0; i < obj->rows; i++) {
-        if (!rows_to_keep[i]) continue;
-        for (unsigned int j = 0; j < obj->columns; j++) {                           // Доп. использовать assign
-            if (!cols_to_keep[j]) continue;
-            unsigned int src_index = i * obj->columns + j;
-            void* src_ptr = (char*)obj->matrix + src_index * element_size;
-            void* dst_ptr = (char*)temp.matrix + current_idx * element_size;
-            memcpy(dst_ptr, src_ptr, element_size);
-            current_idx++;
-        }
-    }
-    unsigned int old_rows = obj->rows, old_cols = obj->columns;
-    struct Matrix* ptr_temp = &temp;
     destroy(obj);
     move(&obj, &ptr_temp);
-    printf("Compaction from %dx%d to %dx%d successful. Total free memory: %u\n",
-           old_rows, old_cols, obj->rows, obj->columns, memory);
+    printf("Compact complete, new sizes %ux%u. Total free memory: %u\n", obj->rows, obj->columns, memory);
     return mx_ok;
 }
 
@@ -632,21 +635,21 @@ enum mx_flags operator(struct Matrix* dst, struct Matrix* src, enum mx_actions a
 {// Исходная матрица должна сохраниться
     printf("\nMatrix operator: %s\n", flags_text(0, action, 1));
     if (is_correct(dst) != mx_ok) {
-    printf("error: Invalid destination matrix\n");
-    return is_correct(dst);
+        printf("error: Invalid destination matrix\n");
+        return is_correct(dst);
     }
 if (action != act_neg && is_correct(src) != mx_ok) {
     printf("error: Invalid source matrix\n");
     return is_correct(src);
 }
-if ((action == act_add || action == act_mul || action == act_pow || action == act_xchg) &&
+if ((action == act_add || action == act_mul || action == act_xchg) &&
     (dst->rows != src->rows || dst->columns != src->columns)) {
     printf("error: Matrix sizes must match for this operation\n");
     printf("Destination: %dx%d, Source: %dx%d\n",
            dst->rows, dst->columns, src->rows, src->columns);
     return mx_error;
 }
-if ((action == act_add || action == act_mul || action == act_pow || action == act_xchg) &&
+if ((action == act_add || action == act_mul || action == act_xchg) &&
     dst->flags != src->flags) {
     printf("error: Matrix types must match for this operation\n");
     return mx_error;
@@ -720,36 +723,6 @@ case act_xchg: { // Обмен значениями между dst и src
     }
     break;
 }
-case act_pow: { // Возведение в степень dst ^ src
-    printf("Performing element-wise power operation\n");
-    unsigned int count = dst->rows * dst->columns;
-    if (dst->flags & mx_char) {
-        char* dst_data = (char*)dst->matrix;
-        char* src_data = (char*)src->matrix;
-        for (unsigned int i = 0; i < count; i++) {
-            char base = dst_data[i];
-            char exponent = src_data[i];
-            char result = 1;
-            for (char j = 0; j < exponent; j++) {
-                result *= base;
-            }
-            dst_data[i] = result;
-        }
-    } else if (dst->flags & mx_word) {
-        short* dst_data = (short*)dst->matrix;
-        short* src_data = (short*)src->matrix;
-        for (unsigned int i = 0; i < count; i++) {
-            short base = dst_data[i];
-            short exponent = src_data[i];
-            short result = 1;
-            for (short j = 0; j < exponent; j++) {
-                result *= base;
-            }
-            dst_data[i] = result;
-        }
-    }
-    break;
-}
 default:
     printf("error: Unsupported operation\n");
     return mx_error;
@@ -758,16 +731,203 @@ printf("Operation completed successfully\n");
 return mx_ok;
 }
 
-unsigned int find(struct Matrix* dst, struct Matrix* src, void* data,
-                  unsigned int* row, unsigned int* col, enum mx_actions action, enum mx_flags type)
-{// Поиск заданного элемента/элементов в исходной матрице
-    // и сохранение в матрицу назначения с учётом параметров и флагов.
+unsigned int find(struct Matrix* dst, struct Matrix* src, void* data, unsigned int *row, unsigned int *col,
+                  enum mx_actions action, enum mx_flags type)
+{  // Поиск заданного элемента(ов) в исходной матрице и сохранение в пустой вектор назначения с учетом параметров.
+    // Если флаг "все" включены, то поиск идет по всем возможным, иначе до первого найденного.
+    // Если один элемент найден, то параметры row, col сохраняется позиция элемента при поиске всех - первый.
+    // Функция работает тихо, только упоминание самой функции, объектов и аргументов.
+    // Количество уникальных дополнительно по возможности, для теста матрицу брать небольшую.
+    // Действие может быть только одно за каждый вызов.
+    // Действия которые поддерживаются: equal, less, more, min, max, unique. Подробнее:
+    //  - найти первый или все элементы равные, меньше или больше значения данных;
+    //  - найти элементы мин-макс(имальные) с учетом флагов, вся матрица, строка или столбец и т.д.
+    //  - найти все уникальные элементы(дополнительно).
+    // Поддерживаемы флаги:
+    // - all, поиск всех элементов удовлетворяющих условию, иначе только первого;
+    // - row, column - только строка, столбец или отдельный элемент;
+    // - vertical, horizontal - поиск в прямом или обратном порядке строк/столбцов;         сделать отдельные переменные с шагом +1/-1 строка столбец
+    // - odd, even - нечетные или четные индексы;
+    // Немного пожеланий, использовать один общий цикл для элементов и вспомогательные функции.
+    if (is_correct(src) != mx_ok || size(src) == 0 || is_correct(dst) != mx_ok ||
+        size(dst) != 0 || row == NULL || col == NULL) {
+        printf("\nMatrix find error: invalid arguments. src must be valid and non-empty, dst must be empty, and pointers non-NULL.\n");
+        printf("Received parameters:\nsrc matrix: [%p], size: %u\ndst matrix: [%p], size: %u\nrow ptr:\t[%p]\n"
+               "col ptr:\t[%p]\naction:\t'%s'\ntype:\t'%s'\n", src, size(src), dst, size(dst), row, col,
+               flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0));
+        return 0;
+    }
+    if ((action == act_data) && (data == NULL || (type & (mx_equal | mx_less | mx_more)) == 0)) {
+        printf("\nMatrix find error: action 'data' requires valid data and a comparison type (equal, less, or more).\n");
+        return 0;
+    }
+    printf("\nMatrix find: action '%s', type '%s' from src [%p] to dst [%p]\n",
+           flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0), src, dst);
 
+    unsigned int start_r = 0, end_r = src->rows;
+    unsigned int start_c = 0, end_c = src->columns;
+    if (type & mx_row) {
+        if (*row >= src->rows)
+            return 0;
+        start_r = *row;
+        end_r = *row + 1;
+    }
+    if (type & mx_column) {
+        if (*col >= src->columns)
+            return 0;
+        start_c = *col;
+        end_c = *col + 1;
+    }
+    void* found_items[MAX_ROWS * MAX_COLUMNS];
+    unsigned int found_count = 0;
+    unsigned int total_elements = size(src);
+    if (action == act_min || action == act_max) {
+        void* extremum = NULL;
+        for (unsigned int r = start_r; r < end_r; ++r) {
+            for (unsigned int c = start_c; c < end_c; ++c) {
+                void* current = linear(src, r, c);
+                if (extremum == NULL) {
+                    extremum = current;
+                    continue;
+                }
+                enum mx_flags cmp_res = type_compare(current, extremum, src->flags);
+                if ((action == act_min && cmp_res == mx_less) || (action == act_max && cmp_res == mx_more))
+                    extremum = current;
+            }
+        }
+        if (extremum == NULL)
+            return 0;
+        data = extremum;
+        action = act_data;
+        type |= mx_equal;
+    }
+    int stop_search = 0;
+
+    int row_step = (type & mx_vert) ? -1 : 1;
+    int col_step = (type & mx_horiz) ? -1 : 1;
+    int r_loop_start = (type & mx_vert) ? end_r - 1 : start_r;
+
+    for (int r = r_loop_start; (type & mx_vert) ? (r >= (int)start_r) : (r < (int)end_r); r += row_step) {
+        int c_loop_start = (type & mx_horiz) ? end_c - 1 : start_c;
+        for (int c = c_loop_start; (type & mx_horiz) ? (c >= (int)start_c) : (c < (int)end_c); c += col_step) {
+            // Фильтрация по четности/нечетности индексов
+            if ((type & mx_row) && (type & mx_even) && (r % 2 != 0))
+                continue;
+            if ((type & mx_row) && (type & mx_odd) && (r % 2 == 0))
+                continue;
+            if ((type & mx_column) && (type & mx_even) && (c % 2 != 0))
+                continue;
+            if ((type & mx_column) && (type & mx_odd) && (c % 2 == 0))
+                continue;
+            void* current_element = linear(src, r, c);
+            int is_match = 0;
+            switch (action) {
+            case act_data: {
+                enum mx_flags cmp = type_compare(current_element, data, src->flags);
+                if (((type & mx_equal) && cmp == mx_equal) ||
+                    ((type & mx_less) && cmp == mx_less) ||
+                    ((type & mx_more) && cmp == mx_more)) {
+                    is_match = 1;
+                }
+                break;
+            }
+            case act_uniq: {
+                unsigned int occurrences = 0;
+                for (unsigned int i = 0; i < total_elements; ++i) {
+                    void* check_element = &((char*)src->matrix)[i * type_size(src->flags)];
+                    if (type_compare(current_element, check_element, src->flags) == mx_equal)
+                        occurrences++;
+                }
+                if (occurrences == 1)
+                    is_match = 1;
+                break;
+            }
+            default:
+                break;
+            }
+            if (is_match) {
+                if (found_count == 0) { // Сохраняем координаты первого найденного
+                    *row = r;
+                    *col = c;
+                }
+                found_items[found_count++] = current_element;
+                if (!(type & mx_all)) { // Если не ищем все, выходим после первого
+                    stop_search = 1;
+                    break;
+                }
+            }
+        }
+        if (stop_search)
+            break;
+    }
+    if (found_count > 0) {
+        if (create(dst, 1, found_count, NULL, src->flags) == mx_ok)
+            for (unsigned int i = 0; i < found_count; ++i)
+                type_assign(linear(dst, 0, i), found_items[i], src->flags);
+        else {
+            printf("\nMatrix find error: failed to create destination matrix for results.\n");
+            return 0;
+        }
+    }
+    return found_count;
 }
 
-unsigned int update(struct Matrix* dst, void* data, unsigned int row,
+enum mx_flags insert(struct Matrix* dst, struct Matrix* src,
+                     unsigned int row, unsigned int col, enum mx_flags type)
+{// Вставка в матрицу назначения исходной матрицы. Размерности должны совпадать с учётом флагов и координат.
+    if (is_correct(dst) != mx_ok || is_correct(src) != mx_ok || size(dst) == 0 || size(src) == 0 ||
+        !(type ^ (mx_row | mx_column)) || type_name(dst->flags) != type_name(src->flags) ||
+        ((type & mx_row) && (src->rows + dst->rows >= MAX_ROWS || src->columns != dst->columns)) ||
+        ((type & mx_column) && (src->columns + dst->columns >= MAX_COLUMNS || src->rows != dst->rows))) {
+        printf("\nerror insert matrix: to(%p) from(%p) sizes %ux%u, and start %ux%u and flags '%s';\n",
+               dst, src, size(dst), size(dst), row, col, flags_text(type, act_nop, 0));
+        return mx_error;
+    }
+    printf("\nInsert matrix: to(%p) from(%p) sizes %ux%u, and start %ux%u and flags '%s';\n",
+           dst, src, size(dst), size(dst), row, col, flags_text(type, act_nop, 0));
+    struct Matrix xchg = {NULL, 0, 0, 0, mx_nop}, *xchg_ptr = &xchg, *from_ptr = dst;
+    unsigned int i, j, k = (type & mx_row) ? src->rows : 0, l = (type & mx_column) ? src->columns : 0,
+        src_i = 0, src_j = 0, dst_i = 0, dst_j = 0, *from_i = &dst_i, *from_j = &dst_j;
+    if (create(&xchg, dst->rows + k, dst->columns + l, NULL, src->flags) != mx_ok)
+        return mx_error;
+    for (i = 0; i < xchg.rows; ++i, (*from_i)++) {
+        if ((type & mx_row)) {
+            if (i >= row && i < row + k) {
+                from_i = &src_i;
+                from_ptr = src;
+            } else {
+                from_i = &dst_i;
+                from_ptr = dst;
+            }
+        }
+        for (j = 0, src_j = 0, dst_j = 0; j < xchg.columns; j++, (*from_j)++) {
+            if ((type & mx_column)) {
+                if (j >= col && j < col + l) {
+                    from_j = &src_j;
+                    from_ptr = src;
+                } else {
+                    from_j = &dst_j;
+                    from_ptr = dst;
+                }
+            }
+            char txt[DATA_MAX];
+            printf("Assign from %u:%u to %u:%u, value '%s';\n", *from_i, *from_j, i, j,
+                   type_text(txt, linear(from_ptr, *from_i, *from_j), from_ptr->flags));
+            type_assign(linear(xchg_ptr, i, j), linear(from_ptr, *from_i, *from_j), xchg.flags);
+        }
+    }
+    destroy(dst);
+    move(&dst, &xchg_ptr);
+    return mx_ok;
+}
+
+enum mx_flags cut(struct Matrix* dst, unsigned int first, unsigned int last, enum mx_flags type)
+{// Удаление из матрица полных строк и/или стобцов, матрица назначения изменяет размеры.
+    ;
+}
+unsigned int update(struct Matrix* dst, struct Matrix* data, unsigned int row,
                     unsigned int col, enum mx_actions action, enum mx_flags type)
-{//Обновление матрицы, вовращает количество заменённых объектов.
+{//Обновление матрицы, вовращает количество заменённых объектов. Обновляет по вектору data, если предумотренно параметрами.
 
 }
 
@@ -879,11 +1039,9 @@ enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
 void chapter_12()
 {
     /*
-        Протестировать copy, info
-        Сделать compact (вспомогательные функции)
-        Find
-        Update
-        Operator
+        find
+        insert и cut по возможности
+        update
     */
     srand((unsigned int)time(NULL));
     printf("Chapter 12;\n");
@@ -925,7 +1083,7 @@ void chapter_12()
     printf("Function:\tLeft:\tRight:\tFlags:\tResult:\t\tComment:\n");
     printf("----------------------------------------------------------------------------\n");
 
-    char data_text[DATA_MAX] = {'D', 'E', 'Y'}, text[DATA_MAX];
+    char data_text[DATA_MAX] = {'D', 'E', 'X'}, text[DATA_MAX];
     short data_short[DATA_MAX] = {1, 2, 3, 4, 5};
 
     printf("is_types\t-\t-\t%s\t%u\t\tTypes counter in flags\n",
@@ -957,6 +1115,9 @@ void chapter_12()
     printf("type_mul\t%c\t%c\t%s\t", data_text[0], data_text[1], flags_text(mx_char, 0, 0));
     type_mul(&data_text[0], &data_text[1], mx_char);
     printf("%c\t\tMultiply values\n", data_text[0]);
+    printf("type_xchg\t%c\t%c\t%s\t", data_text[0], data_text[1], flags_text(mx_char, 0, 0));
+    type_xchg(&data_text[0], &data_text[1], mx_char);
+    printf("%c-%c\t\tXchg values\n", data_text[0], data_text[1]);
     printf("----------------------------------------------------------------------------\n");
     printf("Character range: '%c' to '%c'\n", char_first, char_last);
     printf("Word range: %hd to %hd\n", word_first, word_last);
@@ -1006,7 +1167,6 @@ void chapter_12()
     info(ptr_c, 1, 2, mx_char);
     print(ptr_b, 0, 0, mx_all);
     info(ptr_b, 0, 0, mx_word | mx_row | mx_even);
-    return;
     // 6. Перемещение матрицы в занятую матрицу
     printf("=== Test 6: Move to occupied matrix ===\n");
     printf("Before move - Matrix B:\n");
@@ -1021,6 +1181,72 @@ void chapter_12()
     print(ptr_b, 0, 0, mx_all);
     printf("Matrix C:\n");
     print(ptr_c, 0, 0, mx_all);
+
+    printf("Source Matrix A (before copy):\n");
+    print(ptr_a, 0, 0, mx_all);
+    // Уничтожим C, чтобы подготовить его для копирования
+    destroy(ptr_c);
+    printf("\nCopying 2x2 sub-matrix from A[1,1] to A[2,2] into C...\n");
+    result = mx_copy(ptr_c, ptr_a, 1, 1, 2, 2); // Копируем блок 2x2 из A
+    if (result == mx_ok) {
+        printf("Resulting Matrix C (after copy):\n");
+        print(ptr_c, 0, 0, mx_all);
+    } else {
+        printf("Sub-matrix copy failed with result: %s\n", flags_text(result, 0, 0));
+    }
+    info(ptr_a, 0, 0, mx_all | mx_char);
+    printf("\nInfo for row 1 of Matrix A:\n");
+    info(ptr_a, 1, 0, mx_row | mx_char);
+    printf("\nInfo for column 2 of Matrix A:\n");
+    info(ptr_a, 0, 2, mx_column | mx_char);
+    printf("\nInfo for odd-indexed columns in row 1 of Matrix A:\n");
+    info(ptr_a, 1, 0, mx_row | mx_odd | mx_column | mx_char);
+
+    struct Matrix matrix_result = {NULL, 0, 0, 0, mx_nop};
+    struct Matrix* ptr_res = &matrix_result;
+    unsigned int found_row = 0, found_col = 0;
+    unsigned int count;
+    *((char*)linear(ptr_a, 0, 1)) = 'X';
+    *((char*)linear(ptr_a, 1, 2)) = 'Y';
+    *((char*)linear(ptr_a, 2, 0)) = 'X';
+    *((char*)linear(ptr_a, 2, 3)) = 'Z';
+    printf("Matrix A (3x4) after modification:\n");
+    print(ptr_a, 0, 0, mx_all);
+    *((char*)linear(ptr_a, 0, 0)) = 'X';                // Переделать под update
+    *((char*)linear(ptr_a, 0, 1)) = 'X';
+    *((char*)linear(ptr_a, 0, 2)) = 'X';
+    *((char*)linear(ptr_a, 0, 3)) = 'X';
+    printf("Before compaction:\n");
+    print(ptr_a, 0, 0, mx_all);
+    result = compact(ptr_a, &data_text[2]);
+    printf("Compaction result: %s\n", flags_text(result, 0, 0));
+    print(ptr_a, 0, 0, mx_all);
+
+    destroy(ptr_b);
+    destroy(ptr_c);
+    create(ptr_b, 1, 1, NULL, mx_rand | mx_word);
+    create(ptr_c, 1, 1, NULL, mx_rand | mx_word);
+    print(ptr_b, 0, 0, mx_all);
+    print(ptr_c, 0, 0, mx_all);
+    insert(ptr_b, ptr_c, 1, 0, mx_row);
+    print(ptr_b, 0, 0, mx_all);
+    insert(ptr_b, ptr_b, 0, 1, mx_column);
+    print(ptr_b, 0, 0, mx_all);
+    *((short*)linear(ptr_b, 0, 1)) = 1;
+    *((short*)linear(ptr_b, 1, 1)) = 3;
+    print(ptr_b, 0, 0, mx_all);
+    insert(ptr_b, ptr_b, 1, 0, mx_row);
+    print(ptr_b, 0, 0, mx_all);
+    return;
+    printf("\n=== Test 6.5: Find first 'X' in matrix A ===\n");
+    char char_to_find = 'X';
+    count = find(ptr_res, ptr_a, &char_to_find, &found_row, &found_col, act_data, mx_equal | mx_char);
+    printf("Result: Found %u element(s). First occurrence at [%u, %u] (expected [0, 1]).\n", count, found_row, found_col);
+    printf("Data found:\n");
+    print(ptr_res, 0, 0, mx_all);
+    destroy(ptr_res); // Очищаем результат для следующего теста
+
+    return;
     // 7. Повторное создание и перемещение
     printf("=== Test 7: Recreate and move again ===\n");
     result = create(ptr_c, 2, 2, NULL, mx_char | mx_rand);
@@ -1033,7 +1259,6 @@ void chapter_12()
     }
 
 
-    return;
     // 8. Расширенная печать
     printf("=== Test 8: Extended printing ===\n");
     printf("Matrix A remains:\n");
@@ -1069,24 +1294,5 @@ void chapter_12()
     // 12. Тест уничтожения NULL матрицы                                    // с 11 вместе
     printf("=== Test 12: Destroy NULL matrix ===\n");
     destroy(NULL);
-    // 13. Тест сжатия матрицы типа char с пустыми строками и столбцами
-    printf("\n=== Test 13: Char matrix compaction ===\n");
-    struct Matrix matrix_d = {NULL, 0, 0, 0, mx_nop};
-    struct Matrix* ptr_d = &matrix_d;
-    result = create(ptr_d, 4, 4, NULL, mx_char);
-    if (result == mx_ok) {
-        char* data = (char*)ptr_d->matrix;
-        data[5] = 'A';  // [1][1]
-        data[6] = 'B';  // [1][2]
-        data[9] = 'C';  // [2][1]
-        data[10] = 'D'; // [2][2]
-        printf("Before compaction:\n");
-        print(ptr_d, 0, 0, mx_all);
-        result = compact(ptr_d);
-        printf("Compaction result: %s\n", flags_text(result, 0, 0));
-        printf("After compaction:\n");
-        print(ptr_d, 0, 0, mx_all);
-        destroy(ptr_d);
-    }
     return;
 }
