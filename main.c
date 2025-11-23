@@ -19,4 +19,3 @@ int main ()
     chapter_12();
     return 0;
 }
-
