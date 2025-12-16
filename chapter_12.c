@@ -18,7 +18,7 @@ enum mx_flags { mx_nop = 0x00, mx_ok = 0x00, mx_error = 0x01, mx_char = 0x02, mx
                 mx_equal = 0x400, mx_less = 0x800, mx_more = 0x1000, mx_even = 0x2000, mx_odd = 0x4000
 };
 
-enum mx_actions {
+enum mx_actions {                  // act_sort подумать
     act_nop = 0x00, act_create = 0x01, act_copy = 0x02, act_move = 0x04, act_destroy = 0x08, act_assign = 0x10,
     act_neg = 0x20, act_add = 0x40, act_mul = 0x80, act_xchg = 0x100, act_seq = 0x200, act_rand = 0x400,
     act_roll = 0x800, act_min = 0x1000, act_max = 0x2000, act_uniq = 0x4000, act_data = 0x8000
@@ -38,17 +38,17 @@ static double geometric_ratio = 2.0;  // Знаменатель геометри
 static unsigned int memory = MEM_MAX;
 static char flags_info[DATA_MAX], actions_info[DATA_MAX];
 static char* flags_names[] = { "nope_ok", "error", "char", "word",
-    "column", "row", "horizontal", "vertical", "all", "random", "input",
-    "equal", "less", "more", "even", "odd"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "column", "row", "horizontal", "vertical", "all", "random", "input",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "equal", "less", "more", "even", "odd"
 };
 
 static const char char_first = 'A';
 static const char char_last = 'Z';
-static const short word_first = 1;
+static const short word_first = 0;
 static const short word_last = 9;
 
 static char* types_names[] = {
-    "undefined", "char", "word"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "undefined", "char", "word"
 };
 
 static const unsigned short types_all = sizeof(types_names) / sizeof(char*);
@@ -56,10 +56,10 @@ static const unsigned short flags_all = sizeof(flags_names) / sizeof(char*);
 static const unsigned int types_sizes[] = {0, sizeof(char), sizeof(short)};
 
 static char* matrix_actions_name[] = {
-    "nop", "create", "copy", "move", "destroy",
-    "assign", "neg", "add", "mul", "xchg",
-    "seq", "rand", "roll", "min", "max",
-    "uniq", "data"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "nop", "create", "copy", "move", "destroy",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "assign", "neg", "add", "mul", "xchg",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "seq", "rand", "roll", "min", "max",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "uniq", "data"
 };
 
 char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type);
@@ -117,7 +117,7 @@ char* type_text(char* text, void* data, enum mx_flags type)
     memset(text, 0, DATA_MAX);
     switch (type & (mx_char | mx_word)) {
     case mx_char:                                           // Интервал
-        text[0] = (data != NULL) ? *((char*)data) : ' ';
+        text[0] = (data != NULL) ? *((char*)data) : char_first;
         break;
     case mx_word:
         sprintf_s(text, DATA_MAX, "%+hd", (data != NULL) ? *(short*)data : 0);
@@ -219,10 +219,8 @@ enum mx_flags type_neg(void* left, enum mx_flags type)
         //*((char*)left) = (char)((~(unsigned char)*((char*)left)) + 1);
         break;
     case mx_word:
-        if (*((short*)left) < 0 && *((short*)left) == SHRT_MIN)
-            printf("\nWarning type neg: word (%hd) is out of range(%hd %hd);\n",
-                   *((short*)left), SHRT_MIN, SHRT_MAX);
-        *((short*)left) = -(*((short*)left));
+        if (*((short*)left) != word_first)
+            *((short*)left) = (word_last - (*((short*)left) - word_first) + 1);
         break;
     default:
         printf("\nWarning type neg: type of data is undefined;\n");
@@ -247,11 +245,36 @@ enum mx_flags type_add(void* left, void* right, enum mx_flags type)
             *((char*)left) += (*((char*)left) >= 0) ? char_first : char_last;
         }
         break;
-    case mx_word:                                           // возможно предупреждение
-        *((short*)left) += *((short*)right);
+    case mx_word:
+        *((short*)left) += (*((short*)right) - word_first);
+        if (*((short*)left) < word_first || *((short*)left) > word_last) {
+            *((short*)left) = ((*((short*)left) - word_first) % (word_last - word_first + 1));
+            *((short*)left) += (*((short*)left) >= 0) ? word_first : word_last;
+        }
         break;
     default:
         printf("\ntype add warning: type is undefined;\n");
+        return mx_error;
+    }
+    return mx_ok;
+}
+
+enum mx_flags type_rand(void* left, enum mx_flags type)
+{ //  Генерация псевдослучайного значения с учётом типа данных и глобальныых ограничений
+    if (left == NULL || is_types(type) != 1) {
+        printf("\nWarning type rand: left (%p) or types (%s) incorrect arguments\n",
+               left, flags_text(type, act_nop, 0));
+        return mx_error;
+    }
+    switch (type & (mx_char | mx_word)) {
+    case mx_char:
+        *((char*)left) = char_first + rand() % (char_last - char_first + 1);
+        break;
+    case mx_word:
+        *((short*)left) = word_first + rand() % (word_last - word_first + 1);
+        break;
+    default:
+        printf("\nWarning type rand: type of data is undefined;\n");
         return mx_error;
     }
     return mx_ok;
@@ -279,7 +302,7 @@ enum mx_flags type_mul(void* left, void* right, enum mx_flags type)
         return mx_error;
     }
     switch (type & (mx_char | mx_word)) {
-    case mx_char:                                           // подумать над пределами
+    case mx_char:
         *((char*)left) = (*((char*)left) - char_first) * (*((char*)right) - char_first) + char_first;
         if (*((char*)left) < char_first || *((char*)left) > char_last) {
             *((char*)left) = ((*((char*)left) - char_first) % (char_last - char_first + 1));
@@ -287,12 +310,11 @@ enum mx_flags type_mul(void* left, void* right, enum mx_flags type)
         }
         break;
     case mx_word:
-        if ((*((short*)left) == SHRT_MIN && *((short*)right) == -1) ||
-            (*((short*)left) == -1 && *((short*)right) == SHRT_MIN))
-            printf("\nWarning type mul: left or right may be out of range(%hd %hd);\n",
-                   SHRT_MIN, SHRT_MAX);
-        //printf("!!! %d %d;\n", *((short*)left), *((short*)right));
-        *((short*)left) *= *((short*)right);
+        *((short*)left) = (*((short*)left) - word_first) * (*((short*)right) - word_first) + word_first;
+        if (*((short*)left) < word_first || *((short*)left) > word_last) {
+            *((short*)left) = ((*((short*)left) - word_first) % (word_last - word_first + 1));
+            *((short*)left) += (*((short*)left) >= 0) ? word_first : word_last;
+        }
         break;
     default:
         printf("\ntype mul warning: type is undefined;\n");
@@ -330,7 +352,7 @@ char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type)
             if (*value & flag_bit) {
                 if (info[0] != '\0')
                     strncat_s(info, DATA_MAX, " ", 1);                  // Уточнить в справочнике
-                strncat_s(info, DATA_MAX, names[flag_idx], strlen(names[flag_idx]));
+                strncat_s(info, DATA_MAX - strlen(info), names[flag_idx], strlen(names[flag_idx]));
             }
         }
     } else
@@ -441,16 +463,16 @@ enum mx_flags create(struct Matrix* obj, unsigned int rows, unsigned int columns
         switch (type & (mx_char | mx_word)) {
         case mx_char:
             if (type & mx_rand)
-                init_char = char_first + rand() % (char_last - char_first + 1);
+                type_rand(&init_char, type);
             else if (type & mx_input)
                 init_char = init_text[0];
             ((char*)obj->matrix)[i] = init_char;
             break;
         case mx_word:
             if (type & mx_rand)
-                init_word = word_first + rand() % (word_last - word_first + 1);
+                type_rand(&init_word, type);
             else if (type & mx_input)
-                init_word = init_text[0];
+                init_word = atoi(init_text);
             ((short*)obj->matrix)[i] = init_word;
             break;
         default:
@@ -569,14 +591,6 @@ void print(struct Matrix* obj, unsigned int row, unsigned int column, enum mx_fl
     printf("\n");
 }
 
-int is_element_zero(struct Matrix* obj, unsigned int index) {           // убрать, реализация в compact
-    if (obj->flags & mx_char)
-        return ((char*)obj->matrix)[index] == ' ';
-    if (obj->flags & mx_word)
-        return ((short*)obj->matrix)[index] == 0;
-    return 1;
-}
-
 enum mx_flags compact(struct Matrix* obj, void* data)
 {// Сжатие или уплотнение матрицы. Удаляются полнстью нулевые стоки или столбцы.
     printf("\nMatrix compact (refactored version)\n");
@@ -635,8 +649,8 @@ enum mx_flags operator(struct Matrix* dst, struct Matrix* src, enum mx_actions a
 {// Исходная матрица должна сохраниться
     printf("\nMatrix operator: %s\n", flags_text(0, action, 1));
     if (is_correct(dst) != mx_ok) {
-        printf("error: Invalid destination matrix\n");
-        return is_correct(dst);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            printf("error: Invalid destination matrix\n");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            return is_correct(dst);
     }
 if (action != act_neg && is_correct(src) != mx_ok) {
     printf("error: Invalid source matrix\n");
@@ -768,8 +782,11 @@ unsigned int find(struct Matrix* dst, struct Matrix* src, void* data, unsigned i
     printf("\nMatrix find: action '%s', type '%s' from src [%p] to dst [%p], value = '%s'\n",
            flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0), src, dst,
            type_text(txt, data, src->flags));
-    if (((type & mx_row) && *row >= src->rows) || ((type & mx_column) && *col >= src->columns))
-        return 0;                                                               // printf добавить
+    if (((type & mx_row) && *row >= src->rows) || ((type & mx_column) && *col >= src->columns)) {
+        printf("\nMatrix find error: start coordinates (%u,%u) out of bounds for matrix [%p] size %ux%u with flags '%s';\n",
+               *row, *col, src, src->rows, src->columns, flags_text(type, act_nop, 0));
+        return 0;
+    }
     unsigned int start_row = (type & mx_row) ? *row : 0;
     unsigned int end_row = (type & mx_row) ? *row : src->rows - 1;
     unsigned int start_col = (type & mx_column) ? *col : 0;
@@ -946,127 +963,180 @@ enum mx_flags cut(struct Matrix* dst, unsigned int first, unsigned int last, enu
 }
 
 // data - 1 строка и n столбцов вектор, если значения закончились то по кругу (по умолчанию)
-unsigned int update(struct Matrix* dst, struct Matrix* data, struct Matrix* data2,
-                    unsigned int row, unsigned int col,
-                    enum mx_actions action, enum mx_flags type)
-{//Обновление матрицы, вовращает количество заменённых объектов. Обновляет по вектору data, если предумотренно параметрами.
-    // Общие задания:
-    // - замена значений элементов строки/столбца на значение или последовательность;
-    // - арифметика со строками и столбцами;
-    // - поменять элементы местами, матрица/строка/столбец и два флага вертикально/горизонтально или вместе;
-    // - подумать над обменом всех строк если флаг mx_all;
-    // - подумать над обменом или обновлением максимальным или минимальным, но не обязательно;
-    // - заменить/обработать найденные элементы в виде вектора, добавить доп. источник.
-    if (is_correct(dst) != mx_ok || is_correct(data) != mx_ok || size(data) == 0 ||
-        (data2 != NULL && (is_correct(data2) != mx_ok || size(data2) == 0)) ||
-        (data2 == NULL && ((!((type & mx_row) ^ (type & mx_column)) && !(type & mx_all)) ||
-                           row >= dst->rows || col >= dst->columns))) {
-        printf("\nMatrix update error: invalid arguments, data size 0, or flags/coordinates out of bounds.\n");
-        printf("Received parameters:\ndst matrix: [%p], size: %u\ndata matrix: [%p], size: %u\n"
-               "row:\t\t%u\ncol:\t\t%u\naction:\t\t'%s'\ntype:\t\t'%s'\n",
-               dst, size(dst), data, size(data), row, col,
-               flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0));
-        return 0;
+enum mx_flags update(struct Matrix* dst, struct Matrix* src, void* data,
+                     unsigned int row, unsigned int col,
+                     enum mx_actions action, enum mx_flags type)
+{//Обновление матрицы, элементов матрицы в соответствии с типом действия, флагами и вектором данных.
+    // Из исходного вектора читаются данные для действия, а data - данные для работы с флагами. Типы данных матрицы и вектора должны совпадать.
+    // Если размерности вектора не достаточно, то он зацикливается.
+    // Функционал, действие всегда одно, а флаги отражают условия либо направления:
+    // - замена значений элементов матрицы/строки/столбца на значение вектора или случайным значением(type_rand);
+    // - арифметика(сложение умножение отрицание) со матрица/строками и столбцами;
+    // - поменять элементы местами (act_xchg), матрица/строка/столбец и два флага вертикально/горизонтально или вместе;
+    // - циклические сдвиги act_roll, флаги vert/horiz задают тип сдвига, mx_less или mx_more - направление
+    // - арифметическая прогрессия задаётся в исходном векторе src (низ, верх, шаг)
+    // - флаг mx_all, если установлен то все элементы иначе только первые элементы?
+    if (is_correct(dst) != mx_ok || size(dst) == 0 ||
+        ((type & mx_row) && row >= dst->rows) || ((type & mx_column) && col >= dst->columns) ||
+        !(action & (act_assign | act_rand | act_xchg | act_add | act_mul | act_neg | act_roll | act_seq))) {
+        printf("\nMatrix update error: invalid destination matrix [%p]\n", dst);
+        return mx_error;
     }
-    printf("\nMatrix update: action '%s', type '%s' on dst [%p]\n",
-           flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0), dst);
-    unsigned int count = 0;
-    unsigned int data_idx = 0;
-    unsigned int data_len = size(data);
-    if (data2 != NULL) {
-        unsigned int idx_count = size(data2);
-        for (unsigned int i = 0; i < idx_count; ++i) {
-            void* idx_val_ptr = (char*)data2->matrix + i * type_size(data2->flags);
-            unsigned int offset = 0;
-            if (data2->flags & mx_word)
-                offset = (unsigned int)(*(short*)idx_val_ptr);
-            else if (data2->flags & mx_char)
-                offset = (unsigned int)(*(char*)idx_val_ptr);
-            else
-                continue;
-            if (offset >= size(dst))
-                continue;
-            void* dst_ptr = (char*)dst->matrix + offset * type_size(dst->flags);
-            void* data_ptr = (char*)data->matrix + (data_idx % data_len) * type_size(data->flags);
-            switch (action) {
-            case act_assign:
-                type_assign(dst_ptr, data_ptr, dst->flags);
-                break;
-            case act_add:
-                type_add(dst_ptr, data_ptr, dst->flags);
-                break;
-            case act_mul:
-                type_mul(dst_ptr, data_ptr, dst->flags);
-                break;
-            case act_xchg:
-                type_xchg(dst_ptr, data_ptr, dst->flags);
-                break;
-            case act_min:
-                if (type_compare(dst_ptr, data_ptr, dst->flags) == mx_more)
-                    type_assign(dst_ptr, data_ptr, dst->flags);
-                break;
-            case act_max:
-                if (type_compare(dst_ptr, data_ptr, dst->flags) == mx_less)
-                    type_assign(dst_ptr, data_ptr, dst->flags);
-                break;
-            default: break;
-            }
-            count++;
-            data_idx++;
-        }
-        return count;
+    char data_txt[DATA_MAX];
+    printf("\nMatrix update: action '%s', type '%s' on dst [%p], src vector [%p], rows %u, columns %u,"
+           "data [%s]\n",
+           flags_text(mx_nop, action, 1), flags_text(type, act_nop, 0), dst, src, row, col, type_text(data_txt, data, src->flags));
+    if ((action & (act_assign | act_add | act_mul)) && (is_correct(src) != mx_ok || size(src) == 0 ||
+                                                        type_name(dst->flags) != type_name(src->flags))) {
+        printf("\nMatrix error update: type of action and source or type of matrix is incorrect;\n");
+        return mx_error;
     }
-    if (action == act_xchg && (type & (mx_vert | mx_horiz))) {
-        unsigned int r_start = (type & mx_row) ? row : 0;
-        unsigned int r_end   = (type & mx_row) ? row + 1 : dst->rows;
-        unsigned int c_start = (type & mx_column) ? col : 0;
-        unsigned int c_end   = (type & mx_column) ? col + 1 : dst->columns;
-        if (type & mx_horiz)
-            for (unsigned int r = r_start; r < r_end; ++r)
-                for (unsigned int c = 0; c < dst->columns / 2; ++c, count += 2)
-                    type_xchg(linear(dst, r, c), linear(dst, r, dst->columns - 1 - c), dst->flags);
+    if ((type & (mx_equal | mx_less | mx_more)) && (data == NULL) && !(action & act_roll)) {
+        printf("\nMatrix error update: extra check has no data;\n");
+        return mx_error;
+    }                           // Перепроверить условия
+    if (action & (act_xchg) && (!(type & (mx_vert | mx_horiz)) || ((type & mx_horiz) && (type & mx_vert)) ||
+                                ((type & mx_column) && (type & mx_horiz)) ||
+                                ((type & mx_row) && (type & mx_vert)))) {
+        printf("\nMatrix update error: cant xchg elements without flags or action and flags are incompatable;\n");
+        return mx_error;
+    }
+    if (action & (act_roll) && (!(((type & mx_less) != 0) ^ ((type & mx_more) != 0)) ||
+                                ((type & mx_horiz) && (type & mx_vert)))) {
+        printf("\nMatrix update error: flags are incorrect, only one pair v/h and less/more at call;\n");
+        return mx_error;
+    }
+    // if (action & (act_seq) && ()) {
+    //     ;
+    // }
+    unsigned int start_r = (type & mx_row) ? row : 0;
+    unsigned int end_r   = (type & mx_row) ? row : dst->rows - 1;
+    unsigned int start_c = (type & mx_column) ? col : 0;
+    unsigned int end_c   = (type & mx_column) ? col : dst->columns - 1;
+    if (action & act_xchg) {
         if (type & mx_vert)
-            for (unsigned int c = c_start; c < c_end; ++c)
-                for (unsigned int r = 0; r < dst->rows / 2; ++r, count += 2)
-                    type_xchg(linear(dst, r, c), linear(dst, dst->rows - 1 - r, c), dst->flags);
-        return count;
+            end_r /= 2;
+        if (type & mx_horiz)
+            end_c /= 2;
     }
-    unsigned int r_start = (type & mx_row) ? row : ((type & mx_all) ? 0 : row);
-    unsigned int r_end   = (type & mx_row) ? row + 1 : dst->rows;
-    unsigned int c_start = (type & mx_column) ? col : ((type & mx_all) ? 0 : col);
-    unsigned int c_end   = (type & mx_column) ? col + 1 : dst->columns;
-    for (unsigned int r = r_start; r < r_end; ++r) {
-        for (unsigned int c = c_start; c < c_end; ++c) {
-            void* dst_ptr = linear(dst, r, c);
-            void* data_ptr = (char*)data->matrix + (data_idx % data_len) * type_size(data->flags);
-            switch (action) {
+    unsigned int updates = 0, src_len = (src != NULL) ? size(src) : 0, src_idx = 0;
+    int stop_processing = 0;
+    // Для act_seq (арифметическая прогрессия)                                                 Использовать дополнительную матрицу.
+    char seq_buff[DATA_MAX], txt[DATA_MAX];
+    void* seq_curr = seq_buff;
+    void* seq_end_val = NULL;
+    void* seq_step_val = NULL;
+    if (action == act_seq) {
+        if (src_len < 3) {
+            printf("Error update: act_seq requires src vector with [start, end, step].\n");
+            return mx_error;
+        }
+        type_assign(seq_curr, linear(src, 0, 0), src->flags);
+        seq_end_val = linear(src, 0, 1);
+        seq_step_val = linear(src, 0, 2);
+    }
+    unsigned int i = 0, j = 0;
+    for (i = start_r; i <= end_r; i++) {
+        if (((type & mx_even) && (i % 2 != 0)) || ((type & mx_odd) && (i % 2 == 0)))
+            continue;
+        for (j = start_c; j <= end_c; j++) {
+            if (((type & mx_even) && (j % 2 != 0)) || ((type & mx_odd) && (j % 2 == 0)))
+                continue;
+            void* dst_ptr = linear(dst, i, j);
+            void* src_ptr = (src != NULL) ? linear(src, 0, src_idx % size(src)) : NULL;                   // Страшно
+            printf("row %u, col %u, src %u, value at dst (%s); ", i, j, src_idx, type_text(txt, dst_ptr, src->flags));
+            if (src != NULL)
+                printf("source (%s); ", type_text(txt, src_ptr, src->flags));
+            else
+                printf("source has no data; ");
+            // Фильтрация по data (если задан data и флаги сравнения)
+            if (!(action & act_roll) && (type & (mx_equal | mx_less | mx_more))) {
+                if (type_compare(dst_ptr, data, dst->flags) == (type & (mx_equal | mx_less | mx_more)))
+                    printf("compare element (%s) is true, do action; ", data_txt);
+                else {
+                    printf("compare element (%s) is false, continue;\n", data_txt);
+                    continue;
+                }
+            } else
+                printf("No flags to compare elements, only action; ");
+            switch (action) {                                               // add flags
             case act_assign:
-                type_assign(dst_ptr, data_ptr, dst->flags);
+                type_assign(dst_ptr, src_ptr, dst->flags);
+                printf("Assign element from source and move to next cycle;\n");
                 break;
+            case act_rand:
+                type_rand(dst_ptr, dst->flags);
+                printf("Generate random element, usign matrix type;\n");
+                break;
+            case act_neg:
+                type_neg(dst_ptr, dst->flags);
+                printf("Neg element using type function;\n");
+                break;
+            case act_xchg: {
+                // Зеркальный обмен относительно центра
+                unsigned int t_r = (type & mx_vert) ? (dst->rows - 1 - i) : i;
+                unsigned int t_c = (type & mx_horiz) ? (dst->columns - 1 - j) : j;
+                type_xchg(dst_ptr, linear(dst, t_r, t_c), dst->flags);
+                printf("Xchg elements within matrix, position %u-%u;\n", t_r, t_c);
+                break;
+            }
             case act_add:
-                type_add(dst_ptr, data_ptr, dst->flags);
+                type_add(dst_ptr, src_ptr, dst->flags);
+                printf("Add element usign source right value;\n");
                 break;
             case act_mul:
-                type_mul(dst_ptr, data_ptr, dst->flags);
+                type_mul(dst_ptr, src_ptr, dst->flags);
+                printf("Mul element usign source right value;\n");
                 break;
-            case act_xchg:
-                type_xchg(dst_ptr, data_ptr, dst->flags);
+            case act_seq:
+                type_assign(dst_ptr, seq_curr, dst->flags);
+                type_add(seq_curr, seq_step_val, dst->flags);
+                if (type_compare(seq_curr, seq_end_val, dst->flags) == mx_more)
+                    type_assign(seq_curr, linear(src, 0, 0), dst->flags);
                 break;
-            case act_min:
-                if (type_compare(dst_ptr, data_ptr, dst->flags) == mx_more)
-                    type_assign(dst_ptr, data_ptr, dst->flags);
+            case act_roll: {
+                // Корректировка границ для act_roll, чтобы не выйти за пределы массива при доступе к соседу
+                if (((type & mx_vert) && (i == end_r)) || ((type & mx_horiz) && (j == end_c))) {
+                    printf("\n");
+                    continue;
+                }
+                unsigned int next_r = i, next_c = j;
+                int offs_r = 0, offs_c = 0;
+                if (type & mx_vert) {
+                    if ((type & mx_less)) { // Влево: тянем j+1 в j
+                        next_r = dst->rows - i - 1;
+                        offs_r = -1;
+                    } else { // Вправо: тянем j-1 в j
+                        next_r = i;
+                        offs_r = 1;
+                    }
+                }
+                if (type & mx_horiz) {
+                    if ((type & mx_less)) { // Влево: тянем j+1 в j
+                        next_c = j;
+                        offs_c = 1;
+                    } else { // Вправо: тянем j-1 в j
+                        next_c = dst->columns - j - 1;
+                        offs_c = -1;
+                    }
+                }
+                printf("Roll elements from %u:%u to %u:%u;\n", next_r, next_c, next_r + offs_r, next_c + offs_c);
+                type_xchg(linear(dst, next_r, next_c), linear(dst, next_r + offs_r, next_c + offs_c), dst->flags);
                 break;
-            case act_max:
-                if (type_compare(dst_ptr, data_ptr, dst->flags) == mx_less)
-                    type_assign(dst_ptr, data_ptr, dst->flags);
-                break;
-            default: break;
             }
-            count++;
-            data_idx++;
+            default:
+                printf("update error, type of action us undefined;\n");
+                return mx_error;
+            }
+            updates++;
+            src_idx++; // След. элемент данных
+            // Если флаг mx_all не установлен, выполняем только один раз
+            if (!(type & mx_all) && updates > 0)
+                stop_processing = 1;
         }
     }
-    return count;
+    printf("Matrix updated, %u elements modified.\n", updates);
+    return (updates > 0) ? mx_ok : mx_nop;
 }
 
 enum mx_flags check_array_order(void* array, unsigned int count, enum mx_flags data_type)
@@ -1177,13 +1247,33 @@ enum mx_flags is_order(struct Matrix* obj, enum mx_flags type)
 void chapter_12()
 {
     /*
-        причесать тесты
-        протестировать find
+        type_rand в тестовую таблицу
+        обновить и протестировать create
         update
-        operator
+
+        черновик к пятнице вечеру
+        к субботе - теорию (8-9)
     */
+    // Инициализация и объявление переменных
     srand((unsigned int)time(NULL));
     printf("Chapter 12;\n");
+
+    // Основные структуры и указатели
+    struct Matrix matrix_a = {NULL, 0, 0, 0, mx_nop};
+    struct Matrix matrix_b = {NULL, 0, 0, 0, mx_nop};
+    struct Matrix matrix_c = {NULL, 0, 0, 0, mx_nop};
+    struct Matrix* ptr_a = &matrix_a;
+    struct Matrix* ptr_b = &matrix_b;
+    struct Matrix* ptr_c = &matrix_c;
+
+    // Вспомогательные переменные
+    char data_text[DATA_MAX] = {'D', 'E', 'X'}, text[DATA_MAX];
+    short data_short[DATA_MAX] = {1, 2, 3, 4, 5};
+    short init_val = 10;
+    unsigned int found_row = 0, found_col = 0, count = 0;
+    enum mx_flags result;
+
+    // Информация о структуре Matrix
     printf("\nMain data structure of 'Matrix' about matrix, size %u bytes.\n", (unsigned int)sizeof(struct Matrix));
     printf("Field:\t\tOffset:\tType:\tSize:\tComment:\n");
     printf("matrix\t\t%u\taddress\t%u\tpointer to dynamic array of matrix elements.\n",
@@ -1197,34 +1287,10 @@ void chapter_12()
     printf("flags\t\t%u\tbits\t%u\tmatrix type and status flags.\n",
            (unsigned int)offsetof(struct Matrix, flags), (unsigned int)sizeof(enum mx_flags));
     printf("\n");
-    struct Matrix matrix_a = {NULL, 0, 0, 0, mx_nop};
-    struct Matrix matrix_b = {NULL, 0, 0, 0, mx_nop};
-    struct Matrix matrix_c = {NULL, 0, 0, 0, mx_nop};
-    struct Matrix* ptr_a = &matrix_a;
-    struct Matrix* ptr_b = &matrix_b;
-    struct Matrix* ptr_c = &matrix_c;
 
-    //printf("type size char %u, word %u;\n", type_size(mx_char), type_size(mx_word));
-    //return;
-    //printf("(%s)", flags_text(mx_row | mx_err_mem | mx_ok, act_nop, 0));
-    //short data[1][2] = {{1,2}};
-    //short (*ptr)[][2] = &data;
-    //printf("%hd\n", (*ptr)[0][1]);
-    //return;
-    // ! Тестирование всё так в норме, но можно result держать как одну и ту же переменную.
-    // Что еще можно потестировать:
-    // - попытаться создать матрицу с неверными размерами и потестировать ошибку;
-    // - скопировать не только всю матрицу, но и отдельный элемент;
-    // - попытаться переместить матрицу в занятую матрицу, после удалить объект назначения и снова;
-    // - в функции печати вывести полную матрицу, строку, столбец и отдельный элемент;
-    // - ну и может что-то еще придумаем... :)
-
+    // Тестирование вспомогательных функций
     printf("Function:\tLeft:\tRight:\tFlags:\tResult:\t\tComment:\n");
     printf("----------------------------------------------------------------------------\n");
-
-    char data_text[DATA_MAX] = {'D', 'E', 'X'}, text[DATA_MAX];
-    short data_short[DATA_MAX] = {1, 2, 3, 4, 5};
-
     printf("is_types\t-\t-\t%s\t%u\t\tTypes counter in flags\n",
            flags_text(mx_char, 0, 0), is_types(mx_char));
     printf("is_type_ok\t%c\t-\t%s\t", data_text[0], flags_text(mx_char, 0, 0));
@@ -1257,57 +1323,92 @@ void chapter_12()
     printf("type_xchg\t%c\t%c\t%s\t", data_text[0], data_text[1], flags_text(mx_char, 0, 0));
     type_xchg(&data_text[0], &data_text[1], mx_char);
     printf("%c-%c\t\tXchg values\n", data_text[0], data_text[1]);
+    printf("type_rand\t-\t-\t%s\t", flags_text(mx_char, 0, 0));
+    type_rand(&data_text[0], mx_char);
+    printf("%c\t\tRandom char\n", data_text[0]);
+    printf("type_rand\t-\t-\t%s\t", flags_text(mx_word, 0, 0));
+    type_rand(&data_short[0], mx_word);
+    printf("%hd\t\tRandom word\n", data_short[0]);
     printf("----------------------------------------------------------------------------\n");
     printf("Character range: '%c' to '%c'\n", char_first, char_last);
     printf("Word range: %hd to %hd\n", word_first, word_last);
-    printf("\n=== MATRIX POINTERS STATUS ===\n");
+
+    // Тесты №1: Создание матриц и тестирования печати
+    printf("\n\n--------------------------Tests #1: Creating Matrices and Printing Tests--------------------------\n\n");
     printf("Matrix A: %p (rows: %u, columns: %u)\n", ptr_a, ptr_a->rows, ptr_a->columns);
     printf("Matrix B: %p (rows: %u, columns: %u)\n", ptr_b, ptr_b->rows, ptr_b->columns);
     printf("Matrix C: %p (rows: %u, columns: %u)\n", ptr_c, ptr_c->rows, ptr_c->columns);
     printf("All matrices are initialized but not allocated yet.\n");
-    // 1. Тест создания матрицы с неверными размерами
-    printf("\n=== Test 1: Invalid matrix creation ===\n");
-    enum mx_flags result = create(ptr_a, 0, 5, NULL, mx_char);  // Нулевые строки
+    printf("\nInvalid matrix creation\n");
+    result = create(ptr_a, 0, 5, NULL, mx_char);
     printf("Create 0x5 matrix: %s\n", flags_text(result, 0, 0));
-    // 2. Создание матрицы A (3x4, тип char, случайные значения)
-    printf("\n\n=== Test 2: Valid matrix creation ===\n");
+    printf("\n\nCorrect matrix creation\n");
     result = create(ptr_a, 3, 4, NULL, mx_char | mx_rand);
-    if (result != mx_ok) {
-        printf("Failed to create Matrix A\n");
-        return;
-    } else
-        printf("create return result: '%s' and matrix has %u elements;\n", flags_text(result, act_nop, 0), size(ptr_a));
+    printf("create return result: '%s' and matrix has %u elements;\n",
+           flags_text(result, act_nop, 0), size(ptr_a));
     print(ptr_a, 0, 0, mx_all);
-    //print(ptr_a, 0, 0, mx_row);
-    //print(ptr_a, 0, 0, mx_column);     // Проверить
-    // 3. Создание матрицы B (2x2, тип short, нули)
-    printf("\n\n=== Test 3: Second matrix creation ===\n");
-    short data = 10;
-    create(ptr_b, 2, 2, &data, mx_word);
+    // Создание матрицы B
+    printf("\n\nSecond matrix creation\n");
+    create(ptr_b, 2, 2, &init_val, mx_word);
     print(ptr_b, 0, 0, mx_all);
-
-    printf("\n=== Linear test for word matrix ===\n");
-    // Один тест - проверяем элемент (1,1)
+    // Проверка линейного доступа к памяти
+    printf("\nLinear test for word matrix\n");
     void* addr = linear(ptr_b, 1, 1);
     printf("linear(1,1): %p -> value=%hd (expected: 10)\n", addr, *((short*)addr));
-    // 4. Копирование всей матрицы A в C
-    printf("\n\n=== Test 4: Full matrix copy ===\n");
+    printf("\nPrinting test\n");
+    printf("Matrix A (3x4) full:\n");
     print(ptr_a, 0, 0, mx_all);
-    mx_copy(ptr_c, ptr_a, 0, 0, 2, 3);  // Всю матрицу 3x4
+    printf("Row 1:\n");
+    print(ptr_a, 1, 0, mx_row);
+    printf("Column 2:\n");
+    print(ptr_a, 0, 2, mx_column);
+    printf("Element [2][3]:\n");
+    print(ptr_a, 2, 3, mx_row | mx_column);
+    // Печать несуществующих элементов
+    printf("Invalid row (5):\n");
+    print(ptr_a, 5, 0, mx_row);
+    printf("Invalid column (5):\n");
+    print(ptr_a, 0, 5, mx_column);
+    // Тест ввода с клавиатуры
+    /*
+    printf("Test 9: Keyboard input\n");
+    destroy(ptr_c);
+    result = create(ptr_c, 2, 2, NULL, mx_char | mx_input);
     print(ptr_c, 0, 0, mx_all);
-    // 5. Копирование отдельного элемента
-    printf("\n\n=== Test 5: Single element copy ===\n");
-    destroy(ptr_c);  // Очищаем для нового теста
+    */
+
+    // Тесты №2: Копирование
+    printf("\n\n--------------------------Test #2: Copy--------------------------\n\n");
+    // Полное копирование
+    printf("\nFull matrix copy\n");
     print(ptr_a, 0, 0, mx_all);
-    result = mx_copy(ptr_c, ptr_a, 1, 1, 1, 2);  // Один элемент
+    mx_copy(ptr_c, ptr_a, 0, 0, 2, 3);
+    print(ptr_c, 0, 0, mx_all);
+    // Копирование отдельного элемента
+    printf("\nSingle element copy\n");
+    destroy(ptr_c);
+    print(ptr_a, 0, 0, mx_all);
+    result = mx_copy(ptr_c, ptr_a, 1, 1, 1, 2);
     ((char*)ptr_c->matrix)[0] = 'A';
     ((char*)ptr_c->matrix)[1] = 'C';
     print(ptr_c, 0, 0, mx_all);
     info(ptr_c, 1, 2, mx_char);
     print(ptr_b, 0, 0, mx_all);
     info(ptr_b, 0, 0, mx_word | mx_row | mx_even);
-    // 6. Перемещение матрицы в занятую матрицу
-    printf("=== Test 6: Move to occupied matrix ===\n");
+    // Копирования части матрицы
+    printf("Source Matrix A (before copy):\n");
+    print(ptr_a, 0, 0, mx_all);
+    destroy(ptr_c);
+    printf("\nCopying 2x2 sub-matrix from A[1,1] to A[2,2] into C...\n");
+    result = mx_copy(ptr_c, ptr_a, 1, 1, 2, 2);
+    printf("Resulting Matrix C (after copy):\n");
+    print(ptr_c, 0, 0, mx_all);
+
+    // Тесты №3: Перемещение
+    printf("\n\n--------------------------Test #3: Move--------------------------\n\n");
+    printf("Move to occupied matrix\n");
+    // Очищаем B перед перемещением в неё данных
+    destroy(ptr_b);
     printf("Before move - Matrix B:\n");
     print(ptr_b, 0, 0, mx_all);
     printf("Before move - Matrix C:\n");
@@ -1321,18 +1422,8 @@ void chapter_12()
     printf("Matrix C:\n");
     print(ptr_c, 0, 0, mx_all);
 
-    printf("Source Matrix A (before copy):\n");
-    print(ptr_a, 0, 0, mx_all);
-    // Уничтожим C, чтобы подготовить его для копирования
-    destroy(ptr_c);
-    printf("\nCopying 2x2 sub-matrix from A[1,1] to A[2,2] into C...\n");
-    result = mx_copy(ptr_c, ptr_a, 1, 1, 2, 2); // Копируем блок 2x2 из A
-    if (result == mx_ok) {
-        printf("Resulting Matrix C (after copy):\n");
-        print(ptr_c, 0, 0, mx_all);
-    } else {
-        printf("Sub-matrix copy failed with result: %s\n", flags_text(result, 0, 0));
-    }
+    // Тесты №4 Вывод общий информации о матрице
+    printf("\n\n--------------------------Tests #4: General information about the matrix--------------------------\n\n");
     info(ptr_a, 0, 0, mx_all | mx_char);
     printf("\nInfo for row 1 of Matrix A:\n");
     info(ptr_a, 1, 0, mx_row | mx_char);
@@ -1341,41 +1432,39 @@ void chapter_12()
     printf("\nInfo for odd-indexed columns in row 1 of Matrix A:\n");
     info(ptr_a, 1, 0, mx_row | mx_odd | mx_column | mx_char);
 
-    struct Matrix matrix_result = {NULL, 0, 0, 0, mx_nop};
-    //struct Matrix* ptr_res = &matrix_result;
-    unsigned int found_row = 0, found_col = 0;
-    unsigned int count;
-    *((char*)linear(ptr_a, 0, 1)) = 'X';
-    *((char*)linear(ptr_a, 1, 2)) = 'Y';
-    *((char*)linear(ptr_a, 2, 0)) = 'X';
-    *((char*)linear(ptr_a, 2, 3)) = 'Z';
-    printf("Matrix A (3x4) after modification:\n");
-    print(ptr_a, 0, 0, mx_all);
-    *((char*)linear(ptr_a, 0, 0)) = 'X';                // Переделать под update
+    // Тесты №5: Уплотнение
+    printf("\n\n--------------------------Tests #5: Compact--------------------------\n\n");
+    *((char*)linear(ptr_a, 0, 0)) = 'X';
     *((char*)linear(ptr_a, 0, 1)) = 'X';
     *((char*)linear(ptr_a, 0, 2)) = 'X';
     *((char*)linear(ptr_a, 0, 3)) = 'X';
-    printf("Before compaction:\n");
+    printf("Matrix A (3x4) before compact:\n");
     print(ptr_a, 0, 0, mx_all);
     result = compact(ptr_a, &data_text[2]);
     printf("Compaction result: %s\n", flags_text(result, 0, 0));
     print(ptr_a, 0, 0, mx_all);
 
+    // Тесты №6: Вставка и обрезка
+    printf("\n\n--------------------------Tests #6: Insert and Cut--------------------------\n\n");
     destroy(ptr_b);
     destroy(ptr_c);
     create(ptr_b, 1, 1, NULL, mx_rand | mx_word);
     create(ptr_c, 1, 1, NULL, mx_rand | mx_word);
     print(ptr_b, 0, 0, mx_all);
     print(ptr_c, 0, 0, mx_all);
+    // Вставка строки
     insert(ptr_b, ptr_c, 1, 0, mx_row);
     print(ptr_b, 0, 0, mx_all);
+    // Вставка столбца
     insert(ptr_b, ptr_b, 0, 1, mx_column);
     print(ptr_b, 0, 0, mx_all);
+    // Изменение значений и повторная вставка
     *((short*)linear(ptr_b, 0, 1)) = 1;
     *((short*)linear(ptr_b, 1, 1)) = 3;
     print(ptr_b, 0, 0, mx_all);
     insert(ptr_b, ptr_b, 1, 0, mx_row);
     print(ptr_b, 0, 0, mx_all);
+    // Тестирование обрезки на новой матрице
     destroy(ptr_a);
     create(ptr_a, 3, 4, NULL, mx_char | mx_rand);
     print(ptr_a, 0, 0, mx_all);
@@ -1383,93 +1472,81 @@ void chapter_12()
     print(ptr_a, 0, 0, mx_all);
     cut(ptr_a, 0, 2, mx_column);
     print(ptr_a, 0, 0, mx_all);
-    /*
-    *((char*)linear(ptr_a, 0, 0)) = 'X';                // Переделать под update
-    *((char*)linear(ptr_a, 0, 1)) = 'X';
-    *((char*)linear(ptr_a, 1, 0)) = 'X';
-    *((char*)linear(ptr_a, 1, 1)) = 'X';
-    *((char*)linear(ptr_a, 2, 1)) = 'X';
-    */
-    /*
-    struct Matrix vector = {NULL, 0, 0, 0, mx_nop};
-    struct Matrix vector2 = {NULL, 0, 0, 0, mx_nop};
-    create(&vector, 1, 1, &data_text[2], mx_char);
-    create(&vector2, 1, 5, NULL, mx_word);
-    ((short*)vector2.matrix)[0] = 0;
-    ((short*)vector2.matrix)[1] = 1;
-    ((short*)vector2.matrix)[2] = 2;
-    ((short*)vector2.matrix)[3] = 3;
-    ((short*)vector2.matrix)[4] = 5;
-    update(ptr_a, &vector, &vector2, 0, 0, act_assign, mx_nop);
-    destroy(&vector);
-    destroy(&vector2);
-*/
+
+    // Тесты №7: Поиск
+    printf("\n\n--------------------------Tests #7: Find--------------------------\n\n");
     print(ptr_a, 0, 0, mx_all);
     print(ptr_b, 0, 0, mx_all);
     print(ptr_c, 0, 0, mx_all);
     destroy(ptr_a);
     destroy(ptr_b);
-    printf("\n=== Test 6.5: Find first 'X' in matrix A ===\n");
+    printf("\nFind first 'X' in matrix A\n");
     create(ptr_a, 3, 4, NULL, mx_word | mx_rand);
     print(ptr_a, 0, 0, mx_all);
-    found_row = 0; found_col = 0; data_short[0] = *(short*)linear(ptr_a, found_row, found_col);
-    //count = find(ptr_b, ptr_a, data_short, &found_row, &found_col, act_data,
-     //            mx_equal | mx_row | mx_column | mx_horiz | mx_vert);
-    // count = find(ptr_b, ptr_a, data_short, &found_row, &found_col, act_min, mx_all);
+    found_row = 0;
+    found_col = 0;
+    data_short[0] = *(short*)linear(ptr_a, found_row, found_col);
+    count = find(ptr_b, ptr_a, data_short, &found_row, &found_col, act_data,
+                 mx_equal | mx_row | mx_column | mx_horiz | mx_vert);
+    printf("Find count: %u\n", count);
+    destroy(ptr_b);
+    count = find(ptr_b, ptr_a, data_short, &found_row, &found_col, act_min, mx_all);
+    printf("Find min count: %u\n", count);
+    destroy(ptr_b);
     count = find(ptr_b, ptr_a, data_short, &found_row, &found_col, act_uniq, mx_nop);
     printf("Result: Found %u element(s). First occurrence at [%u, %u].\n",
            count, found_row, found_col);
     printf("Data found:\n");
     print(ptr_b, 0, 0, mx_all);
-    // destroy(ptr_res); // Очищаем результат для следующего теста
 
+    // Тест №8: Закомментированные тесты update
+    printf("\n\n--------------------------Tests #8: Update--------------------------\n\n");
+    //Тест act_assign: Заполнение областей
+    printf("1. Assign 'X' to Row 0 and Column 2:\n");
+    destroy(ptr_a);
+    destroy(ptr_b);
+    create(ptr_a, 3, 5, NULL, mx_char | mx_rand);
+    char val_x = 'X';
+    create(ptr_b, 1, 1, &val_x, mx_char);
+    print(ptr_a, 0, 0, mx_all);
+    update(ptr_a, ptr_b, NULL, 0, 0, act_roll, mx_all | mx_vert | mx_more);
+    print(ptr_a, 0, 0, mx_all);
     return;
-    // 7. Повторное создание и перемещение
-    printf("=== Test 7: Recreate and move again ===\n");
-    result = create(ptr_c, 2, 2, NULL, mx_char | mx_rand);
-    if (result == mx_ok) {
-        printf("Recreated Matrix C:\n");
-        print(ptr_c, 0, 0, mx_all);
-
-        result = move(&ptr_b, &ptr_c);
-        printf("Second move C to B: %s\n", flags_text(result, 0, 0));
-    }
-
-
-    // 8. Расширенная печать
-    printf("=== Test 8: Extended printing ===\n");
-    printf("Matrix A remains:\n");
+    update(ptr_a, ptr_b, NULL, 0, 2, act_assign, mx_column | mx_all);
+    print(ptr_a, 0, 0, mx_all);
+    //Тест act_seq: Арифметическая прогрессия (1..9)
+    printf("\n2. Arithmetic Sequence (Start:1, End:9, Step:1):\n");
+    destroy(ptr_a);
+    destroy(ptr_b);
+    create(ptr_a, 3, 5, NULL, mx_word);
+    create(ptr_b, 1, 3, NULL, mx_word);
+    ((short*)ptr_b->matrix)[0] = 1;  // Start
+    ((short*)ptr_b->matrix)[1] = 9;  // End (max for mx_word)
+    ((short*)ptr_b->matrix)[2] = 1;  // Step
+    update(ptr_a, ptr_b, NULL, 0, 0, act_seq, mx_all);
+    print(ptr_a, 0, 0, mx_all);
+    //Тест act_roll: Сдвиг
+    printf("\n3. Roll Row 1 Left and Column 4 Down:\n");
+    // Сдвиг 1-й строки влево
+    update(ptr_a, NULL, NULL, 1, 0, act_roll, mx_row | mx_horiz | mx_less | mx_all);
+    // Сдвиг 4-го столбца вниз
+    update(ptr_a, NULL, NULL, 0, 4, act_roll, mx_column | mx_vert | mx_more | mx_all);
+    print(ptr_a, 0, 0, mx_all);
+    //Тест act_add с условием: Добавить 2 ко всем числам < 5
+    printf("\n4. Conditional Add: Add 2 to values < 5:\n");
+    destroy(ptr_b);
+    short val_add = 2;
+    short val_thresh = 5;
+    create(ptr_b, 1, 1, &val_add, mx_word);
+    update(ptr_a, ptr_b, &val_thresh, 0, 0, act_add, mx_all | mx_less);
     print(ptr_a, 0, 0, mx_all);
 
-    // Печать разных представлений
-    print(ptr_a, 1, 0, mx_row);           // Строка 1
-    print(ptr_a, 0, 2, mx_column);        // Столбец 2
-    print(ptr_a, 2, 3, mx_row | mx_column); // Элемент [2][3]
-
-    // Печать несуществующих элементов
-    print(ptr_a, 5, 0, mx_row);           // Несуществующая строка
-    print(ptr_a, 0, 5, mx_column);        // Несуществующий столбец
-
-    // 9. Тест ввода с клавиатуры (закомментирован для автоматического тестирования)
-    /*
-    printf("=== Test 9: Keyboard input ===\n");
-    destroy(ptr_c);
-    result = create(ptr_c, 2, 2, NULL, mx_char | mx_input);
-    if (result == mx_ok) {
-        print(ptr_c, 0, 0, mx_all);
-    }
-    */
-    // 11. Уничтожение матриц
-    printf("=== Test 11: Cleanup ===\n");
+    // Уничтожение матриц
+    printf("Cleanup\n");
     destroy(ptr_a);
     destroy(ptr_b);
     destroy(ptr_c);
-
     printf("Final memory check: %u bytes used, %u bytes free (total: %u bytes)\n",
            MEM_MAX - memory, memory, MEM_MAX);
-
-    // 12. Тест уничтожения NULL матрицы                                    // с 11 вместе
-    printf("=== Test 12: Destroy NULL matrix ===\n");
-    destroy(NULL);
     return;
 }
