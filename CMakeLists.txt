@@ -20,10 +20,11 @@ add_executable(school-code
   chapter_10.c
   chapter_11.c
   chapter_12.c
+  chapter_13.c
+  chapter_14.c
+  chapter_15.c
   chapter_16.c
-  theory.c
   library.c
-  games.c
   exam.c
   KernighanRitchie.c
   library.h

@@ -11,6 +11,24 @@
 #define MAX_SIZE 12
 /*
  *  Глава 12. матрицы произвольных размерностей и базовые алгоритмы интерпритации данных.
+* Следующая версия:
+
+* - каждый тип данных можно оформить в виде структуры с ограниченями и параметрами размеров и т.д.;
+* - функция ввода типа с учетом преобразования, подумать дополнительно;
+* - обновить с учетом поддержки типов все функции связанные с их обработкой;
+* - вынести в отдельную функцию и/или в структуру данных, эти параметры, обновить функцию поиска;
+* - дополнить типы числами с плавающей точкой, например float и определить окрестность точки условный эпсилон;
+* - в функции умножения символов, придумать правило переполнения или оставить как есть;
+* - дополнить примером более сложного объекта, например строки или адреса динамической строки;
+* - поиск элементов в матрице пока что в виде вектора, но может как-то дополнить до матрицы;
+* - дополнить функцию уплотнения, возможно стоит добавить флаги отдельно строки/столбца;
+* - дополнить флаги главной и второстепенной диаганалью;
+* - текстовое представление типа добработать;
+* - добавить базовые методы решения матриц, пока что был черновик Крамера;
+* - дополнительно подумать над аргументами командной строки, если есть необходимость для файла;
+* - подумать над таблицей типов данных(ограничения), для масштабирования или общих правил(не обязательно).
+
+
  */
 
 enum mx_flags { mx_nop = 0x00, mx_ok = 0x00, mx_error = 0x01, mx_char = 0x02, mx_word = 0x04, mx_column = 0x08,
@@ -38,8 +56,8 @@ static double geometric_ratio = 2.0;  // Знаменатель геометри
 static unsigned int memory = MEM_MAX;
 static char flags_info[DATA_MAX], actions_info[DATA_MAX];
 static char* flags_names[] = { "nope_ok", "error", "char", "word",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "column", "row", "horizontal", "vertical", "all", "random", "input",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "equal", "less", "more", "even", "odd"
+    "column", "row", "horizontal", "vertical", "all", "random", "input",
+    "equal", "less", "more", "even", "odd"
 };
 
 static const char char_first = 'A';
@@ -48,7 +66,7 @@ static const short word_first = 0;
 static const short word_last = 9;
 
 static char* types_names[] = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "undefined", "char", "word"
+    "undefined", "char", "word"
 };
 
 static const unsigned short types_all = sizeof(types_names) / sizeof(char*);
@@ -56,10 +74,10 @@ static const unsigned short flags_all = sizeof(flags_names) / sizeof(char*);
 static const unsigned int types_sizes[] = {0, sizeof(char), sizeof(short)};
 
 static char* matrix_actions_name[] = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "nop", "create", "copy", "move", "destroy",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "assign", "neg", "add", "mul", "xchg",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "seq", "rand", "roll", "min", "max",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "uniq", "data"
+    "nop", "create", "copy", "move", "destroy",
+    "assign", "neg", "add", "mul", "xchg",
+    "seq", "rand", "roll", "min", "max",
+    "uniq", "data"
 };
 
 char* flags_text(enum mx_flags state, enum mx_actions action, unsigned int type);
@@ -649,8 +667,8 @@ enum mx_flags operator(struct Matrix* dst, struct Matrix* src, enum mx_actions a
 {// Исходная матрица должна сохраниться
     printf("\nMatrix operator: %s\n", flags_text(0, action, 1));
     if (is_correct(dst) != mx_ok) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            printf("error: Invalid destination matrix\n");
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            return is_correct(dst);
+    printf("error: Invalid destination matrix\n");
+    return is_correct(dst);
     }
 if (action != act_neg && is_correct(src) != mx_ok) {
     printf("error: Invalid source matrix\n");

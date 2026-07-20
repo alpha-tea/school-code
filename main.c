@@ -1,3 +1,7 @@
+#include <stdio.h>
+/*
+ Программирование на классическом Си. Описание по главам.
+ */
 void chapter_1(); // Ввод и вывод числовых данных. Оператор присваивания.
 void chapter_2(); // Целочисленная арифметика.
 void chapter_3(); // Величины логического типа.
@@ -10,12 +14,13 @@ void chapter_9(); // Строки символов.
 void chapter_10(); // Функции и процедуры.
 void chapter_11(); // Одномерные массивы.
 void chapter_12(); // Двумерные массивы.
-void KernighanRitchie(); // Керниган и Ритчи.
+void chapter_16(); // Доп. задания и игры.
+void KernighanRitchie_3(); // Керниган и Ритчи.
 void exam();    // Задачи экзамена.
-void games();   // Игры.
 
 int main ()
 {
-    chapter_12();
+    printf("Code tasks on classic C programming language.\n\n");
+    KernighanRitchie_3();
     return 0;
 }

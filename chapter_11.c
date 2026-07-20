@@ -8,9 +8,10 @@
 
 /*
  *  Глава 11. Одномерные массивы.
+ *  Не трогать. Упорядочить флаги, названия, функции объединить и сократить тесты (в лучшие времена)
+ *  Вернуться к следующей версии и переработать название, флаги и часть функций.
  */
 
-// Сократить названия.
 
 enum array_inf_val {inf_info, inf_addr, inf_mem_size, inf_elements, inf_positiv, inf_negativ,
                     inf_zeros, inf_evens, inf_odds, inf_avarage_a, inf_avarage_g, inf_prim,
@@ -160,7 +161,7 @@ int array_information(int data[], int size, enum array_inf_val ret)
             ++data_int[inf_odds];
         data_int[inf_avarage_a] += data[i];
         data_int[inf_avarage_g] *= data[i];
-        if (prime_number(data[i]))
+        if (is_prime_number(data[i]))
             ++data_int[inf_prim];
 
         data_int[inf_var_sum] += data[i] * sign;
@@ -376,8 +377,8 @@ int array_update_commands(int data[], char commands[], int limit)
             if ((result_act = string_char_find(comm_act_name, commands[i + 2], 0, 0)) != -1 &&
                     (is_digit(commands[i + 3]) || commands[i + 3] == '_')) {
                 printf("command: %c '%s' ", commands[i + 2] ,array_action_name[result_act]);
-                number_chk = char_to_hex(commands[i + 1]);
-                number_act = char_to_hex(commands[i + 3]);
+                number_chk = hex_char_to_int(commands[i + 1]);
+                number_act = hex_char_to_int(commands[i + 3]);
                 printf("digits: chk = %d, act = %d ", number_chk, number_act);
                 j = 0;
                 while ((j = array_scan_element(data, j, limit, number_chk, result_chk)) != -1) {
@@ -1000,7 +1001,7 @@ void chapter_11()
     array_print(init,length,prt_element);
     printf("\nB(first 30 primes numbers):\n");
     for (i = 2, quantity = 0; quantity < 30; ++i) {
-        if (prime_number(i) == 1) {
+        if (is_prime_number(i) == 1) {
             data[quantity] = i;
             ++quantity;
         }
@@ -1130,7 +1131,7 @@ void chapter_11()
             k = i + 1;
         }
     }
-    find_max_recur(scores,3,&result,0);
+    find_max_recursive(scores,3,&result,0);
     printf("max score idx = %d, sum = %d;\n\n",result, scores[result]);
     printf("11.36 - 11.39, checking elements for conditions;\n");
     quantity = 10; max = 100;
@@ -1567,7 +1568,7 @@ void chapter_11()
     array_delete_element(data,quantity,result);
     array_print(data, quantity, prt_element | prt_indexes);
     printf("\n\n11.151, delete max and min elements;\n");
-    uniq_gen_fast_alt(data,quantity,20);
+    generate_shuffled_array(data,quantity,20);
     array_print(data, quantity, prt_element | prt_indexes);
     array_min_max(data,quantity,1,1,&a);
     array_delete_element(data,quantity,a);
@@ -1670,7 +1671,7 @@ void chapter_11()
     array_create_sequence(data, 0, 0, random_max, 0b00000001, OBJ_MAX);
     array_print(data, quantity, prt_element | prt_indexes);
     for (i = 0; i < quantity; ++i) {
-        result = number_to_digits(data[i],data_extra,2);
+        result = int_to_digits_array(data[i],data_extra,2);
         while (result > 0)
             if (data_extra[--result] == 5) {
                 array_insert_element(data,quantity++,a,i++);
@@ -1836,7 +1837,7 @@ void chapter_11()
     printf("\n11.191, search uniq. digits in number %d\n", a);
     int array_digit[6];
     int uniq_array_digit[6];
-    number_to_digits(a,array_digit,6);
+    int_to_digits_array(a,array_digit,6);
     array_print(array_digit,6,prt_element | prt_indexes);
     result = array_unique_elements(array_digit,6,uniq_array_digit);
     printf("\nresult = %d\n\n", result);
@@ -1864,8 +1865,8 @@ void chapter_11()
         array_number[i] = 0;
     for (i = 0; i < 128; ++i)
         array_result[i] = 0;
-    number_to_digits(data_nums[3],&array_result[119],8);
-    number_to_digits(data_nums[3],array_number,8);
+    int_to_digits_array(data_nums[3],&array_result[119],8);
+    int_to_digits_array(data_nums[3],array_number,8);
     array_print(array_number,8,prt_element);
     printf("\n");
     array_print(array_result,128,prt_element);

@@ -2,53 +2,9 @@
 #include <stdlib.h>
 #include "library.h"
 
-#define STRING_MAX 256
-#define BYTE_NUMS 256
-
 /*
  *  Глава 9. Строки символов.
  */
-
-
-int string_length_brackets(char src[], int start)
-{
-    int i = 0, counter = 1;
-    if (src[start] != '(')
-        return -1;
-    for (i = start + 1; src[i] != '\0' && counter > 0; ++i) {
-        if (src[i] == '(')
-            counter++;
-        if (src[i] == ')')
-            counter--;
-    }
-    return i - 1;
-}
-
-int string_checking_brackets(char src[])
-{
-    int i = 0, counter = 0;
-    for (i = 0; src[i] != '\0' && counter >= 0; ++i) {
-        if (src[i] == '(')
-            counter++;
-        if (src[i] == ')')
-            counter--;
-    }
-    if (counter == 0)
-        return i;
-    else
-        return -1 * (i - 1);
-}
-
-int string_delete(char src[], int start, int length)
-{
-    int help = string_length(src), i;
-    if (start < 0 || start + length > help || length <= 0)
-        return -1;
-    for (i = start; i + length < help; ++i)
-        src[i] = src[i + length];
-    src[i] = '\0';
-    return 0;
-}
 
 char boolean_calculator(char src[])
 {
@@ -120,60 +76,6 @@ char boolean_calculator(char src[])
         printf("\t:'%c': '%s'\n",signs[i], result_string);
     }
     return result_string[0];
-}
-
-int string_is_symmetrical(char string[])
-{
-    int help = 0, len_1 = string_length(string) - 1;
-    if (len_1 < 1) {
-        printf("error, string is empty;\n");
-        return -1;
-    }
-    while (help < len_1 && string[help] == string[len_1]) {
-        ++help;
-        --len_1;
-    }
-    return (help >= len_1);
-}
-
-void string_rrc(char src[], int counter)
-{
-    int help = string_length(src), j;
-    char help_2;
-    for (int i = 0; i < counter; ++i) {
-        help_2 = src[help - 1];
-        for (j = help - 1; j > 0; --j)
-            src[j] = src[j - 1];
-        src[j] = help_2;
-    }
-}
-
-void string_rlc(char src[], int counter)
-{
-    int help = string_length(src),j;
-    char help_2;
-    for (int i = 0; i < counter; ++i) {
-        help_2 = src[0];
-        for (j = 0; j < help - 1; ++j)
-            src[j] = src[j + 1];
-        src[help - 1] = help_2;
-    }
-}
-
-int string_xchg_chars(char src[], int table[], int count)
-{
-    char help1 = string_length(src), help;
-    if (count == 0 || help1 == 0)
-        return -2;
-    for (int i = 0; i < count * 2; i += 2) {
-        if (table[i] < help1 && table[i] >= 0 && table[i + 1] < help1 && table[i + 1] >= 0) {
-            help = src[table[i]];
-            src[table[i]] = src[table[i + 1]];
-            src[table[i + 1]] = help;
-        } else
-            return -1;
-    }
-    return 0;
 }
 
 unsigned char not_gate(unsigned char bit_1)
@@ -248,159 +150,6 @@ void print_binary_word(unsigned short int word)
     print_binary_byte((unsigned char)(word & 0xFF));
 }
 
-int num_radix(char src[], char dst[], int from, int to)
-{
-    int src_len = string_length(src), quantity = 0, sum = 0, number = 0, help1 = 0;
-    int help = 1;
-    char numbers[] = "0123456789ABCDEF";
-    if (to == from || from < 1 || from > 16 || to < 1 || to > 16) {
-        printf("Error in parameters.\n");
-        return -1;
-    }
-    for (int i = src_len - 1; i >= 0; --i) {
-        for (int k = 0; numbers[k] != '\0' && k <= from; ++k)
-            if (numbers[k] == src[i]) {
-                if (k >= from)
-                    return -1;
-                number = k;
-            }
-        sum += number * help;
-        help *= from;
-    }
-    help = sum;
-    while (help > 0) {
-        help /= to;
-        ++help1;
-    }
-    for (int l = help1 - 1; l >= 0; --l) {
-        number = sum % to;
-        sum /= to;
-        dst[l] = numbers[number];
-        ++quantity;
-    }
-    return quantity;
-}
-
-int string_find_seq(char s[], char c, int start, int length)
-{
-    int src_len = string_length(s), index = 0;
-    if (src_len < start + length) {
-        printf("Sequence length more than string length.\n");
-        return -1;
-    }
-    for (index = start; index < start + length && s[index] == c; ++index)
-        ;
-    return (index == start + length);
-}
-
-int string_palindrom(char c[])
-{
-    int i = 0, src_len = string_length(c);
-    if (src_len == 0)
-        return -1;
-    for (i = 0; i < src_len && c[i] == c[src_len - i - 1]; ++i)
-        ;
-    if (i == src_len)
-        return 0;
-    return -1;
-}
-
-int string_concat(char src[], char dst[])
-{
-    int src_len = string_length(src), dst_length = string_length(dst);
-    int i = 0;
-    for (i = 0; i < src_len; ++i)
-        dst[i + dst_length] = src[i];
-    dst[i + dst_length] = '\0';
-    return i;
-}
-
-void string_clear(char s[], int len)
-{
-    for (int i = 0; i < len; ++i)
-        s[i] = '\0';
-}
-
-void string_exchange(char** s1, char** s2)
-{
-    char *addr;
-    addr = *s1;
-    *s1 = *s2;
-    *s2 = addr;
-}
-
-int string_find_sub(char s1[], char s2[])
-{
-    int j = 0, src_1 = string_length(s1), src_2 = string_length(s2);
-    if (src_1 == 0 || src_2 == 0 || src_1 < src_2)
-        return -2;
-    for (int i = 0; i < src_1; ++i) {
-        if (s1[i] == s2[j])
-            ++j;
-        else
-            j = 0;
-        if (j == src_2)
-            return i - j + 1;
-    }
-    return -1;
-}
-
-int string_rep_sub(char src[], char find[],char rep[],int all)
-{
-    int j = 0, src_len = string_length(src), find_len = string_length(find), quantity = 0;
-    if (src_len == 0 || find_len == 0 || src_len < find_len || find_len != string_length(rep) ||
-            string_is_equal(find, rep) == 0)
-        return -1;
-    while ((j = string_find_sub(src,find)) >= 0 && all >= 0) {
-        for (int k = 0; k < find_len; ++k)
-            src[j + k] = rep[k];
-        if (all == 0)
-            --all;
-        ++quantity;
-    }
-    return quantity;
-}
-
-int string_swap_parts(char src[], int parts, int mode)
-{
-    int src_len = string_length(src), parts_size = src_len / parts;
-    if ((mode < 1 || mode > 2) && (src_len == 0 || src_len % parts != 0)) {
-        printf("String is empty or parts not fit or mode error;\n");
-        return -1;
-    }
-    printf("Exchange %d parts in string %s, parts size = %d;\n", parts, src, parts_size);
-    if (mode == 1)
-        printf("Swap parts in string in reverse mode;\n");
-    else
-        printf("Swap parts in string in pairs mode;\n");
-    for (int i = 0; i < parts / 2; ++i) {
-        int left_part, right_part;
-        switch (mode) {
-        case 1:
-            left_part = i * parts_size;
-            right_part = (parts - i - 1) * parts_size;
-            break;
-        case 2:
-            left_part = i * 2 * parts_size;
-            right_part = (i * 2 + 1) * parts_size;
-            break;
-        default:
-            printf("Error in mode return;\n");
-            return -1;
-        }
-
-        printf("Parts move %d:%d, chars move:",left_part, right_part);
-        for (int k = 0; k < parts_size; ++k) {
-            printf("%c:%c ",src[left_part + k], src[right_part + k]);
-            char tmp = src[left_part + k];
-            src[left_part + k] = src[right_part + k];
-            src[right_part + k] = tmp;
-        }
-    }
-    printf("Result = %s;\n",src);
-    return 0;
-}
-
 static unsigned char bits_nums[BYTE_NUMS][CHAR_BIT];
 
 unsigned char set_register(unsigned char* num, unsigned char byte[])
@@ -426,23 +175,6 @@ unsigned char get_register(unsigned char* num, unsigned char byte[])
         }
     }
     return 0x00;
-}
-
-int string_to_words(char text[], char words[STRING_MAX][STRING_MAX])    // Fix later...
-{
-    int idx_word = 0, i, j, words_total = 0;
-    for (i = 0, j = 0; text[i] != '\0' || idx_word != i;) {
-        if ((text[i] == ' ' || text[i] == '\0') && idx_word < i) {
-            string_copy_substr(text,words[j++],idx_word,i - idx_word);
-            idx_word = i;
-            words_total++;
-        } else {
-            ++i;
-            if (text[idx_word] == ' ')
-                idx_word = i;
-        }
-    }
-    return words_total;
 }
 
 unsigned char not_logical (unsigned char dst[])
@@ -485,39 +217,6 @@ unsigned char xor_logical(unsigned char dst[], unsigned char src[])
     return not_gate(zero_flag);
 }
 
-int string_to_int(char src[], int base)
-{
-    const int base_min = 2, base_max = 16;
-    char digits[] = "0123456789ABCDEF";
-    if (base < base_min || base > base_max)
-        return 0;
-    int idx = 0, number = 0, sign = 0; // 0 - пока не определили знак.
-    while (!sign && src[idx] != '\0') {
-        if (src[idx] == '-')
-            sign = -1;
-        if (src[idx] == '+')
-            sign = 1;
-        int idx_2 = 0;
-        while (src[idx] != digits[idx_2] && idx_2 < base) // Здесь можно использовать if для анализа.
-            ++idx_2;
-        if (idx_2 != base)
-            sign = 1;
-        else
-            ++idx;
-    }
-    //printf("Sign = %d\nIdx = %d\n",sign,idx);
-    while (src[idx] != '\0') {
-        int j = 0; // Здесь тоже можно через if.
-        while (src[idx] != digits[j] && j < base)
-            ++j;
-        if (src[idx] == digits[j] && j != base)
-            number = number * base + j;
-        //printf("Src = %c, idx = %d, number = %d\n",src[idx],idx,number);
-        ++idx;
-    }
-    return sign * number;
-}
-
 unsigned char shift_logical_left(unsigned char dst[], unsigned char counter) // возвращает последний бит, вышедший за пределы.
 {
     unsigned char carry_flag = 0x00;
@@ -533,6 +232,7 @@ unsigned char shift_logical_left(unsigned char dst[], unsigned char counter) // 
 
 void chapter_9()
 {
+    printf("Chapter 5. Strings, base string functions, working with text and arrays;\n\n");
     int i = 0, j = 0, k = 0;
     //printf("[%ld]%d\n",(long)&i,i);
     printf("Size of char: %u bytes, min = %d, max = %d, bits in char =  %d;\n\n",
