@@ -1,7 +1,7 @@
 
-School code and basic programming tasks in classic C. Streaming on twitch.tv/bitscode
+Code and basic programming tasks in classic C. Streaming on twitch.tv/bitscode
 ---------------------------------------------------------------------------------------------
-Решаем школьные задачи по программированию на классическом СИ, вещаем по вечерам на канале twitch.tv/bitscode, архив вещаний доступен на ютуб-канале "Bitscode":
+Решаем базовые задачи по программированию на классическом СИ, вещаем по вечерам на канале twitch.tv/bitscode, архив вещаний доступен на ютуб-канале "Bitscode":
 https://www.youtube.com/@bitscode.
 ---------------------------------------------------------------------------------------------
 Нас всегда можно найти на https://8bittea.party
